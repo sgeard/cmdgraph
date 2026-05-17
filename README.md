@@ -516,11 +516,15 @@ tclsh tcl/utest_cmdgraph.tcl
 
 ### Documentation
 
-The Fortran implementation is documented with
-[FORD](https://forddocs.readthedocs.io). From the `fortran/` directory:
+The Fortran API documentation is published at
+**<https://sgeard.github.io/cmdgraph/>**.
+
+It is generated with [FORD](https://forddocs.readthedocs.io). To rebuild it
+locally and refresh the published site, from the `fortran/` directory:
 
 ```bash
-ford ford.md          # generates fortran/ford_docs/index.html
+ford ford.md                       # regenerate fortran/ford_docs/
+bash ../tools/publish-ford-docs    # rebuild the gh-pages branch
 ```
 
 The C++ header (`cpp/include/cmdgraph.hxx`) carries Doxygen `///` comments on
