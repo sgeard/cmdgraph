@@ -1,0 +1,2008 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="State-graph driven command interpreter — Fortran implementation">
+    <meta name="author" content="Simon Geard" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>dlist &ndash; cmdgraph</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">cmdgraph </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>dlist
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 7.9% of total for modules and submodules.">142 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/dlist.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/dlist.f90.html'>dlist.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">dlist</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/dlist.html#interface-int_node">int_node</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-real_node">real_node</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-real_a_node">real_a_node</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-real_m_node">real_m_node</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-char_node">char_node</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-make_node">make_node</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-make_int_node">make_int_node</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-make_real_node">make_real_node</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-make_real_a_node">make_real_a_node</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-make_real_m_node">make_real_m_node</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-make_char_node">make_char_node</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-iterate_ll">iterate_ll</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-reverse_iterate_ll">reverse_iterate_ll</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-size_ll">size_ll</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-get_ll">get_ll</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-insert_ll">insert_ll</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-remove_ll">remove_ll</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-print_ll">print_ll</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-append_ll">append_ll</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-clear_ll">clear_ll</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-assign_ll">assign_ll</a>
+            <a class="list-group-item" href="../module/dlist.html#interface-finalize_ll">finalize_ll</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#absints-0"
+         aria-expanded="false" aria-controls="absints-0">
+         <h4 class="card-header bg-primary text-white">Abstract Interfaces</h4>
+      </a>
+      <div id="absints-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/dlist.html#interface-command_fun">command_fun</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/dlist.html#type-dlist_t">dlist_t</a>
+            <a class="list-group-item" href="../module/dlist.html#type-dlist_node_data_t">dlist_node_data_t</a>
+            <a class="list-group-item" href="../module/dlist.html#type-dlist_node_integer">dlist_node_integer</a>
+            <a class="list-group-item" href="../module/dlist.html#type-dlist_node_real">dlist_node_real</a>
+            <a class="list-group-item" href="../module/dlist.html#type-dlist_node_real_a">dlist_node_real_a</a>
+            <a class="list-group-item" href="../module/dlist.html#type-dlist_node_real_m">dlist_node_real_m</a>
+            <a class="list-group-item" href="../module/dlist.html#type-dlist_node_char">dlist_node_char</a>
+            <a class="list-group-item" href="../module/dlist.html#type-dlist_node_t">dlist_node_t</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Doubly-linked list with polymorphic element storage.
+Iterate with <code>iterate</code> / <code>reverse_iterate</code>, or access by index with <code>get</code>.
+Abstract base for list element data.  Extend this type to store custom data.
+Node holding a single <code>integer</code> value.
+Node holding a single <code>real(8)</code> value.
+Node holding a <code>real(8)</code> rank-1 array.
+Node holding a <code>real(8)</code> rank-2 array.
+Node holding an allocatable <code>character</code> string.
+Construct an integer node.
+Construct a real(8) scalar node.
+Construct a real(8) rank-1 array node.
+Construct a real(8) rank-2 array node.
+Construct a character node.
+Generic node constructor — dispatches on argument type.
+Visitor procedure signature for <code>iterate</code> / <code>reverse_iterate</code>.
+Set <code>ok = .false.</code> to stop iteration early.</p>
+<br>      
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                <li class="list-inline-item"><h5>Descendants:</h5></li>
+                  <li class="list-inline-item"><a href='dlist_sm.html'>dlist_sm</a></li>
+              </ul>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+
+
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-int_node"></span>
+      <h3>public        interface <a href='../interface/int_node.html'>int_node</a> 
+      </h3>
+    </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    public  interface <a href='../interface/make_int_node.html'>make_int_node</a>()  
+
+    </h3>
+    
+  
+
+  <h4>Arguments</h4>
+    <em>None</em>
+
+          </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-real_node"></span>
+      <h3>public        interface <a href='../interface/real_node.html'>real_node</a> 
+      </h3>
+    </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    public  interface <a href='../interface/make_real_node.html'>make_real_node</a>()  
+
+    </h3>
+    
+  
+
+  <h4>Arguments</h4>
+    <em>None</em>
+
+          </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-real_a_node"></span>
+      <h3>public        interface <a href='../interface/real_a_node.html'>real_a_node</a> 
+      </h3>
+    </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    public  interface <a href='../interface/make_real_a_node.html'>make_real_a_node</a>()  
+
+    </h3>
+    
+  
+
+  <h4>Arguments</h4>
+    <em>None</em>
+
+          </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-real_m_node"></span>
+      <h3>public        interface <a href='../interface/real_m_node.html'>real_m_node</a> 
+      </h3>
+    </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    public  interface <a href='../interface/make_real_m_node.html'>make_real_m_node</a>()  
+
+    </h3>
+    
+  
+
+  <h4>Arguments</h4>
+    <em>None</em>
+
+          </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-char_node"></span>
+      <h3>public        interface <a href='../interface/char_node.html'>char_node</a> 
+      </h3>
+    </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    public  interface <a href='../interface/make_char_node.html'>make_char_node</a>()  
+
+    </h3>
+    
+  
+
+  <h4>Arguments</h4>
+    <em>None</em>
+
+          </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-make_node"></span>
+      <h3>public        interface <a href='../interface/make_node.html'>make_node</a> 
+      </h3>
+    </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    public  interface <a href='../interface/make_int_node.html'>make_int_node</a>()  
+
+    </h3>
+    
+  
+
+  <h4>Arguments</h4>
+    <em>None</em>
+
+          </li>
+          <li class="list-group-item">
+                <h3>
+    public  interface <a href='../interface/make_real_node.html'>make_real_node</a>()  
+
+    </h3>
+    
+  
+
+  <h4>Arguments</h4>
+    <em>None</em>
+
+          </li>
+          <li class="list-group-item">
+                <h3>
+    public  interface <a href='../interface/make_real_a_node.html'>make_real_a_node</a>()  
+
+    </h3>
+    
+  
+
+  <h4>Arguments</h4>
+    <em>None</em>
+
+          </li>
+          <li class="list-group-item">
+                <h3>
+    public  interface <a href='../interface/make_real_m_node.html'>make_real_m_node</a>()  
+
+    </h3>
+    
+  
+
+  <h4>Arguments</h4>
+    <em>None</em>
+
+          </li>
+          <li class="list-group-item">
+                <h3>
+    public  interface <a href='../interface/make_char_node.html'>make_char_node</a>()  
+
+    </h3>
+    
+  
+
+  <h4>Arguments</h4>
+    <em>None</em>
+
+          </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-make_int_node"></span>
+      <h3>        interface
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module function make_int_node(v) result(n)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/dlist_node_integer.html'>dlist_node_integer</a>)</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-make_real_node"></span>
+      <h3>        interface
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module function make_real_node(v) result(n)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v~2"></span>
+              real(kind=8),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/dlist_node_real.html'>dlist_node_real</a>)</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-make_real_a_node"></span>
+      <h3>        interface
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module function make_real_a_node(v) result(n)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v~3"></span>
+              real(kind=8),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong>(:)</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/dlist_node_real_a.html'>dlist_node_real_a</a>)</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-make_real_m_node"></span>
+      <h3>        interface
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module function make_real_m_node(v) result(n)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v~4"></span>
+              real(kind=8),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong>(:,:)</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/dlist_node_real_m.html'>dlist_node_real_m</a>)</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-make_char_node"></span>
+      <h3>        interface
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module function make_char_node(v) result(n)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v~5"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/dlist_node_char.html'>dlist_node_char</a>)</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-iterate_ll"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to stdout.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module function iterate_ll(this, f) result(r)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~17"></span>
+              class(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-f"></span>
+              procedure(<a href='../interface/command_fun.html'>command_fun</a>)
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>f</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-reverse_iterate_ll"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to stdout.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module function reverse_iterate_ll(this, f) result(r)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~18"></span>
+              class(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-f~2"></span>
+              procedure(<a href='../interface/command_fun.html'>command_fun</a>)
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>f</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-size_ll"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to stdout.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module function size_ll(lst)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lst~5"></span>
+              class(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lst</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-get_ll"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to stdout.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module function get_ll(this, idx) result(node)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~19"></span>
+              class(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-idx~3"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>idx</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>class(<a href='../type/dlist_node_data_t.html'>dlist_node_data_t</a>), allocatable</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-insert_ll"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to stdout.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module subroutine insert_ll(lst, idx, data)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lst"></span>
+              class(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lst</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-idx"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>idx</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-data~7"></span>
+              class(<a href='../type/dlist_node_data_t.html'>dlist_node_data_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>data</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-remove_ll"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to stdout.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module subroutine remove_ll(lst, idx)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lst~2"></span>
+              class(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lst</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-idx~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>idx</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-print_ll"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to stdout.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module subroutine print_ll(lst)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lst~3"></span>
+              class(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lst</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-append_ll"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to stdout.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module subroutine append_ll(lst, data)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lst~4"></span>
+              class(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lst</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-data~8"></span>
+              class(<a href='../type/dlist_node_data_t.html'>dlist_node_data_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>data</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-clear_ll"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to stdout.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module subroutine clear_ll(lst)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lst~6"></span>
+              class(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lst</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-assign_ll"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to stdout.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module subroutine assign_ll(lhs, rhs)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lhs"></span>
+              class(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lhs</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rhs"></span>
+              class(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rhs</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-finalize_ll"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to stdout.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public module subroutine finalize_ll(lst)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lst~7"></span>
+              type(<a href='../type/dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lst</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Abstract Interfaces</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="interface-command_fun"></span><h3>abstract interface
+        
+    </h3></div>
+    <ul class="list-group">
+      <li class="list-group-item">
+            <h3>
+    public  subroutine command_fun(command, ok)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-command"></span>
+              class(<a href='../type/dlist_node_data_t.html'>dlist_node_data_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>command</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ok~2"></span>
+              logical,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ok</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+      </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-dlist_t"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/dlist_t.html'>dlist_t</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      
+
+
+
+        <h4>Finalizations Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>final :: <strong>finalize_ll</strong></td>
+                <td></td>
+              </tr>
+          </tbody>
+        </table>
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/dlist_t.html#boundprocedure-iterate'>iterate</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/iterate_ll.html'>iterate_ll</a></td>
+                  <td><p>Apply a visitor to each element in order</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/dlist_t.html#boundprocedure-reverse_iterate'>reverse_iterate</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/reverse_iterate_ll.html'>reverse_iterate_ll</a></td>
+                  <td><p>Apply a visitor to each element in reverse</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/dlist_t.html#boundprocedure-print'>print</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/print_ll.html'>print_ll</a></td>
+                  <td><p>Print list contents to stdout</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/dlist_t.html#boundprocedure-append'>append</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/append_ll.html'>append_ll</a></td>
+                  <td><p>Append a node to the tail</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/dlist_t.html#boundprocedure-insert'>insert</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/insert_ll.html'>insert_ll</a></td>
+                  <td><p>Insert a node at 1-based index</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/dlist_t.html#boundprocedure-remove'>remove</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/remove_ll.html'>remove_ll</a></td>
+                  <td><p>Remove element at 1-based index</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/dlist_t.html#boundprocedure-size'>size</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/size_ll.html'>size_ll</a></td>
+                  <td><p>Number of elements</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/dlist_t.html#boundprocedure-clear'>clear</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/clear_ll.html'>clear_ll</a></td>
+                  <td><p>Remove all elements</p></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/dlist_t.html#boundprocedure-get'>get</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/get_ll.html'>get_ll</a></td>
+                  <td><p>Index-based accessor (1-based); unallocated if out of range</p></td>
+              </tr>
+              <tr>
+                <td>  generic, public ::
+  <strong><a href='../type/dlist_t.html#boundprocedure-assignment%28%3D%29'>assignment(=)</a></strong> => assign_ll</td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-dlist_node_data_t"></span>
+      <h3>
+        type, public, abstract&nbsp;::&nbsp;
+        <a href='../type/dlist_node_data_t.html'>dlist_node_data_t</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-dlist_node_integer"></span>
+      <h3>
+        type, public, extends(<a href='../type/dlist_node_data_t.html'>dlist_node_data_t</a>)&nbsp;::&nbsp;
+        <a href='../type/dlist_node_integer.html'>dlist_node_integer</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-data"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>data</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-dlist_node_real"></span>
+      <h3>
+        type, public, extends(<a href='../type/dlist_node_data_t.html'>dlist_node_data_t</a>)&nbsp;::&nbsp;
+        <a href='../type/dlist_node_real.html'>dlist_node_real</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-data~2"></span>
+              real(kind=8),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>data</strong></td>
+<td> =</td>
+                <td>0.0d0</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-dlist_node_real_a"></span>
+      <h3>
+        type, public, extends(<a href='../type/dlist_node_data_t.html'>dlist_node_data_t</a>)&nbsp;::&nbsp;
+        <a href='../type/dlist_node_real_a.html'>dlist_node_real_a</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-data~3"></span>
+              real(kind=8),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>data</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-dlist_node_real_m"></span>
+      <h3>
+        type, public, extends(<a href='../type/dlist_node_data_t.html'>dlist_node_data_t</a>)&nbsp;::&nbsp;
+        <a href='../type/dlist_node_real_m.html'>dlist_node_real_m</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-data~4"></span>
+              real(kind=8),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>data</strong>(:,:)</td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-dlist_node_char"></span>
+      <h3>
+        type, public, extends(<a href='../type/dlist_node_data_t.html'>dlist_node_data_t</a>)&nbsp;::&nbsp;
+        <a href='../type/dlist_node_char.html'>dlist_node_char</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-data~5"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>data</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-dlist_node_t"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/dlist_node_t.html'>dlist_node_t</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      
+
+
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              cmdgraph
+ was developed by Simon Geard<br>              &copy; 2026 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+            </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>
