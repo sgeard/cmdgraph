@@ -1,0 +1,19 @@
+# Build artifacts
+obj_*/
+*.o
+*.a
+*.so
+*.mod
+*.smod
+
+# Fortran fpm build directory
+build/
+
+# Generated documentation
+fortran/ford_docs/
+
+# SVN working copy metadata (git ignores .svn natively, but be explicit)
+.svn/
+
+# Local scratch / commit notes
+commit-msg

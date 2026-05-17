@@ -1,0 +1,47 @@
+# example.cgl — sample graph definition for testing cmdgraph_gen.tcl
+# kate: syntax Tcl/Tk;
+
+initial root
+
+state root {
+    prompt "> "
+    command {q(uit)}  quit             help "exit"
+    command {p(airs)} goto pairs       help "manage pairs"
+    command {l(og)}   goto log         help "view log"
+}
+
+state pairs {
+    prompt "pairs> "
+    on_enter list_pairs
+    include nav
+    # Commands with arg specs
+    command {a(dd)}    action  act_add         help "add a pair" {
+        arg id   int
+        arg name char optional
+    }
+    command {d(elete)} action  act_delete      help "delete a pair" {
+        arg id int
+    }
+    command {s(elect)} do_goto detail act_select {
+        arg id int
+    }
+}
+
+state detail {
+    prompt "detail> "
+    include nav
+    command {u(pdate)} do_pop act_update help "update and return" {
+        arg name char
+    }
+}
+
+state log {
+    prompt "log> "
+    include nav
+    command {c(lear)} action act_clear help "clear the log"
+}
+
+# Abstract states are shared command sets with no prompt
+abstract nav {
+    command {b(ack)} pop help "return to previous state"
+}
