@@ -218,6 +218,9 @@ contains
         type(command_t), allocatable                         :: merged(:)
         character(len=:), allocatable                        :: cycle_msg
         logical                                              :: has_cycle
+        type(cmd_array_t), allocatable                       :: original(:), snapshot(:)
+        character(len=:), allocatable                        :: emsg
+        logical                                              :: ok
 
         if (propagate_build_error(this, stat, errmsg)) return
         if (this%finalized) then
@@ -225,33 +228,52 @@ contains
             call raise(this%build_error_msg, stat, errmsg)
             return
         end if
+        if (.not. allocated(this%states)) then
+            call raise("cmdgraph: cannot finalize: no states defined", stat, errmsg)
+            return
+        end if
 
-        ! Trim command arrays from build capacity to exact count.
+        ! Snapshot the per-state command arrays before any mutation. finalize is
+        ! atomic: it transforms (trim/parse/merge) then validates, and only
+        ! commits on full success. On any validation failure the snapshot is
+        ! restored so the engine is byte-identical to before the call and a
+        ! corrected retry starts from a clean (untrimmed/unmerged) state.
+        allocate(snapshot(size(this%states)))
         do i = 1, size(this%states)
-            associate(st => this%states(i))
-                if (allocated(st%commands)) then
-                    st%commands = st%commands(1:st%build_count)
-                else
-                    allocate(st%commands(0))
-                end if
-            end associate
+            if (allocated(this%states(i)%commands)) then
+                snapshot(i)%items = this%states(i)%commands
+            else
+                allocate(snapshot(i)%items(0))
+            end if
         end do
 
-        ! Parse every command's spec into req/opt
-        do i = 1, size(this%states)
-            do j = 1, size(this%states(i)%commands)
-                call parse_spec(this%states(i)%commands(j)%spec, &
-                                this%states(i)%commands(j)%req, &
-                                this%states(i)%commands(j)%opt)
+        ok   = .true.
+        emsg = ""
+        transform: block
+            ! Trim command arrays from build capacity to exact count.
+            do i = 1, size(this%states)
+                associate(st => this%states(i))
+                    if (allocated(st%commands)) then
+                        st%commands = st%commands(1:st%build_count)
+                    else
+                        allocate(st%commands(0))
+                    end if
+                end associate
             end do
-        end do
 
-        ! Merge includes: included commands first, then state's own (so state wins).
-        ! Snapshot every state's commands first, then resolve includes from the
-        ! snapshot — that keeps includes flat (no transitive inheritance) and
-        ! order-independent, matching the Tcl semantics.
-        block
-            type(cmd_array_t), allocatable :: original(:)
+            ! Parse every command's spec into req/opt
+            do i = 1, size(this%states)
+                do j = 1, size(this%states(i)%commands)
+                    call parse_spec(this%states(i)%commands(j)%spec, &
+                                    this%states(i)%commands(j)%req, &
+                                    this%states(i)%commands(j)%opt)
+                end do
+            end do
+
+            ! Merge includes: included commands first, then state's own (so
+            ! state wins). Snapshot every state's commands first, then resolve
+            ! includes from the snapshot — that keeps includes flat (no
+            ! transitive inheritance) and order-independent, matching Tcl.
             allocate(original(size(this%states)))
             do i = 1, size(this%states)
                 original(i)%items = this%states(i)%commands
@@ -262,60 +284,73 @@ contains
                 do k = 1, size(this%states(i)%includes)
                     sidx = find_state_idx(this, trim(this%states(i)%includes(k)))
                     if (sidx == 0) then
-                        call raise("cmdgraph: state '" // this%states(i)%name // &
-                                   "' includes unknown state '" // &
-                                   trim(this%states(i)%includes(k)) // "'", stat, errmsg)
-                        return
+                        emsg = "cmdgraph: state '" // this%states(i)%name // &
+                               "' includes unknown state '" // &
+                               trim(this%states(i)%includes(k)) // "'"
+                        ok = .false.
+                        exit transform
                     end if
                     call merge_commands(merged, original(sidx)%items)
                 end do
                 call merge_commands(merged, original(i)%items)
                 call move_alloc(merged, this%states(i)%commands)
             end do
-        end block
 
-        ! Validate goto/do_goto targets
-        do i = 1, size(this%states)
-            do j = 1, size(this%states(i)%commands)
-                if (this%states(i)%commands(j)%kind == EDGE_GOTO .or. &
-                    this%states(i)%commands(j)%kind == EDGE_DO_GOTO) then
-                    tidx = find_state_idx(this, this%states(i)%commands(j)%target)
-                    if (tidx == 0) then
-                        call raise("cmdgraph: state '" // this%states(i)%name // &
+            ! Validate goto/do_goto targets
+            do i = 1, size(this%states)
+                do j = 1, size(this%states(i)%commands)
+                    if (this%states(i)%commands(j)%kind == EDGE_GOTO .or. &
+                        this%states(i)%commands(j)%kind == EDGE_DO_GOTO) then
+                        tidx = find_state_idx(this, this%states(i)%commands(j)%target)
+                        if (tidx == 0) then
+                            emsg = "cmdgraph: state '" // this%states(i)%name // &
                                    "' has '" // this%states(i)%commands(j)%spec // &
                                    "' targeting unknown state '" // &
-                                   this%states(i)%commands(j)%target // "'", stat, errmsg)
-                        return
-                    end if
-                    if (.not. allocated(this%states(tidx)%prompt)) then
-                        call raise("cmdgraph: state '" // this%states(i)%name // &
+                                   this%states(i)%commands(j)%target // "'"
+                            ok = .false.
+                            exit transform
+                        end if
+                        if (.not. allocated(this%states(tidx)%prompt)) then
+                            emsg = "cmdgraph: state '" // this%states(i)%name // &
                                    "' has '" // this%states(i)%commands(j)%spec // &
                                    "' targeting abstract state '" // &
-                                   this%states(i)%commands(j)%target // "'", stat, errmsg)
-                        return
+                                   this%states(i)%commands(j)%target // "'"
+                            ok = .false.
+                            exit transform
+                        end if
                     end if
-                end if
+                end do
             end do
-        end do
 
-        ! Validate DAG-ness of forward edges (goto/do_goto) between concrete states.
-        ! pop is the return path; abstract states are command mix-ins, not nodes.
-        call find_cycle(this, has_cycle, cycle_msg)
-        if (has_cycle) then
-            call raise(cycle_msg, stat, errmsg)
-            return
-        end if
+            ! Validate DAG-ness of forward edges (goto/do_goto) between concrete
+            ! states. pop is the return path; abstract states are command
+            ! mix-ins, not nodes.
+            call find_cycle(this, has_cycle, cycle_msg)
+            if (has_cycle) then
+                emsg = cycle_msg
+                ok = .false.
+                exit transform
+            end if
 
-        ! Validate initial state
-        sidx = find_state_idx(this, initial)
-        if (sidx == 0) then
-            call raise("cmdgraph: initial state '" // initial // "' not in graph", &
-                       stat, errmsg)
-            return
-        end if
-        if (.not. allocated(this%states(sidx)%prompt)) then
-            call raise("cmdgraph: initial state '" // initial // "' is abstract", &
-                       stat, errmsg)
+            ! Validate initial state
+            sidx = find_state_idx(this, initial)
+            if (sidx == 0) then
+                emsg = "cmdgraph: initial state '" // initial // "' not in graph"
+                ok = .false.
+                exit transform
+            end if
+            if (.not. allocated(this%states(sidx)%prompt)) then
+                emsg = "cmdgraph: initial state '" // initial // "' is abstract"
+                ok = .false.
+                exit transform
+            end if
+        end block transform
+
+        if (.not. ok) then
+            do i = 1, size(this%states)
+                this%states(i)%commands = snapshot(i)%items
+            end do
+            call raise(emsg, stat, errmsg)
             return
         end if
 
@@ -914,8 +949,9 @@ contains
             ctx = this%stack(this%stack_top)%context
             r = this%states(sidx)%commands(cmd_idx)%proc(args, ctx)
             if (r%errored) then
-                if (allocated(r%errmsg) .and. len(r%errmsg) > 0) &
-                    call emit_error(this, r%errmsg)
+                if (allocated(r%errmsg)) then
+                    if (len(r%errmsg) > 0) call emit_error(this, r%errmsg)
+                end if
                 rc = RC_ERROR
             else
                 rc = RC_OK
@@ -929,8 +965,9 @@ contains
             ctx = this%stack(this%stack_top)%context
             r = this%states(sidx)%commands(cmd_idx)%proc(args, ctx)
             if (r%errored) then
-                if (allocated(r%errmsg) .and. len(r%errmsg) > 0) &
-                    call emit_error(this, r%errmsg)
+                if (allocated(r%errmsg)) then
+                    if (len(r%errmsg) > 0) call emit_error(this, r%errmsg)
+                end if
                 rc = RC_ERROR
             else if (allocated(r%value)) then
                 if (len(r%value) > 0) then
@@ -955,8 +992,9 @@ contains
             ctx = this%stack(this%stack_top)%context
             r = this%states(sidx)%commands(cmd_idx)%proc(args, ctx)
             if (r%errored) then
-                if (allocated(r%errmsg) .and. len(r%errmsg) > 0) &
-                    call emit_error(this, r%errmsg)
+                if (allocated(r%errmsg)) then
+                    if (len(r%errmsg) > 0) call emit_error(this, r%errmsg)
+                end if
                 rc = RC_ERROR
             else
                 this%stack_top = this%stack_top - 1

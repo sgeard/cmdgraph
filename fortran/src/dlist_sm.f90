@@ -84,34 +84,37 @@ contains
         integer, intent(in)                  :: idx
         class(dlist_node_data_t), intent(in) :: data
         integer :: i
-        type(dlist_node_t), pointer :: this, new_node
+        type(dlist_node_t), pointer :: this, new_node, prev
 
         allocate(new_node)
         new_node%data = data
 
         if (.not. associated(lst%begin)) then
-            ! Empty list
+            ! Empty list — idx is irrelevant.
             lst%begin => new_node
             lst%end   => new_node
-        else if (idx <= 0) then
-            ! Prepend
-            new_node%next    => lst%begin
+        else if (idx <= 1) then
+            ! Insert at position 1: prepend (also covers out-of-range low).
+            new_node%next      => lst%begin
             lst%begin%previous => new_node
-            lst%begin        => new_node
+            lst%begin          => new_node
+        else if (idx > lst%num_of_elements) then
+            ! Out-of-range high: append.
+            new_node%previous => lst%end
+            lst%end%next      => new_node
+            lst%end           => new_node
         else
-            ! Locate node at position idx, insert after it
+            ! Insert before the node currently at position idx (2..n), so the
+            ! new element ends up AT idx and later elements shift right.
             this => lst%begin
-            do i=2,min(idx,lst%num_of_elements)
+            do i = 2, idx
                 this => this%next
             end do
-            new_node%previous => this
-            new_node%next     => this%next
-            if (associated(this%next)) then
-                this%next%previous => new_node
-            else
-                lst%end => new_node
-            end if
-            this%next => new_node
+            prev => this%previous
+            new_node%previous => prev
+            new_node%next     => this
+            prev%next          => new_node
+            this%previous      => new_node
         end if
         lst%num_of_elements = lst%num_of_elements + 1
     end subroutine insert_ll

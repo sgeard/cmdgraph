@@ -50,22 +50,31 @@ contains
     subroutine test_insert_and_remove()
         type(dlist_t) :: a
 
-        call a%insert(0, int_node(2))
-        call a%insert(0, int_node(1))
-        call a%insert(2, int_node(4))
-        call a%insert(2, int_node(3))
-        call check_int("insert builds list size", a%size(), 4)
-        call check_int_node("insert prepend", a, 1, 1)
-        call check_int_node("insert middle", a, 3, 3)
-        call check_int_node("insert append", a, 4, 4)
+        ! 1-based insert-before semantics: insert(i, x) places x AT position i,
+        ! shifting later elements right. idx<=1 (or empty) prepends; idx>size
+        ! appends. (Codex #3: implementation now matches the documented API.)
+        call a%insert(5, int_node(99))   ! empty list, any idx -> [99]
+        call a%insert(1, int_node(10))   ! prepend           -> [10,99]
+        call a%insert(99, int_node(40))  ! idx>size: append   -> [10,99,40]
+        call a%insert(2, int_node(20))   ! before pos 2       -> [10,20,99,40]
+        call a%insert(3, int_node(30))   ! before pos 3       -> [10,20,30,99,40]
+        call check_int("insert builds list size", a%size(), 5)
+        call check_int_node("insert: prepend at head",        a, 1, 10)
+        call check_int_node("insert: before-idx at pos 2",    a, 2, 20)
+        call check_int_node("insert: before-idx keeps order", a, 3, 30)
+        call check_int_node("insert: shifted element survives", a, 4, 99)
+        call check_int_node("insert: append at tail",         a, 5, 40)
 
         call a%remove(1)
-        call check_int_node("remove first", a, 1, 2)
+        call check_int_node("remove first", a, 1, 20)
+        call a%remove(3)
+        call check_int_node("remove middle", a, 3, 40)
+        call a%remove(99)
+        call check_int("remove out-of-range is a no-op", a%size(), 3)
         call a%remove(2)
-        call check_int_node("remove middle", a, 2, 4)
-        call a%remove(2)
-        call check_int("remove last leaves one", a%size(), 1)
-        call check_int_node("remaining node after removes", a, 1, 2)
+        call check_int("remove leaves two", a%size(), 2)
+        call check_int_node("remaining head after removes", a, 1, 20)
+        call check_int_node("remaining tail after removes", a, 2, 40)
     end subroutine test_insert_and_remove
 
     subroutine test_iteration()

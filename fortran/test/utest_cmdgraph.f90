@@ -15,7 +15,6 @@ program utest_cmdgraph
     integer, save :: last_rest_nargs = -1
     integer, save :: last_rest_int = -1
     character(len=:), save, allocatable :: last_rest_str
-    character(len=:), save, allocatable :: last_errmsg
 
     type(engine_t) :: eng
 
@@ -128,6 +127,7 @@ program utest_cmdgraph
     call test_constructors()
     call test_builder_errors2()
     call test_finalize_errors()
+    call test_finalize_retry()
     call test_multi_include()
     call test_dispatch_special()
     call test_run_engine()
@@ -145,8 +145,8 @@ program utest_cmdgraph
     ! --- version ---
     call check_int("version major",  CMDGRAPH_VERSION%major, 1)
     call check_int("version minor",  CMDGRAPH_VERSION%minor, 0)
-    call check_int("version patch",  CMDGRAPH_VERSION%patch, 0)
-    call check_str("version string", CMDGRAPH_VERSION%string(), "1.0.0")
+    call check_int("version patch",  CMDGRAPH_VERSION%patch, 1)
+    call check_str("version string", CMDGRAPH_VERSION%string(), "1.0.1")
 
     ! --- Done ---
     write(*,'(/,a,i0,a,i0,a,i0,a)') "Results: ", pass+fail, " tests, ", pass, " passed, ", fail, " failed"
@@ -745,7 +745,7 @@ contains
     subroutine test_rest_of_line()
         type(engine_t) :: e, bad
         character(len=*), parameter :: hp = "/tmp/cmdgraph_fortran_rest_utest.txt"
-        integer                       :: u, ios, p, s
+        integer                       :: u, ios, s
         character(len=512)            :: line
         character(len=:), allocatable :: txt
         character(len=:), allocatable :: m
@@ -1215,7 +1215,50 @@ contains
                 index(m, "abst") > 0, .true.)
         end block
 
+        ! Codex Medium #2: a fresh engine (states unallocated) finalized
+        ! directly must report a normal construction error, not hit
+        ! size() on an unallocated allocatable.
+        block
+            type(engine_t) :: e
+            integer :: s
+            character(len=:), allocatable :: m
+            call e%finalize("root", stat=s, errmsg=m)
+            call check_int("finalize: empty graph stat", s, 1)
+            call check_log("finalize: empty graph errmsg", &
+                index(m, "no states") > 0, .true.)
+        end block
+
     end subroutine test_finalize_errors
+
+    ! Codex Medium #1: finalize trims/parses/merges before validating the
+    ! initial state. A failed finalize must leave the engine byte-identical
+    ! to before the call, so a corrected retry succeeds without dropping the
+    ! merged-in (included) commands. Pre-fix, the retry re-trimmed to the
+    ! stale build_count and silently lost "xshared".
+    subroutine test_finalize_retry()
+        type(engine_t) :: e
+        integer :: s
+        character(len=:), allocatable :: m
+
+        call e%add_state("common")
+        call e%add_command("common", "x(shared)", EDGE_ACTION, proc=act_outer, help="shared")
+        call e%add_state("root", prompt="> ")
+        call e%add_include("root", "common")
+        call e%add_command("root", "q(uit)", EDGE_QUIT)
+
+        ! Fails at initial-state validation, which runs AFTER trim + merge.
+        call e%finalize("phantom", stat=s, errmsg=m)
+        call check_int("retry: first finalize fails",          s, 1)
+        call check_log("retry: failure names bad initial",     index(m, "phantom") > 0, .true.)
+
+        ! Corrected retry must succeed with the merged graph fully intact.
+        call e%finalize("root", stat=s)
+        call check_int("retry: second finalize ok",            s, 0)
+        last_act_outer_called = 0
+        call check_int("retry: included command survives",     e%dispatch("xshared"), RC_OK)
+        call check_int("retry: included action ran",           last_act_outer_called, 1)
+        call check_int("retry: own command survives",          e%dispatch("quit"), RC_EXITED)
+    end subroutine test_finalize_retry
 
     subroutine test_multi_include()
         ! Adding two includes to the same state exercises the array-resize path
