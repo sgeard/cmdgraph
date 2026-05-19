@@ -1,0 +1,45 @@
+# cad_2d.cgl — graph definition for the 2D CAD example.
+# Mirrors the command graph hand-built in fortran/cad_2d/cad_2d.f90.
+# kate: syntax Tcl/Tk;
+#
+#   create -+- line -+- <point> --- <point> -+   (draw a line)
+#                     +- colour / thickness  -+   (set style)
+#
+# <point> is either `x y` or `from <id> <dx> <dy>`. The two-point capture
+# is modelled with line_mode (first point, do_goto) and p2_pending
+# (second point, do_pop draws and returns; esc aborts).
+
+initial root
+
+state root {
+    prompt "cad> "
+    command {c(reate)} goto creator help "create something"
+    command {q(uit)}   quit         help "exit"
+}
+
+state creator {
+    prompt "create> "
+    command {l(ine)} goto line_mode help "draw lines"
+    command {b(ack)} pop            help "back"
+    command {q(uit)} quit           help "exit"
+}
+
+state line_mode {
+    prompt "line> "
+    command {p(oint)}     do_goto p2_pending act_p1 help "first point: <x> <y> or from <id> <dx> <dy>"
+    command {colour}      action  act_colour        help "set draw colour" {
+        arg n int
+    }
+    command {t(hickness)} action  act_thickness     help "set line thickness" {
+        arg t real
+    }
+    command {b(ack)}      pop                        help "back to creator"
+    command {q(uit)}      quit                       help "exit"
+}
+
+state p2_pending {
+    prompt "p2> "
+    command {p(oint)} do_pop act_p2 help "second point: <x> <y> or from <id> <dx> <dy>"
+    command {e(sc)}   pop           help "abandon this line"
+    command {q(uit)}  quit          help "exit"
+}
