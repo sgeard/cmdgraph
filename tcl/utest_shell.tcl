@@ -198,6 +198,88 @@ check "built-in help lists q(uit)"  [string match *q(uit)*     $out] 1
 m3 destroy
 
 # ----------------------------------------------------------------------------
+# Auto-quit collision detection (B3). A subclass defining a do_q* command
+# whose required prefix is itself a prefix of "quit" would clash with the
+# auto-injected q(uit). The Shell must refuse construction with a clear
+# diagnostic rather than silently producing an ambiguous shell.
+# ----------------------------------------------------------------------------
+
+# 6a. The collision case: req="q" (full="query") with no explicit quit.
+oo::class create QueryShell {
+    superclass cmdgraph::Shell
+    constructor {} { next "q> " }
+    method do_q(uery) {} { my puts "query ran" }
+}
+set rc [catch { QueryShell new } err]
+check "auto-quit collision: refused"  $rc 1
+check "auto-quit collision: names the conflict" \
+    [string match *q(uery)* $err] 1
+check "auto-quit collision: names q(uit)" \
+    [string match *q(uit)* $err] 1
+
+# 6b. Same shape, longer required prefix ("qui(ck)" → req="qui").
+oo::class create QuickShell {
+    superclass cmdgraph::Shell
+    constructor {} { next "qk> " }
+    method do_qui(ck) {} { my puts "quick" }
+}
+set rc [catch { QuickShell new } err]
+check "auto-quit collision: qui(ck) refused"  $rc 1
+
+# 6c. Defining do_q(uit) explicitly opts out of auto-injection — the
+# coexistence of do_q(uery) and do_q(uit) is the user's call (and the
+# engine reports the runtime ambiguity if "q" alone is typed).
+oo::class create QueryWithQuit {
+    superclass cmdgraph::Shell
+    constructor {} { next "q> " }
+    method do_q(uery) {} { my puts "query ran" }
+    method do_q(uit)  {} { my puts "bye"; my exit }
+}
+set rc [catch { QueryWithQuit new } err]
+check "auto-quit opt-out via do_q(uit)"   $rc 0
+catch { [QueryWithQuit new] destroy }
+
+# 6d. Spec resolving to full "quit" via different parens (qu(it)) opts out.
+oo::class create QueryWithQuit2 {
+    superclass cmdgraph::Shell
+    constructor {} { next "q> " }
+    method do_q(uery) {} { my puts "query ran" }
+    method do_qu(it)  {} { my puts "bye"; my exit }
+}
+set rc [catch { QueryWithQuit2 new } err]
+check "auto-quit opt-out via do_qu(it)"   $rc 0
+catch { [QueryWithQuit2 new] destroy }
+
+# 6e. A do_q* whose required prefix is NOT a prefix of "quit" is safe.
+# req="qz" is not in {q, qu, qui, quit}; cmd "qz" matches qz(ap) only,
+# cmd "q" matches q(uit) only. No ambiguity, so auto-inject proceeds.
+oo::class create ZapShell {
+    superclass cmdgraph::Shell
+    constructor {} { next "z> " }
+    method do_qz(ap) {} { my puts "zap" }
+}
+set rc [catch { ZapShell new } err]
+check "auto-quit safe with disjoint q-prefix"  $rc 0
+catch { [ZapShell new] destroy }
+
+# ----------------------------------------------------------------------------
+# 7. Suppressed out_chan (B2) — empty out channel must not raise.
+# Engine convention: out_chan eq "" means "discard output". cmdloop used to
+# bypass that by writing the prompt directly to $out_chan, which raised on
+# a literal empty string. Now it routes through emit_prompt and is silent.
+# ----------------------------------------------------------------------------
+
+Minimal create m4
+set in_r [make_input_pipe {{greet Quiet} quit}]
+m4 set_io_channels $in_r "" ""
+set rc [catch { m4 cmdloop } err]
+close $in_r
+check "suppressed out_chan: no error"         $rc 0
+check "suppressed out_chan: action still ran" [m4 last_greeted] Quiet
+check "suppressed out_chan: quit landed"      [[m4 engine] is_running] 0
+m4 destroy
+
+# ----------------------------------------------------------------------------
 
 puts ""
 puts "Passed: $pass"

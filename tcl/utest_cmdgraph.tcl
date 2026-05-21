@@ -412,6 +412,125 @@ check "context is empty outside action"  [cmdgraph::context] ""
 
 ec destroy
 
+# --- nested dispatch preserves the outer context (B1) ---
+#
+# A GUI back-end (or any caller) may re-enter the engine from inside an
+# action. The outer action's cmdgraph::context must survive that — the
+# old code unconditionally reset current_context to "" after invoke,
+# which wiped the outer save.
+
+set nested_ctx_before ""
+set nested_ctx_after  ""
+
+# Inner action just reads its own context, lets the engine reset it.
+proc nest_inner_act {args} {
+    return ""
+}
+
+# Outer action: read context, recurse via dispatch, read context again.
+proc nest_outer_act {args} {
+    global nested_ctx_before nested_ctx_after
+    set nested_ctx_before [cmdgraph::context]
+    nest_engine dispatch "inner"
+    set nested_ctx_after  [cmdgraph::context]
+    return ""
+}
+
+proc nest_open_act {args} { return [lindex $args 0] }
+
+set nest_graph {
+    root {
+        prompt "root> "
+        commands {
+            o(pen) {do_goto child nest_open_act args {{id char}} help "open"}
+            q(uit) {quit help "quit"}
+        }
+    }
+    child {
+        prompt "child> "
+        commands {
+            outer {action nest_outer_act help "outer reads ctx, calls inner"}
+            inner {action nest_inner_act help "inner reads its own ctx"}
+            b(ack) {pop help "back"}
+        }
+    }
+}
+
+cmdgraph::Engine create nest_engine $nest_graph root
+nest_engine dispatch "open BOOK42"
+nest_engine dispatch "outer"
+check "nested dispatch: outer ctx before inner"  $nested_ctx_before BOOK42
+check "nested dispatch: outer ctx after inner"   $nested_ctx_after  BOOK42
+nest_engine destroy
+
+# Same scenario via on_enter (which also restores). Push a child whose
+# on_enter triggers a nested dispatch; the on_enter must see its own
+# context, and the outer action's view must be unaffected.
+
+set on_enter_saw ""
+set outer_saw_before ""
+set outer_saw_after  ""
+
+proc nest_inner_act2 {args} {
+    return ""
+}
+
+proc nest_on_enter_grandchild {} {
+    global on_enter_saw
+    set on_enter_saw [cmdgraph::context]
+    # Re-enter the engine from inside on_enter.
+    nest_engine2 dispatch "inner"
+}
+
+proc nest_outer_act2 {args} {
+    global outer_saw_before outer_saw_after
+    set outer_saw_before [cmdgraph::context]
+    # Pushing grandchild fires its on_enter, which dispatches a nested cmd.
+    nest_engine2 dispatch "descend SUB"
+    set outer_saw_after [cmdgraph::context]
+    # Unwind so the outer caller is back where it was.
+    nest_engine2 dispatch "back"
+    return ""
+}
+
+proc nest_open_act2    {args} { return [lindex $args 0] }
+proc nest_descend_act2 {args} { return [lindex $args 0] }
+
+set nest_graph2 {
+    root {
+        prompt "root> "
+        commands {
+            o(pen) {do_goto child nest_open_act2 args {{id char}} help "open"}
+            q(uit) {quit help "quit"}
+        }
+    }
+    child {
+        prompt "child> "
+        commands {
+            outer   {action nest_outer_act2 help "outer"}
+            descend {do_goto grandchild nest_descend_act2 args {{id char}} help "descend"}
+            inner   {action nest_inner_act2 help "inner"}
+            b(ack)  {pop help "back"}
+        }
+    }
+    grandchild {
+        prompt "gc> "
+        on_enter nest_on_enter_grandchild
+        commands {
+            inner  {action nest_inner_act2 help "inner"}
+            b(ack) {pop help "back"}
+        }
+    }
+}
+
+cmdgraph::Engine create nest_engine2 $nest_graph2 root
+nest_engine2 dispatch "open BOOK99"
+nest_engine2 dispatch "outer"
+check "nested on_enter: outer ctx survives"      $outer_saw_after  BOOK99
+check "nested on_enter: on_enter saw new ctx"    $on_enter_saw     SUB
+check "nested on_enter: outer ctx before push"   $outer_saw_before BOOK99
+nest_engine2 destroy
+
 # --- dispatch return codes ---
 
 proc noop_action  {args} { return }
@@ -1149,8 +1268,8 @@ emsg_eng destroy
 set v [cmdgraph::version]
 check "version major"  [dict get $v major]  1
 check "version minor"  [dict get $v minor]  2
-check "version patch"  [dict get $v patch]  0
-check "version string" [dict get $v string] "1.2.0"
+check "version patch"  [dict get $v patch]  1
+check "version string" [dict get $v string] "1.2.1"
 
 # --- Done ---
 

@@ -120,7 +120,7 @@ namespace eval cmdgraph {
 
     variable version_major 1
     variable version_minor 2
-    variable version_patch 0
+    variable version_patch 1
 
     proc version {} {
         variable version_major
@@ -795,11 +795,14 @@ oo::class create cmdgraph::Engine {
         if {![my is_running]} return
         set sdef [dict get $graph [my top_state]]
         if {![dict exists $sdef on_enter]} return
+        # Save/restore so nested dispatch (an on_enter or action that
+        # re-enters the engine) doesn't clobber an outer frame's context.
+        set saved $::cmdgraph::current_context
         set ::cmdgraph::current_context [my top_ctx]
         # on_enter may be a bare proc name or a list-formed callback
         # (e.g. `[list $obj on_enter_method]`); {*} handles both.
         set rc [catch {{*}[dict get $sdef on_enter]} err]
-        set ::cmdgraph::current_context ""
+        set ::cmdgraph::current_context $saved
         if {$rc} {
             my emit_error "error in on_enter for [my top_state]: $err"
         }
@@ -817,10 +820,15 @@ oo::class create cmdgraph::Engine {
     # proc_name may be a bare command (e.g. `act_outer`) or a list-formed
     # callback (e.g. `[list $obj do_thing]`). Both are expanded with {*}, so
     # an instance method on a TclOO object can be registered as an action.
+    #
+    # Save/restore of current_context so that an action which re-enters the
+    # engine (a GUI calling $engine dispatch on a queued line, for instance)
+    # doesn't reset the outer frame's context to "" on return.
     method invoke {proc_name arg_list} {
+        set saved $::cmdgraph::current_context
         set ::cmdgraph::current_context [my top_ctx]
         set rc [catch {{*}$proc_name {*}$arg_list} result]
-        set ::cmdgraph::current_context ""
+        set ::cmdgraph::current_context $saved
         if {$rc} {
             my emit_error "error: $result"
             return [dict create errored 1 value "" errmsg $result]
@@ -961,6 +969,7 @@ oo::class create cmdgraph::Shell {
         set cmds {}
         set methods [info object methods [self] -all]
         set has_quit 0
+        set quit_conflicts {}
         foreach m $methods {
             if {![string match "do_*" $m]} continue
             set spec [string range $m 3 end]
@@ -975,6 +984,19 @@ oo::class create cmdgraph::Shell {
             lassign [my ParseSpec $spec] req opt
             set full $req$opt
             if {$full eq "quit"} { set has_quit 1 }
+            # B3: if the required prefix is itself a non-empty prefix of
+            # "quit", an auto-injected q(uit) would be ambiguous with this
+            # spec — typing those required chars would match both. The
+            # user-defined spec resolving to full "quit" suppresses the
+            # auto-inject (and so this list), which is why "quit" itself
+            # isn't in the set below.
+            if {$req in {q qu qui}} { lappend quit_conflicts $spec }
+        }
+        if {!$has_quit && [llength $quit_conflicts] > 0} {
+            error "cmdgraph::Shell: auto-injected q(uit) would be ambiguous\
+                   with [join $quit_conflicts {, }]; define a do_q(uit)\
+                   (or any do_<spec> whose full text is \"quit\") to opt\
+                   out of auto-injection"
         }
         if {!$has_quit} {
             dict set cmds q(uit) [list quit help "exit the shell"]
@@ -1028,8 +1050,11 @@ oo::class create cmdgraph::Shell {
         if {[my HasMethod preloop]} { my preloop }
         try {
             while {!$exiting && [$engine is_running]} {
-                puts -nonewline $out_chan $prompt_str
-                flush $out_chan
+                # Route prompt through the engine so the "out_chan eq {}
+                # means suppressed" convention is honoured here just as
+                # for engine-emitted output; bypassing it with a bare
+                # `puts` would raise on a suppressed channel.
+                $engine emit_prompt $prompt_str
                 if {[gets $in_chan line] < 0} break
                 if {[my HasMethod precmd]} { set line [my precmd $line] }
                 if {$line eq ""} { continue }
@@ -1046,4 +1071,4 @@ oo::class create cmdgraph::Shell {
     }
 }
 
-package provide cmdgraph 1.2.0
+package provide cmdgraph 1.2.1
