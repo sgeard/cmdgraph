@@ -1,0 +1,689 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="State-graph driven command interpreter — Fortran implementation">
+    <meta name="author" content="Simon Geard" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>All Procedures &ndash; cmdgraph
+</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">cmdgraph </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12" id='text'>
+			 <h1>Procedures</h1>
+			 <table class="table table-striped">
+			 <thead><tr><th>Procedure</th><th>Location</th><th>Procedure Type</th><th>Description</th></tr></thead>
+			 <tbody>
+			   <tr>
+                 <td><a href='../interface/action_error.html'>action_error</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/action_ok.html'>action_ok</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/append_ll.html'>append_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/arg_int_n.html'>arg_int_n</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/arg_is_char.html'>arg_is_char</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/arg_is_int.html'>arg_is_int</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/arg_is_real.html'>arg_is_real</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/arg_is_rest.html'>arg_is_rest</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/arg_real_n.html'>arg_real_n</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/assign_ll.html'>assign_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/char_node.html'>char_node</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/clear_ll.html'>clear_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/finalize_ll.html'>finalize_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/get_ll.html'>get_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/insert_ll.html'>insert_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/int_node.html'>int_node</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/iterate_ll.html'>iterate_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/make_char_node.html'>make_char_node</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/make_int_node.html'>make_int_node</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/make_node.html'>make_node</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/make_real_a_node.html'>make_real_a_node</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/make_real_m_node.html'>make_real_m_node</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/make_real_node.html'>make_real_node</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/print_ll.html'>print_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/real_a_node.html'>real_a_node</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/real_m_node.html'>real_m_node</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/real_node.html'>real_node</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/remove_ll.html'>remove_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/reverse_iterate_ll.html'>reverse_iterate_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/size_ll.html'>size_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			 </tbody></table>
+             
+        </div>
+      </div>
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              cmdgraph
+ was developed by Simon Geard<br>              &copy; 2026 
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+            </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>
