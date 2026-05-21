@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p>19.2% of total for derived types.</p>Including implementation: 65 statements, 44.8% of total for derived types.">19 statements</a>
+                 title="<p>19.2% of total for derived types.</p>Including implementation: 66 statements, 45.2% of total for derived types.">19 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -215,7 +215,8 @@ Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
 Apply <code>f</code> to each element in reverse order.
-Print list contents to stdout.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
 Append <code>data</code> to the tail of the list.
 Number of elements in the list.
 Remove all elements.
@@ -259,7 +260,8 @@ Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
 Apply <code>f</code> to each element in reverse order.
-Print list contents to stdout.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
 Append <code>data</code> to the tail of the list.
 Number of elements in the list.
 Remove all elements.
@@ -351,7 +353,8 @@ Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
 Apply <code>f</code> to each element in reverse order.
-Print list contents to stdout.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
 Append <code>data</code> to the tail of the list.
 Number of elements in the list.
 Remove all elements.
@@ -443,7 +446,8 @@ Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
 Apply <code>f</code> to each element in reverse order.
-Print list contents to stdout.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
 Append <code>data</code> to the tail of the list.
 Number of elements in the list.
 Remove all elements.
@@ -451,7 +455,7 @@ Index-based accessor (1-based).  Returns an allocatable polymorphic
 copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p>
                     <h3>
-    public module subroutine print_ll(lst)  
+    public module subroutine print_ll(lst, unit)  
 </h3>
 
   
@@ -478,6 +482,21 @@ check <code>allocated(node)</code> before <code>select type</code>.</p>
             </td>
             <td>::</td>
             <td><strong>lst</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>unit</strong></td>
             <td>
                 
             </td>
@@ -515,7 +534,8 @@ Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
 Apply <code>f</code> to each element in reverse order.
-Print list contents to stdout.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
 Append <code>data</code> to the tail of the list.
 Number of elements in the list.
 Remove all elements.
@@ -602,7 +622,8 @@ Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
 Apply <code>f</code> to each element in reverse order.
-Print list contents to stdout.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
 Append <code>data</code> to the tail of the list.
 Number of elements in the list.
 Remove all elements.
@@ -704,7 +725,8 @@ Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
 Apply <code>f</code> to each element in reverse order.
-Print list contents to stdout.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
 Append <code>data</code> to the tail of the list.
 Number of elements in the list.
 Remove all elements.
@@ -791,7 +813,8 @@ Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
 Apply <code>f</code> to each element in reverse order.
-Print list contents to stdout.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
 Append <code>data</code> to the tail of the list.
 Number of elements in the list.
 Remove all elements.
@@ -868,7 +891,8 @@ Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
 Apply <code>f</code> to each element in reverse order.
-Print list contents to stdout.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
 Append <code>data</code> to the tail of the list.
 Number of elements in the list.
 Remove all elements.
@@ -940,7 +964,8 @@ Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
 Apply <code>f</code> to each element in reverse order.
-Print list contents to stdout.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
 Append <code>data</code> to the tail of the list.
 Number of elements in the list.
 Remove all elements.
@@ -1032,7 +1057,8 @@ Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
 Apply <code>f</code> to each element in reverse order.
-Print list contents to stdout.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
 Append <code>data</code> to the tail of the list.
 Number of elements in the list.
 Remove all elements.

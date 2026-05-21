@@ -25,14 +25,14 @@ struct Version {
     int major = 0;  ///< Breaking API change
     int minor = 0;  ///< Backwards-compatible feature addition
     int patch = 0;  ///< Bug fix
-    /// @return Dot-separated version string, e.g. "1.0.0".
+    /// @return Dot-separated version string, e.g. "1.1.0".
     [[nodiscard]] std::string string() const {
         return std::to_string(major) + '.' + std::to_string(minor) + '.' + std::to_string(patch);
     }
 };
 
 /// Compile-time library version constant.
-inline constexpr Version CMDGRAPH_VERSION{1, 0, 0};
+inline constexpr Version CMDGRAPH_VERSION{1, 1, 0};
 
 //──── Arg spec kinds ──────────────────────────────────────────────────────────
 

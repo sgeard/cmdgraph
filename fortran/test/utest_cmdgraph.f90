@@ -150,9 +150,9 @@ program utest_cmdgraph
 
     ! --- version ---
     call check_int("version major",  CMDGRAPH_VERSION%major, 1)
-    call check_int("version minor",  CMDGRAPH_VERSION%minor, 0)
-    call check_int("version patch",  CMDGRAPH_VERSION%patch, 1)
-    call check_str("version string", CMDGRAPH_VERSION%string(), "1.0.1")
+    call check_int("version minor",  CMDGRAPH_VERSION%minor, 1)
+    call check_int("version patch",  CMDGRAPH_VERSION%patch, 0)
+    call check_str("version string", CMDGRAPH_VERSION%string(), "1.1.0")
 
     ! --- Done ---
     write(*,'(/,a,i0,a,i0,a,i0,a)') "Results: ", pass+fail, " tests, ", pass, " passed, ", fail, " failed"

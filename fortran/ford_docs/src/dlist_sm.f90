@@ -84,34 +84,37 @@ contains
         integer, intent(in)                  :: idx
         class(dlist_node_data_t), intent(in) :: data
         integer :: i
-        type(dlist_node_t), pointer :: this, new_node
+        type(dlist_node_t), pointer :: this, new_node, prev
 
         allocate(new_node)
         new_node%data = data
 
         if (.not. associated(lst%begin)) then
-            ! Empty list
+            ! Empty list — idx is irrelevant.
             lst%begin => new_node
             lst%end   => new_node
-        else if (idx <= 0) then
-            ! Prepend
-            new_node%next    => lst%begin
+        else if (idx <= 1) then
+            ! Insert at position 1: prepend (also covers out-of-range low).
+            new_node%next      => lst%begin
             lst%begin%previous => new_node
-            lst%begin        => new_node
+            lst%begin          => new_node
+        else if (idx > lst%num_of_elements) then
+            ! Out-of-range high: append.
+            new_node%previous => lst%end
+            lst%end%next      => new_node
+            lst%end           => new_node
         else
-            ! Locate node at position idx, insert after it
+            ! Insert before the node currently at position idx (2..n), so the
+            ! new element ends up AT idx and later elements shift right.
             this => lst%begin
-            do i=2,min(idx,lst%num_of_elements)
+            do i = 2, idx
                 this => this%next
             end do
-            new_node%previous => this
-            new_node%next     => this%next
-            if (associated(this%next)) then
-                this%next%previous => new_node
-            else
-                lst%end => new_node
-            end if
-            this%next => new_node
+            prev => this%previous
+            new_node%previous => prev
+            new_node%next     => this
+            prev%next          => new_node
+            this%previous      => new_node
         end if
         lst%num_of_elements = lst%num_of_elements + 1
     end subroutine insert_ll
@@ -148,20 +151,44 @@ contains
 
     end subroutine remove_ll
 
-    module subroutine print_ll(lst)
-        class(dlist_t), intent(in) :: lst
-        type(dlist_node_t), pointer :: next
-        write(*,'(a)') 'Nodes:'
+    module subroutine print_ll(lst, unit)
+        use iso_fortran_env, only: output_unit
+        class(dlist_t), intent(in)    :: lst
+        integer, intent(in), optional :: unit
+        type(dlist_node_t), pointer   :: next
+        integer                       :: idx, u
+        u = output_unit
+        if (present(unit)) u = unit
+        write(u,'(a)') 'Nodes:'
         next => lst%begin
         if (.not. associated(next)) then
-            write(*,'(a)') ' *** none found ***'
+            write(u,'(a)') ' *** none found ***'
             return
         end if
-        do
-            if (.not. associated(next)) exit
-            write(*,'(4x,a)') '...'
+        idx = 0
+        each_node: do
+            if (.not. associated(next)) exit each_node
+            idx = idx + 1
+            ! Render each built-in node kind; unknown extensions print a tag.
+            select type (d => next%data)
+            type is (dlist_node_integer)
+                write(u,'(4x,i0,a,i0)') idx, ': int    = ', d%data
+            type is (dlist_node_real)
+                write(u,'(4x,i0,a,g0)') idx, ': real   = ', d%data
+            type is (dlist_node_real_a)
+                write(u,'(4x,i0,a,*(1x,g0))') &
+                    idx, ': real_a =', d%data
+            type is (dlist_node_real_m)
+                write(u,'(4x,i0,a,i0,a,i0)') &
+                    idx, ': real_m = [', size(d%data,1), &
+                    ' x ', size(d%data,2)
+            type is (dlist_node_char)
+                write(u,'(4x,i0,a,a)') idx, ': char   = ', d%data
+            class default
+                write(u,'(4x,i0,a)') idx, ': <user-defined>'
+            end select
             next => next%next
-        end do
+        end do each_node
     end subroutine print_ll
 
     module integer function size_ll(lst)

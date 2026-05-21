@@ -9,7 +9,9 @@ non-demo projects, and — just as importantly — records what is deliberately
 It supersedes the earlier `codex_issues` scratch list, reconciled against the
 state of the tree at r1447. Updated 2026-05-16 to reflect the C++ port and
 versioning. Further updated 2026-05-20 to record the cross-implementation
-parity contract and the harness that enforces it.
+parity contract and the harness that enforces it. Further updated 2026-05-21
+to record the 1.1.0 release bump that absorbs the Tcl `do_goto` truthiness
+behavioural break introduced by that contract.
 
 ## Guiding principle
 
@@ -186,6 +188,21 @@ The original top priorities have largely landed. Do not re-implement these:
   - C++:     `CMDGRAPH_VERSION.major` / `.minor` / `.patch` / `.string()`
   - Fortran: `CMDGRAPH_VERSION%major` / `%minor` / `%patch` / `%string()`
   - Tcl:     `set v [cmdgraph::version]` → dict keys `major minor patch string`
+- **1.1.0 release** (2026-05-21, all three implementations). Minor bump driven
+  by the Tcl `do_goto` truthiness change from the parity contract above: under
+  pre-parity 1.0.0 Tcl, returning `"0"` / `"no"` / `"false"` from a `do_goto`
+  proc meant "stay" (via `string is boolean -strict`); under the contract,
+  only the empty string means stay and those values transition with the
+  string as the new state's context. Fortran and C++ were already on the
+  non-empty/empty semantics, so their externally-visible behaviour is
+  unchanged — but the cross-impl sync rule (`major`/`minor` synchronised) pulls
+  them along to 1.1.0 as well. Fortran's intervening 1.0.0 → 1.0.1 (r1482:
+  atomic finalize / empty-graph guard / dlist insert) was pure bug-fix and is
+  subsumed. The Tcl module file was renamed `cmdgraph-1.0.tm` →
+  `cmdgraph-1.1.tm` so Tcl's module-path version discovery matches the
+  `package provide` directive. No other API or behaviour changes; all unit
+  tests and the parity harness remain green on both primary (`ifx`/`icpx`)
+  and secondary (`gfortran`/`g++`) toolchains.
 
 ## Bigger — defer until a real workflow demands it
 

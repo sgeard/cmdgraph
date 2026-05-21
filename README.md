@@ -23,7 +23,7 @@ procedures.
 
 Three implementations are kept in parity:
 
-- **`tcl/cmdgraph-1.0.tm`** — reference implementation (Tcl 8.6+, TclOO)
+- **`tcl/cmdgraph-1.1.tm`** — reference implementation (Tcl 8.6+, TclOO)
 - **`fortran/`** — Fortran port (Fortran 2018, module/submodule structure)
 - **`cpp/`** — C++ port (C++23, single header + implementation file)
 

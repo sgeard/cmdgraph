@@ -113,7 +113,7 @@ namespace eval cmdgraph {
     namespace export Engine arg_int_n arg_real_n version
 
     variable version_major 1
-    variable version_minor 0
+    variable version_minor 1
     variable version_patch 0
 
     proc version {} {
@@ -875,4 +875,4 @@ oo::class create cmdgraph::Engine {
     }
 }
 
-package provide cmdgraph 1.0.0
+package provide cmdgraph 1.1.0

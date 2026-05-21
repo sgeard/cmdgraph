@@ -963,9 +963,9 @@ int main() {
     test_command_name_not_word();
 
     check_int("version major",  CMDGRAPH_VERSION.major, 1);
-    check_int("version minor",  CMDGRAPH_VERSION.minor, 0);
+    check_int("version minor",  CMDGRAPH_VERSION.minor, 1);
     check_int("version patch",  CMDGRAPH_VERSION.patch, 0);
-    check_str("version string", CMDGRAPH_VERSION.string(), "1.0.0");
+    check_str("version string", CMDGRAPH_VERSION.string(), "1.1.0");
 
     std::cout << "\nResults: " << (g_pass + g_fail) << " tests, "
               << g_pass << " passed, " << g_fail << " failed\n";

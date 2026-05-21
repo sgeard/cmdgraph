@@ -41,7 +41,7 @@ module cmdgraph
     end type version_t
 
     !! Compile-time library version constant.
-    type(version_t), parameter :: CMDGRAPH_VERSION = version_t(1, 0, 0)
+    type(version_t), parameter :: CMDGRAPH_VERSION = version_t(1, 1, 0)
 
     interface
         module function version_t_string(this) result(s)
