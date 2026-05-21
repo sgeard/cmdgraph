@@ -1,0 +1,13 @@
+root> echo hello world
+echo: hello world
+root> ad 2 3
+sum: 5
+root> sa
+save: ok
+root> se
+send: ok
+root> g
+entered detail ctx=
+detail> w
+where: ctx=
+detail> b

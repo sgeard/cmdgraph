@@ -1,0 +1,4 @@
+root> echo one
+echo: one
+root> ad 4 5
+sum: 9

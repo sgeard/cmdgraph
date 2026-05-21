@@ -1,0 +1,5 @@
+root> o 0
+root> o 3
+entered detail ctx=3
+detail> w
+where: ctx=3
