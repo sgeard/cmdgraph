@@ -52,6 +52,12 @@
 #   - When multiple includes have the same command, later includes win.
 #   - Includes are flat — they do not transitively pull in includes-of-includes.
 #
+# Action callbacks:
+#   The proc_name slot of action / do_goto / do_pop accepts either a bare
+#   command name or a list-formed callback such as `[list $obj method_name]`.
+#   The same form is accepted for `on_enter`. This is what cmdgraph::Shell
+#   relies on to bind commands to instance methods.
+#
 # Edge kinds:
 #   action  proc_name              — invoke proc, ignore return value, stay
 #   goto    state_name             — push state, no proc call
@@ -113,7 +119,7 @@ namespace eval cmdgraph {
     namespace export Engine arg_int_n arg_real_n version
 
     variable version_major 1
-    variable version_minor 1
+    variable version_minor 2
     variable version_patch 0
 
     proc version {} {
@@ -790,7 +796,9 @@ oo::class create cmdgraph::Engine {
         set sdef [dict get $graph [my top_state]]
         if {![dict exists $sdef on_enter]} return
         set ::cmdgraph::current_context [my top_ctx]
-        set rc [catch {[dict get $sdef on_enter]} err]
+        # on_enter may be a bare proc name or a list-formed callback
+        # (e.g. `[list $obj on_enter_method]`); {*} handles both.
+        set rc [catch {{*}[dict get $sdef on_enter]} err]
         set ::cmdgraph::current_context ""
         if {$rc} {
             my emit_error "error in on_enter for [my top_state]: $err"
@@ -805,9 +813,13 @@ oo::class create cmdgraph::Engine {
     #     return, used as context for do_goto. A do_goto action wanting to
     #     stay must return "" explicitly.
     # On Tcl errors, errored=1, value="" and the error message is printed.
+    #
+    # proc_name may be a bare command (e.g. `act_outer`) or a list-formed
+    # callback (e.g. `[list $obj do_thing]`). Both are expanded with {*}, so
+    # an instance method on a TclOO object can be registered as an action.
     method invoke {proc_name arg_list} {
         set ::cmdgraph::current_context [my top_ctx]
-        set rc [catch {$proc_name {*}$arg_list} result]
+        set rc [catch {{*}$proc_name {*}$arg_list} result]
         set ::cmdgraph::current_context ""
         if {$rc} {
             my emit_error "error: $result"
@@ -875,4 +887,163 @@ oo::class create cmdgraph::Engine {
     }
 }
 
-package provide cmdgraph 1.1.0
+# ----------------------------------------------------------------------------
+# cmdgraph::Shell — OO façade for single-state shells (Python cmd.Cmd analog)
+# ----------------------------------------------------------------------------
+#
+# Subclass cmdgraph::Shell, define do_<spec> methods, run cmdloop. The base
+# class introspects the subclass at construction time and synthesises a single
+# state whose commands are bound to the matching instance methods.
+#
+# Conventions:
+#   do_<spec>       — required: the action method. Receives the parsed args.
+#                     `<spec>` is the cmdgraph command spec including any
+#                     prefix/completion parens, e.g. do_g(reet) or do_quit.
+#   help_<spec>     — optional: returns the help string. Empty if absent.
+#   args_<spec>     — optional: returns the typed-arg spec list, same shape
+#                     as the engine's `args { ... }` field, e.g.
+#                     `{{name char} {age int optional}}`. Absent → variadic.
+#
+# Quit:
+#   If the subclass does not register a command whose full spec resolves to
+#   `quit`, a built-in `q(uit)` is auto-injected. Subclasses wanting custom
+#   quit logic just define `do_q(uit)` themselves and call `my exit` from
+#   inside it (or wherever else the shell should terminate).
+#
+# Lifecycle hooks (all optional; the base class calls them iff the subclass
+# defines them):
+#   preloop  {}             — once, before the first prompt
+#   postloop {}             — once, after the loop has stopped
+#   precmd   {line}         — before each dispatch; returns the (possibly
+#                             rewritten) line. Returning "" skips dispatch.
+#   postcmd  {rc line}      — after each dispatch; rc is the dispatch return
+#                             code (ok/unknown/ambiguous/error/transitioned/
+#                             exited). Return value is ignored.
+#
+# Usage:
+#   oo::class create MyShell {
+#       superclass cmdgraph::Shell
+#       constructor {} { next "myshell> " }
+#       method do_g(reet)    {name} { puts "Hello, $name" }
+#       method args_g(reet)  {}     { return {{name char}} }
+#       method help_g(reet)  {}     { return "Greet someone" }
+#   }
+#   [MyShell new] cmdloop
+
+oo::class create cmdgraph::Shell {
+    variable engine prompt_str in_chan out_chan exiting
+
+    constructor {{prompt "> "}} {
+        set prompt_str $prompt
+        set in_chan    stdin
+        set out_chan   stdout
+        set exiting    0
+
+        set cmds [my BuildCommands]
+        set graph_def [dict create root [dict create \
+            prompt   $prompt_str \
+            commands $cmds]]
+
+        cmdgraph::Engine create [self namespace]::engine $graph_def root
+        set engine [self namespace]::engine
+    }
+
+    destructor {
+        if {[info exists engine] && [info commands $engine] ne ""} {
+            $engine destroy
+        }
+    }
+
+    # Walk the subclass methods. Every do_<spec> becomes an action edge bound
+    # to [self]; help_<spec>/args_<spec> supply optional metadata. Returns the
+    # commands dict ready to embed in a state definition.
+    method BuildCommands {} {
+        set cmds {}
+        set methods [info object methods [self] -all]
+        set has_quit 0
+        foreach m $methods {
+            if {![string match "do_*" $m]} continue
+            set spec [string range $m 3 end]
+            set help ""
+            set argspec {}
+            if {"help_$spec" in $methods} { set help    [my help_$spec] }
+            if {"args_$spec" in $methods} { set argspec [my args_$spec] }
+            dict set cmds $spec [list \
+                action [list [self] $m] \
+                args   $argspec \
+                help   $help]
+            lassign [my ParseSpec $spec] req opt
+            set full $req$opt
+            if {$full eq "quit"} { set has_quit 1 }
+        }
+        if {!$has_quit} {
+            dict set cmds q(uit) [list quit help "exit the shell"]
+        }
+        return $cmds
+    }
+
+    method ParseSpec {spec} {
+        if {[regexp {^([^(]+)\(([^)]*)\)$} $spec _ req opt]} {
+            return [list $req $opt]
+        }
+        return [list $spec ""]
+    }
+
+    # Public: terminate the cmdloop after the current iteration. Useful from
+    # a user-defined do_q(uit) (which is an action, not a quit edge) — call
+    # `my exit` once side-effects are done. Hooks may call it too.
+    method exit {} { set exiting 1 }
+
+    # Convenience: write to the shell's out_chan (which set_io_channels can
+    # redirect). Action methods should prefer `my puts` over bare `puts` so
+    # they cooperate with channel redirection and the test harness.
+    method puts {args} {
+        switch [llength $args] {
+            1 { ::puts $out_chan [lindex $args 0] }
+            2 {
+                if {[lindex $args 0] eq "-nonewline"} {
+                    ::puts -nonewline $out_chan [lindex $args 1]
+                } else {
+                    error "cmdgraph::Shell puts: expected ?-nonewline? string"
+                }
+            }
+            default {
+                error "cmdgraph::Shell puts: expected ?-nonewline? string"
+            }
+        }
+    }
+
+    # Redirect channels. Forwards to the engine so its emit_* methods follow.
+    method set_io_channels {in out err} {
+        set in_chan  $in
+        set out_chan $out
+        $engine set_io_channels $in $out $err
+    }
+
+    # Expose the underlying engine for callers that need direct access
+    # (e.g. for state_path, last_error, available_commands).
+    method engine {} { return $engine }
+
+    method cmdloop {} {
+        if {[my HasMethod preloop]} { my preloop }
+        try {
+            while {!$exiting && [$engine is_running]} {
+                puts -nonewline $out_chan $prompt_str
+                flush $out_chan
+                if {[gets $in_chan line] < 0} break
+                if {[my HasMethod precmd]} { set line [my precmd $line] }
+                if {$line eq ""} { continue }
+                set rc [$engine dispatch $line]
+                if {[my HasMethod postcmd]} { my postcmd $rc $line }
+            }
+        } finally {
+            if {[my HasMethod postloop]} { my postloop }
+        }
+    }
+
+    method HasMethod {name} {
+        expr {$name in [info object methods [self] -all]}
+    }
+}
+
+package provide cmdgraph 1.2.0

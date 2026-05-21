@@ -549,6 +549,17 @@ The graph must be a directed acyclic graph on `goto` / `do_goto` edges between
 concrete states. `pop` and `do_pop` are the return paths and are not
 constrained. `finalize` validates the DAG and rejects cycles.
 
+The Tcl distribution additionally ships `cmdgraph::Shell` — a Python
+`cmd.Cmd`-style façade that introspects a subclass's `do_<spec>` methods to
+synthesise a single-state graph. It exists in Tcl only because TclOO's runtime
+method introspection is what makes the `cmd.Cmd` shape feel native; in C++ and
+Fortran the equivalent would require explicit per-command registration. The
+Shell layer is **not** part of the cross-language parity contract — the
+*engine* is. If demand emerges, adding an OO façade to C++ (lambdas capturing
+`this` over the existing `std::function` action signature) or Fortran (an
+opaque payload slot on the command record with explicit-`self` action
+signatures, mirroring Python's own `self` convention) is straightforward.
+
 ---
 
 ## Performance characteristics

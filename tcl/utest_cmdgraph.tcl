@@ -1148,9 +1148,9 @@ emsg_eng destroy
 
 set v [cmdgraph::version]
 check "version major"  [dict get $v major]  1
-check "version minor"  [dict get $v minor]  1
+check "version minor"  [dict get $v minor]  2
 check "version patch"  [dict get $v patch]  0
-check "version string" [dict get $v string] "1.1.0"
+check "version string" [dict get $v string] "1.2.0"
 
 # --- Done ---
 
