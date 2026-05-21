@@ -11,7 +11,10 @@ state of the tree at r1447. Updated 2026-05-16 to reflect the C++ port and
 versioning. Further updated 2026-05-20 to record the cross-implementation
 parity contract and the harness that enforces it. Further updated 2026-05-21
 to record the 1.1.0 release bump that absorbs the Tcl `do_goto` truthiness
-behavioural break introduced by that contract.
+behavioural break introduced by that contract. Same day, further updated to
+record the 1.2.0 release in the Tcl distribution only — `cmdgraph::Shell`
+façade — and the consequent narrowing of the cross-impl major/minor sync rule
+to engine semantics.
 
 ## Guiding principle
 
@@ -203,6 +206,50 @@ The original top priorities have largely landed. Do not re-implement these:
   `package provide` directive. No other API or behaviour changes; all unit
   tests and the parity harness remain green on both primary (`ifx`/`icpx`)
   and secondary (`gfortran`/`g++`) toolchains.
+- **1.2.0 release (Tcl only) — `cmdgraph::Shell` façade** (2026-05-21).
+  A Python `cmd.Cmd`-style subclassable convenience layer on top of the
+  existing Tcl engine. The subclass writes `do_<spec>` instance methods,
+  the base class introspects them at construction time via
+  `info object methods` and synthesises a single-state graph whose action
+  edges are bound back to the instance with list-formed callbacks. Optional
+  `help_<spec>` / `args_<spec>` companion methods supply per-command
+  metadata. Lifecycle hooks `preloop`, `postloop`, `precmd line`, and
+  `postcmd rc line` are honoured iff the subclass defines them. A real
+  `quit`-kind edge labelled `q(uit)` is auto-injected unless the subclass
+  already declares one. Instance helpers: `my exit` terminates the loop
+  from inside an action; `my puts ?-nonewline? str` routes through the
+  redirectable `out_chan` so `set_io_channels` covers user output too;
+  `my engine` exposes the underlying engine for `state_path`,
+  `available_commands`, etc.
+
+  Engine change required to enable the façade: `invoke` and
+  `fire_on_enter` now `{*}`-expand the registered proc slot, so a
+  list-formed callback `[list $obj method_name]` works alongside the
+  bare-proc-name form. Backward compatible — a bare name is a
+  single-element list, so all pre-existing graphs continue to work
+  unmodified. Tests: 238/238 engine (`utest_cmdgraph.tcl`) + 16/16
+  façade (`utest_shell.tcl`).
+
+  **Deliberately Tcl-only.** TclOO's runtime method introspection is what
+  makes the `cmd.Cmd` shape feel native; in C++ and Fortran the equivalent
+  would require explicit per-command registration and pull only marginal
+  value through. The README's "Design boundary" section records the
+  decision and sketches how an OO façade could be added to C++ (lambdas
+  capturing `this` over the existing `std::function` action signature, no
+  engine change) or Fortran (an opaque payload slot on the command record
+  with explicit-`self` action signatures, mirroring Python's own `self`
+  convention, ~50 lines of engine delta) if demand emerges — tracked as a
+  deferred item below.
+
+  Consequence for the version-sync rule: the original 1.0.0 versioning
+  entry above stated that `major` and `minor` are synchronised across all
+  implementations. This is hereby **narrowed to engine semantics**.
+  Language-specific convenience layers (Shell now, others in future) live
+  above the parity contract and may carry their own version trajectory.
+  C++ and Fortran therefore remain at 1.1.0 (Fortran's patch lineage at
+  1.0.1); the Tcl distribution moves to 1.2.0 alone. The Tcl module file
+  is renamed `cmdgraph-1.1.tm` → `cmdgraph-1.2.tm` so module-path version
+  discovery matches the `package provide` directive.
 
 ## Bigger — defer until a real workflow demands it
 
@@ -224,6 +271,19 @@ The original top priorities have largely landed. Do not re-implement these:
    <id:int> <dx:real> <dy:real>`, each with a single-arity spec validated
    by the engine. Help auto-renders the specs; actions are pure typed
    accessors.
+5. **OO `Shell` façade for C++ and Fortran** (equivalent of the Tcl 1.2.0
+   `cmdgraph::Shell`). The Tcl Shell is deliberately Tcl-only — see the
+   1.2.0 entry above for the rationale. If a real workflow asks for the
+   same subclass-and-write-methods pattern in C++ or Fortran, the
+   implementation paths are sketched in the README's "Design boundary"
+   section: C++ via lambdas capturing `this` over the existing
+   `std::function` action signature (no engine change required); Fortran
+   via an opaque payload slot on the command record alongside
+   explicit-`self` action signatures, mirroring Python's own `self`
+   convention (~50 lines of engine delta plus the new `shell_t` derived
+   type). Neither path requires reopening the cross-impl engine parity
+   contract. Defer until demand emerges — re-evaluate when a concrete app
+   would benefit from it, not before.
 
 ## Known limitations — not worth fixing
 
