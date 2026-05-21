@@ -1,3 +1,6 @@
+!! SPDX-License-Identifier: MIT
+!! Copyright (c) 2026 Simon Geard
+!!
 ! Tests for cmdgraph's DAG validation: the structural graph formed by
 ! goto/do_goto edges between concrete states must be acyclic. Construction
 ! errors are returned via the optional stat/errmsg arguments to finalize.

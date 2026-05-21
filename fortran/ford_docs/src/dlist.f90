@@ -1,3 +1,6 @@
+!! SPDX-License-Identifier: MIT
+!! Copyright (c) 2026 Simon Geard
+!!
 !! Polymorphic doubly-linked list used as the parsed-argument container.
 !!
 !! Elements are stored as class(`dlist_node_data_t`) and accessed by

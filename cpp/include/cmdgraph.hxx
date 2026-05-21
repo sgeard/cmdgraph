@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Simon Geard
+//
 /// @file cmdgraph.hxx
 /// @brief cmdgraph — state-graph driven command interpreter.
 ///

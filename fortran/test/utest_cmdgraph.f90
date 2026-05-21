@@ -1,3 +1,6 @@
+!! SPDX-License-Identifier: MIT
+!! Copyright (c) 2026 Simon Geard
+!!
 ! Smoke test for cmdgraph_f. Mirrors a few of the key Tcl tests:
 ! construction, dispatch return codes, goto/do_goto/pop/quit semantics.
 program utest_cmdgraph

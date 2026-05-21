@@ -1,3 +1,6 @@
+!! SPDX-License-Identifier: MIT
+!! Copyright (c) 2026 Simon Geard
+!!
 !! State-graph driven command interpreter — Fortran implementation.
 !!
 !! Build the graph with `add_state` / `add_command` / `add_include` /

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Simon Geard
+//
 // Unit tests for cmdgraph C++. Mirrors fortran/test/utest_cmdgraph.f90.
 
 #include "cmdgraph.hxx"

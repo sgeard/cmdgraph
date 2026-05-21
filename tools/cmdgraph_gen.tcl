@@ -1,4 +1,7 @@
 #!/usr/bin/env tclsh
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Simon Geard
+#
 # cmdgraph_gen.tcl — generate builder code from a .cgl graph definition
 # kate: syntax Tcl/Tk;
 #

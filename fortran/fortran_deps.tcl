@@ -1,4 +1,7 @@
 #!/usr/bin/env tclsh9.1
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Simon Geard
+#
 # fortran_deps.tcl — scan Fortran .f90 files and generate depends.mk
 #
 # Usage: tclsh9.1 fortran_deps.tcl [src_dir [out_file [entry.f90 ...]]]

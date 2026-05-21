@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Simon Geard
+//
 // cmdgraph C++ library demo — a tiny interactive "library" REPL.
 // Mirrors fortran/app/main.f90.
 

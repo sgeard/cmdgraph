@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Simon Geard
+//
 // cmdgraph C++ cad_2d demo — simple 2D line drawing REPL.
 // Mirrors fortran/cad_2d/cad_2d.f90.
 //

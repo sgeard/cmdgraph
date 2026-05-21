@@ -652,3 +652,10 @@ not yet fully implemented in lfortran.
 **No escaped quotes** — the tokeniser does not support `\"` inside a quoted
 string. A quoted token must begin and end with `"` and may not contain a
 literal `"`. This should be sufficient for the typical command-shell use case.
+
+---
+
+## Licence
+
+MIT — see [LICENSE](LICENSE). Source files carry an
+[SPDX](https://spdx.dev/) `MIT` identifier in their header.

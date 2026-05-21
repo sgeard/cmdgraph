@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Simon Geard
+#
 # kate: syntax Tcl/Tk;
 
 # demo_shell.tcl — a tiny accumulator calculator built with cmdgraph::Shell.

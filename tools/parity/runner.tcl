@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Simon Geard
+#
 # Parity runner — Tcl.  Usage: tclsh runner.tcl <script> <result-file>
 # Builds the canonical parity graph (see GRAPH.md), run_file the script with
 # echo on, then writes the normalised structured trailer to <result-file>.

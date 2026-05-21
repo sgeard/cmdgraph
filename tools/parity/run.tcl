@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Simon Geard
+#
 # Cross-language parity driver.
 #   tclsh tools/parity/run.tcl [impl ...]      (default: tcl fortran cpp)
 # Runs every scripts/*.in (plus a synthetic open-failure case) through each

@@ -1,3 +1,6 @@
+!! SPDX-License-Identifier: MIT
+!! Copyright (c) 2026 Simon Geard
+!!
 ! cmdgraph_f demo — a tiny interactive "library" REPL.
 !
 ! Showcases:
