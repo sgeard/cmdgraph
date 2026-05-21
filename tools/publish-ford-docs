@@ -1,0 +1,68 @@
+# publish-ford-docs — rebuild the orphan gh-pages branch from the current
+# FORD output in fortran/ford_docs/ and (optionally) push it.
+#
+# Usage:   bash tools/publish-ford-docs [--push]
+#
+#   (no args)  Rebuild the local gh-pages branch, then print the push command.
+#   --push     Also run `git push -f origin gh-pages`.
+#
+# The gh-pages branch is a single orphan commit whose root is the contents of
+# fortran/ford_docs/ plus an empty .nojekyll (so GitHub Pages does not strip
+# FORD's asset directories). Each run replaces it — generated docs carry no
+# useful history, so the branch is force-updated rather than accumulating.
+#
+# This never touches your working tree, index, or current branch: it stages
+# into a throwaway index and builds the commit with git plumbing.
+
+set -euo pipefail
+
+# Repo root, derived from this script's location (cwd-independent).
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+repo_root=$(cd "$script_dir/.." && pwd)
+docs_dir="$repo_root/fortran/ford_docs"
+
+if [ ! -f "$docs_dir/index.html" ]; then
+    echo "error: $docs_dir/index.html not found." >&2
+    echo "       Run 'ford ford.md' from the fortran/ directory first." >&2
+    exit 1
+fi
+
+cd "$repo_root"
+
+# Build the gh-pages tree in an isolated index so the real one is untouched.
+tmp_index=$(mktemp -t cmdgraph-ghpages.XXXXXX)
+trap 'rm -f "$tmp_index"' EXIT
+rm -f "$tmp_index"
+export GIT_INDEX_FILE="$tmp_index"
+
+# Stage the docs (full paths), then extract just the ford_docs subtree so its
+# contents sit at the branch root.
+git add --force fortran/ford_docs
+full_tree=$(git write-tree)
+docs_tree=$(git rev-parse "$full_tree:fortran/ford_docs")
+
+# Reseed the index from that subtree and add an empty .nojekyll at the root.
+rm -f "$tmp_index"
+git read-tree "$docs_tree"
+nojekyll_blob=$(git hash-object -w /dev/null)
+git update-index --add --cacheinfo "100644,$nojekyll_blob,.nojekyll"
+new_tree=$(git write-tree)
+
+unset GIT_INDEX_FILE
+
+# Orphan commit (no parent) and force the local branch to it.
+commit=$(git commit-tree "$new_tree" \
+    -m "Publish FORD docs to GitHub Pages (written with Claude)")
+git branch -f gh-pages "$commit"
+
+file_count=$(git ls-tree -r --name-only gh-pages | wc -l | tr -d ' ')
+echo "Rebuilt local gh-pages -> $commit ($file_count files at branch root)."
+
+if [ "${1:-}" = "--push" ]; then
+    echo "Pushing to origin..."
+    git push -f origin gh-pages
+    echo "Done. Live at https://sgeard.github.io/cmdgraph/ (allow a minute)."
+else
+    echo "Not pushed. To publish, run:"
+    echo "    git push -f origin gh-pages"
+fi

@@ -13,6 +13,7 @@ program utest_dlist
     call test_iteration()
     call test_array_and_matrix_nodes()
     call test_finalize_on_scope_exit()
+    call test_print_to_scratch_unit()
 
     write(*,'(/,a,i0,a,i0,a,i0,a)') "dlist tests: ", pass+fail, " total, ", &
                                     pass, " passed, ", fail, " failed"
@@ -132,6 +133,51 @@ contains
         call build_and_leave_scope()
         call check_log("finalized scoped list without error", .true., .true.)
     end subroutine test_finalize_on_scope_exit
+
+    subroutine test_print_to_scratch_unit()
+        ! print_ll renders each built-in node kind to the given unit; redirect
+        ! to a scratch file so we can assert content without polluting stdout.
+        type(dlist_t)                 :: lst, empty
+        integer                       :: u, ios, nlines
+        character(len=256)            :: buf
+        logical                       :: saw_int, saw_real, saw_char, saw_a, saw_m, saw_header
+
+        open(newunit=u, status='scratch', action='readwrite', iostat=ios)
+        call check_int("scratch unit open ok", ios, 0)
+
+        call empty%print(unit=u)
+        call lst%append(int_node(42))
+        call lst%append(real_node(3.5d0))
+        call lst%append(char_node("hello"))
+        call lst%append(real_a_node([1.0d0, 2.0d0, 3.0d0]))
+        call lst%append(real_m_node(reshape([1.0d0,2.0d0,3.0d0,4.0d0], [2,2])))
+        call lst%print(unit=u)
+
+        rewind(u)
+        nlines     = 0
+        saw_header = .false.
+        saw_int    = .false.; saw_real = .false.; saw_char = .false.
+        saw_a      = .false.; saw_m    = .false.
+        scan_lines: do
+            read(u, '(a)', iostat=ios) buf
+            if (ios /= 0) exit scan_lines
+            nlines = nlines + 1
+            if (index(buf, 'Nodes:')           > 0) saw_header = .true.
+            if (index(buf, 'int    = 42')      > 0) saw_int    = .true.
+            if (index(buf, 'real   = 3.5')     > 0) saw_real   = .true.
+            if (index(buf, 'char   = hello')   > 0) saw_char   = .true.
+            if (index(buf, 'real_a =')         > 0) saw_a      = .true.
+            if (index(buf, 'real_m = [2 x 2')  > 0) saw_m      = .true.
+        end do scan_lines
+        close(u)
+
+        call check_log("print emits header",        saw_header, .true.)
+        call check_log("print emits int node",      saw_int,    .true.)
+        call check_log("print emits real node",     saw_real,   .true.)
+        call check_log("print emits char node",     saw_char,   .true.)
+        call check_log("print emits real array",    saw_a,      .true.)
+        call check_log("print emits real matrix",   saw_m,      .true.)
+    end subroutine test_print_to_scratch_unit
 
     subroutine build_and_leave_scope()
         type(dlist_t) :: tmp

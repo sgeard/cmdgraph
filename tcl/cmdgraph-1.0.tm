@@ -27,8 +27,10 @@
 #   A state can carry an opaque "context" — typically the object the state
 #   operates on (an account id, a filename, etc.). The context is supplied
 #   by the do_goto action's return value:
-#       - return "" or boolean-false (0, false, no, off) → no transition
-#       - return any other value → transition; the value becomes the context
+#       - return ""               → no transition (stay in current state)
+#       - return any other value  → transition; the value becomes the context
+#   Strings like "0", "no", "false" are valid contexts and DO transition —
+#   only the empty string means stay.
 #   Action procs read the current context with `cmdgraph::context` (or via
 #   `[$engine current_context]` when multiple engines are in play). A `goto`
 #   edge pushes with empty context; `pop` returns to the previous (state, ctx).
@@ -53,9 +55,11 @@
 # Edge kinds:
 #   action  proc_name              — invoke proc, ignore return value, stay
 #   goto    state_name             — push state, no proc call
-#   do_goto state_name proc_name   — invoke proc; if it returns a truthy
-#                                    value (1, true, yes, on) push the
-#                                    target state, otherwise stay
+#   do_goto state_name proc_name   — invoke proc; if it returns a non-empty
+#                                    string push the target state (the
+#                                    returned string becomes the new state's
+#                                    context); empty string stays. "0",
+#                                    "no", "false" are valid contexts.
 #   pop                            — pop the state stack (e.g. "esc"/"back")
 #   do_pop  proc_name              — invoke proc, then pop on success (the
 #                                    commit-and-return pattern); a Tcl
@@ -68,13 +72,15 @@
 #   - A command may declare `args {{name int|real|char ?optional?} ...}`.
 #     When present, the engine validates argument count and token types before
 #     invoking the action. Only trailing positions may be omitted.
-#   - For do_goto, the proc must return a Tcl boolean: 1/true/yes/on for
-#     success (triggering the transition), anything else for failure.
+#   - For do_goto, the proc must return the new state's context as a string:
+#     any non-empty string triggers the transition (and becomes the context);
+#     "" stays. "0", "no", "false" are valid contexts that DO transition —
+#     a do_goto wanting to refuse the transition must return "" explicitly.
 #   - For action, the return value is ignored; pure actions can return
 #     implicitly.
-#   - On bad input, an action should print an error and return 0 (or just
-#     return for an action edge). The engine catches unexpected Tcl errors
-#     as a safety net but actions should not rely on this.
+#   - On bad input, a do_goto action should print an error and return "";
+#     an action edge can just return. The engine catches unexpected Tcl
+#     errors as a safety net but actions should not rely on this.
 #
 # Command name shorthand:
 #   s(ummary) means "s" is the required prefix and "ummary" is the optional
@@ -91,7 +97,7 @@
 #       ok           — action ran, do_goto stayed, built-in help, or empty line
 #       unknown      — no command matched
 #       ambiguous    — multiple commands matched
-#       transitioned — state pushed (goto, do_goto truthy) or popped without exit
+#       transitioned — state pushed (goto, do_goto non-empty return) or popped without exit
 #       exited       — quit, pop emptied the stack, or engine already dead
 #       error        — invoked action raised a Tcl error
 #   Useful for GUI/programmatic callers; `run` itself ignores them.
@@ -176,7 +182,7 @@ oo::class create cmdgraph::Engine {
                 dict set parsed_cmds $spec [dict create \
                     req $req \
                     opt $opt \
-                    edge [my parse_edge $edge]]
+                    edge [my parse_edge $spec $edge]]
             }
             dict set sdef commands $parsed_cmds
             dict set graph $state $sdef
@@ -286,7 +292,7 @@ oo::class create cmdgraph::Engine {
         return [list $spec ""]
     }
 
-    method parse_edge {edge} {
+    method parse_edge {spec edge} {
         set kind   [lindex $edge 0]
         set target ""
         set proc_  ""
@@ -296,19 +302,34 @@ oo::class create cmdgraph::Engine {
             action {
                 set proc_ [lindex $edge 1]
                 set rest  [lrange $edge 2 end]
+                if {$proc_ eq ""} {
+                    error "cmdgraph: action edge '$spec' missing required proc"
+                }
             }
             goto {
                 set target [lindex $edge 1]
                 set rest   [lrange $edge 2 end]
+                if {$target eq ""} {
+                    error "cmdgraph: goto edge '$spec' missing required target"
+                }
             }
             do_goto {
                 set target [lindex $edge 1]
                 set proc_  [lindex $edge 2]
                 set rest   [lrange $edge 3 end]
+                if {$target eq ""} {
+                    error "cmdgraph: do_goto edge '$spec' missing required target"
+                }
+                if {$proc_ eq ""} {
+                    error "cmdgraph: do_goto edge '$spec' missing required proc"
+                }
             }
             do_pop {
                 set proc_ [lindex $edge 1]
                 set rest  [lrange $edge 2 end]
+                if {$proc_ eq ""} {
+                    error "cmdgraph: do_pop edge '$spec' missing required proc"
+                }
             }
             pop - quit {
                 set rest [lrange $edge 1 end]
@@ -688,6 +709,12 @@ oo::class create cmdgraph::Engine {
             set kind [dict get $slot kind]
             if {$kind eq "rest"} { continue }
             set actual [my token_kind $arg]
+            # Promote int → real: an integer literal is accepted in a real
+            # slot.  The arg is passed through to the action as the raw token
+            # (Tcl is dynamically typed; the action sees the same string).
+            # Mirrors C++ ARG_REAL int-variant promotion and the Fortran
+            # post-validate normalisation in dispatch_engine.
+            if {$kind eq "real" && $actual eq "int"} { continue }
             if {$actual ne $kind} {
                 set name [dict get $slot name]
                 switch -- $kind {
@@ -773,8 +800,10 @@ oo::class create cmdgraph::Engine {
     # Invokes an action proc with the current state's context visible via
     # cmdgraph::context. Returns a dict {errored 0|1 value V} so callers can
     # distinguish a Tcl error from a falsy return. Value semantics:
-    #   - empty / boolean-false (0, false, no, off) → value is ""
-    #   - anything else → value is the proc's return (used as context for do_goto)
+    #   - "" (empty / unset) → no transition
+    #   - anything else (including "0", "no", "false") → value is the proc's
+    #     return, used as context for do_goto. A do_goto action wanting to
+    #     stay must return "" explicitly.
     # On Tcl errors, errored=1, value="" and the error message is printed.
     method invoke {proc_name arg_list} {
         set ::cmdgraph::current_context [my top_ctx]
@@ -783,9 +812,6 @@ oo::class create cmdgraph::Engine {
         if {$rc} {
             my emit_error "error: $result"
             return [dict create errored 1 value "" errmsg $result]
-        }
-        if {[string is boolean -strict $result] && ![string is true -strict $result]} {
-            return [dict create errored 0 value "" errmsg ""]
         }
         return [dict create errored 0 value $result errmsg ""]
     }

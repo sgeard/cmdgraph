@@ -59,10 +59,10 @@ proc act_list {args} {
     puts "2  SICP"
 }
 
-# Return the id to transition; return 0 / false to stay
+# Return the id (any non-empty string) to transition; return "" to stay
 proc act_open {args} {
     set id [lindex $args 0]
-    if {$id < 1 || $id > 2} { puts "no such book"; return 0 }
+    if {$id < 1 || $id > 2} { puts "no such book"; return "" }
     return $id
 }
 
@@ -262,7 +262,7 @@ A complete example is in [`tools/example.cgl`](tools/example.cgl).
 |-----------------|----------------------|-------------|-----------|
 | `EDGE_ACTION`   | `EdgeKind::Action`   | `action`    | Invoke proc, stay in current state |
 | `EDGE_GOTO`     | `EdgeKind::Goto`     | `goto`      | Push target state (no proc call) |
-| `EDGE_DO_GOTO`  | `EdgeKind::DoGoto`   | `do_goto`   | Invoke proc; truthy return pushes target with return value as context |
+| `EDGE_DO_GOTO`  | `EdgeKind::DoGoto`   | `do_goto`   | Invoke proc; non-empty return pushes target with return value as context (`""` stays) |
 | `EDGE_POP`      | `EdgeKind::Pop`      | `pop`       | Pop the stack (back / esc) |
 | `EDGE_DO_POP`   | `EdgeKind::DoPop`    | `do_pop`    | Invoke proc, then pop on success (commit-and-return) |
 | `EDGE_QUIT`     | `EdgeKind::Quit`     | `quit`      | Exit the engine |
@@ -347,8 +347,11 @@ return action_error("msg");   // failure; "msg" → error channel and eng.last_e
 
 **Tcl** — actions return a plain value:
 
-- For `do_goto` / `do_pop`: return a truthy value (1, true, yes, on) to
-  proceed, falsy (0, false, …) to stay. The return value becomes the context.
+- For `do_goto`: return any non-empty string to transition (the string becomes
+  the new state's context); return `""` to stay. `"0"`, `"no"`, `"false"` are
+  valid contexts that DO transition — only the empty string means stay.
+- For `do_pop`: any return that does not raise a Tcl error pops successfully;
+  raise an error (via `error` or `return -code error …`) to refuse the pop.
 - For `action`: return value is ignored.
 - Tcl errors are caught as a safety net; `last_error` captures the message.
 
@@ -631,13 +634,6 @@ detect ambiguity.
 (tested up to the current alpha release). The code uses standard Fortran 2018
 features (module/submodule, allocatable character, polymorphic types) that are
 not yet fully implemented in lfortran.
-
-**Tcl tokeniser recursion depth** — `count_char` and `strip_leading_arg_space`
-are tail-recursive. Tcl's default recursion limit (~1000 frames) means that a
-single token or leading-whitespace run longer than roughly 500 characters can
-overflow the stack. In practice, interactive command input is far shorter than
-this; it only becomes relevant if a `rest`-kind argument captures a very long
-string that is later re-parsed.
 
 **No escaped quotes** — the tokeniser does not support `\"` inside a quoted
 string. A quoted token must begin and end with `"` and may not contain a

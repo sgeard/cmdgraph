@@ -51,14 +51,14 @@ struct ArgSpec {
 /// @name Arg spec constructors
 /// Preferred over direct ArgSpec initialisation.
 /// @{
-[[nodiscard]] ArgSpec              arg_is_int (std::string name, bool optional = false);
-[[nodiscard]] ArgSpec              arg_is_real(std::string name, bool optional = false);
-[[nodiscard]] ArgSpec              arg_is_char(std::string name, bool optional = false);
-[[nodiscard]] ArgSpec              arg_is_rest(std::string name, bool optional = false);
+[[nodiscard]] ArgSpec              arg_is_int (const std::string& name, bool optional = false);
+[[nodiscard]] ArgSpec              arg_is_real(const std::string& name, bool optional = false);
+[[nodiscard]] ArgSpec              arg_is_char(const std::string& name, bool optional = false);
+[[nodiscard]] ArgSpec              arg_is_rest(const std::string& name, bool optional = false);
 /// @brief Return @p n copies of an integer spec (fixed-size tuple, e.g. a 2D point).
-[[nodiscard]] std::vector<ArgSpec> arg_int_n  (std::string name, int n);
+[[nodiscard]] std::vector<ArgSpec> arg_int_n  (const std::string& name, int n);
 /// @brief Return @p n copies of a real spec.
-[[nodiscard]] std::vector<ArgSpec> arg_real_n (std::string name, int n);
+[[nodiscard]] std::vector<ArgSpec> arg_real_n (const std::string& name, int n);
 /// @}
 
 //──── Arg values ──────────────────────────────────────────────────────────────
@@ -87,9 +87,9 @@ struct [[nodiscard]] ActionResult {
 };
 
 /// @brief Successful result, optionally carrying a DoGoto context string.
-ActionResult action_ok   (std::optional<std::string> ctx = std::nullopt);
+ActionResult action_ok   (const std::optional<std::string>& ctx = std::nullopt);
 /// @brief Error result, optionally with a message written to the error channel.
-ActionResult action_error(std::optional<std::string> msg = std::nullopt);
+ActionResult action_error(const std::optional<std::string>& msg = std::nullopt);
 
 //──── Function types ──────────────────────────────────────────────────────────
 
@@ -184,29 +184,29 @@ public:
     /// @brief Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
     /// @param name    Unique state identifier.
     /// @param prompt  Displayed before each input line.  Omit for an abstract (include-only) state.
-    void add_state   (std::string name,
-                      std::optional<std::string> prompt = std::nullopt);
+    void add_state   (const std::string& name,
+                      const std::optional<std::string>& prompt = std::nullopt);
 
     /// @brief Add a command edge to @p state.
     /// @param state  Owning state name.
     /// @param spec   Command spec, e.g. "p(airs)" — required prefix + optional suffix.
     /// @param kind   Edge behaviour (Action, Goto, DoGoto, Pop, DoPop, Quit).
     /// @param opts   Target state, proc, help text, and arg specs.
-    void add_command (std::string state, std::string spec, EdgeKind kind,
-                      CommandOptions opts = {});
+    void add_command (const std::string& state, const std::string& spec, EdgeKind kind,
+                      const CommandOptions& opts = {});
 
     /// @brief Merge all commands from abstract state @p included into @p state.
     /// State's own commands override included ones with the same spec.
-    void add_include (std::string state, std::string included);
+    void add_include (const std::string& state, const std::string& included);
 
     /// @brief Register a hook called after every successful transition into @p state.
-    void set_on_enter(std::string state, OnEnterFn proc);
+    void set_on_enter(const std::string& state, const OnEnterFn& proc);
 
     /// @brief Validate the graph and set the initial state.
     /// @param initial  Name of the starting state.
     /// @throws std::runtime_error if a cycle is detected in goto/do_goto edges,
     ///         or if any state reference is unresolved.
-    void finalize    (std::string initial);
+    void finalize    (const std::string& initial);
     /// @}
 
     /// @name Execution
@@ -216,12 +216,24 @@ public:
     void                     run    ();
 
     /// @brief Execute commands from @p path, stopping at the first error.
-    /// @param echo      If true, print each prompt+line as it is read.
-    /// @param out_stat  If non-null, receives the RC of the failing dispatch (or RC::Ok).
-    /// @param out_line  If non-null, receives the 1-based line number of the failure.
+    /// Blank lines and lines whose first non-whitespace character is @c # are
+    /// skipped (not echoed, not dispatched, no line-number consumed for matching
+    /// purposes — they still advance the 1-based counter).
+    /// @param echo        If true, emit each prompt+line as it is read.
+    ///                    Echo goes through the info channel, so #last_message
+    ///                    reflects the most recently echoed line.
+    /// @param out_stat    If non-null, receives the RC of the failing dispatch
+    ///                    (or RC::Ok on success / open failure).
+    /// @param out_line    If non-null, receives the 1-based line number of the
+    ///                    failure (0 for a file-open failure or a successful run).
+    /// @param out_errmsg  If non-null, receives the diagnostic text (mirrors
+    ///                    #last_error for Error / dispatch failures and
+    ///                    #last_message for Unknown / Ambiguous).
     /// @return True if the file ran to completion (or ended with quit); false otherwise.
-    [[nodiscard]] bool        run_file(std::string path, bool echo = false,
-                                       RC* out_stat = nullptr, int* out_line = nullptr);
+    /// Open-failure discriminator: ok==false && *out_line==0.
+    [[nodiscard]] bool        run_file(const std::string& path, bool echo = true,
+                                       RC* out_stat = nullptr, int* out_line = nullptr,
+                                       std::string* out_errmsg = nullptr);
 
     /// @brief Rewind to the initial state without rebuilding the graph.
     /// Clears the stack, contexts, last_message, and last_error.
@@ -229,7 +241,7 @@ public:
 
     /// @brief Dispatch one line of input.
     /// Performs prefix matching, arg validation, and edge traversal.
-    RC                       dispatch(std::string line);
+    RC                       dispatch(const std::string& line);
 
     /// @brief Redirect I/O channels.  Pass nullptr to suppress a channel.
     /// Default: stdin / stdout / stderr.
@@ -295,14 +307,33 @@ private:
     // ── Private helpers ─────────────────────────────────────────────────────
 
     [[nodiscard]] std::size_t find_state_(const std::string& name) const;
+    void                      emit_info_ (const std::string& msg);
     void                      emit_error_(const std::string& msg);
     void                      emit_help_ (const std::vector<Command>& cmds);
     [[nodiscard]] RC          apply_edge_(const Command& cmd, const ArgList& args);
 
     [[nodiscard]] static std::string cmd_usage_  (const Command& c);
     [[nodiscard]] static bool        cmd_matches_(const Command& c, const std::string& input);
+
+    // DFS cycle detection over goto/do_goto edges between concrete states.
+    // On a back-edge, sets found=true, ancestor=back-edge target, descendant=u,
+    // and unwinds. Mirrors Fortran find_cycle/dfs (cmdgraph_sm.f90:1245-1299).
                   static void        dfs_        (const std::vector<State>& states,
-                                                  std::size_t idx, std::vector<int>& color);
+                                                  std::size_t u,
+                                                  std::vector<int>&         color,
+                                                  std::vector<std::size_t>& parent,
+                                                  bool&                     found,
+                                                  std::size_t&              ancestor,
+                                                  std::size_t&              descendant);
+
+    // Build "cmdgraph: cycle detected: A -> B -> ... -> A" by walking parent[]
+    // up from descendant to ancestor and reversing. Mirrors Fortran
+    // build_cycle_message (cmdgraph_sm.f90:1303).
+    [[nodiscard]] static std::string build_cycle_message_(
+                                                  const std::vector<State>&       states,
+                                                  std::size_t                     ancestor,
+                                                  std::size_t                     descendant,
+                                                  const std::vector<std::size_t>& parent);
 };
 
 } // namespace cmdgraph

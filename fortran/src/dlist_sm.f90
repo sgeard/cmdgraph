@@ -151,20 +151,44 @@ contains
 
     end subroutine remove_ll
 
-    module subroutine print_ll(lst)
-        class(dlist_t), intent(in) :: lst
-        type(dlist_node_t), pointer :: next
-        write(*,'(a)') 'Nodes:'
+    module subroutine print_ll(lst, unit)
+        use iso_fortran_env, only: output_unit
+        class(dlist_t), intent(in)    :: lst
+        integer, intent(in), optional :: unit
+        type(dlist_node_t), pointer   :: next
+        integer                       :: idx, u
+        u = output_unit
+        if (present(unit)) u = unit
+        write(u,'(a)') 'Nodes:'
         next => lst%begin
         if (.not. associated(next)) then
-            write(*,'(a)') ' *** none found ***'
+            write(u,'(a)') ' *** none found ***'
             return
         end if
-        do
-            if (.not. associated(next)) exit
-            write(*,'(4x,a)') '...'
+        idx = 0
+        each_node: do
+            if (.not. associated(next)) exit each_node
+            idx = idx + 1
+            ! Render each built-in node kind; unknown extensions print a tag.
+            select type (d => next%data)
+            type is (dlist_node_integer)
+                write(u,'(4x,i0,a,i0)') idx, ': int    = ', d%data
+            type is (dlist_node_real)
+                write(u,'(4x,i0,a,g0)') idx, ': real   = ', d%data
+            type is (dlist_node_real_a)
+                write(u,'(4x,i0,a,*(1x,g0))') &
+                    idx, ': real_a =', d%data
+            type is (dlist_node_real_m)
+                write(u,'(4x,i0,a,i0,a,i0)') &
+                    idx, ': real_m = [', size(d%data,1), &
+                    ' x ', size(d%data,2)
+            type is (dlist_node_char)
+                write(u,'(4x,i0,a,a)') idx, ': char   = ', d%data
+            class default
+                write(u,'(4x,i0,a)') idx, ': <user-defined>'
+            end select
             next => next%next
-        end do
+        end do each_node
     end subroutine print_ll
 
     module integer function size_ll(lst)

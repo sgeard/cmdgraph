@@ -18,3 +18,7 @@ depends.mk
 
 # Local scratch / commit notes
 commit-msg
+
+# Parity harness build and run artefacts
+tools/parity/bin/
+tools/parity/.work/

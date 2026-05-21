@@ -167,9 +167,11 @@ module dlist
             logical :: r
         end function reverse_iterate_ll
 
-        !! Print list contents to stdout.
-        module subroutine print_ll(lst)
-            class(dlist_t), intent(in) :: lst
+        !! Print list contents to `unit` (default `output_unit`).
+        !! Renders the built-in node kinds; extensions print as `<user-defined>`.
+        module subroutine print_ll(lst, unit)
+            class(dlist_t), intent(in)    :: lst
+            integer, intent(in), optional :: unit
         end subroutine print_ll
 
         !! Append `data` to the tail of the list.

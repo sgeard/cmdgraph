@@ -14,25 +14,25 @@ namespace cmdgraph {
 
 //──── Free functions ──────────────────────────────────────────────────────────
 
-ActionResult action_ok(std::optional<std::string> ctx) {
-    return {false, std::move(ctx), std::nullopt};
+ActionResult action_ok(const std::optional<std::string>& ctx) {
+    return {false, ctx, std::nullopt};
 }
 
-ActionResult action_error(std::optional<std::string> msg) {
-    return {true, std::nullopt, std::move(msg)};
+ActionResult action_error(const std::optional<std::string>& msg) {
+    return {true, std::nullopt, msg};
 }
 
-ArgSpec arg_is_int (std::string n, bool opt) { return {std::move(n), ARG_INT,  opt}; }
-ArgSpec arg_is_real(std::string n, bool opt) { return {std::move(n), ARG_REAL, opt}; }
-ArgSpec arg_is_char(std::string n, bool opt) { return {std::move(n), ARG_CHAR, opt}; }
-ArgSpec arg_is_rest(std::string n, bool opt) { return {std::move(n), ARG_REST, opt}; }
+ArgSpec arg_is_int (const std::string& n, bool opt) { return {n, ARG_INT,  opt}; }
+ArgSpec arg_is_real(const std::string& n, bool opt) { return {n, ARG_REAL, opt}; }
+ArgSpec arg_is_char(const std::string& n, bool opt) { return {n, ARG_CHAR, opt}; }
+ArgSpec arg_is_rest(const std::string& n, bool opt) { return {n, ARG_REST, opt}; }
 
-std::vector<ArgSpec> arg_int_n(std::string name, int n) {
-    return std::vector<ArgSpec>(n, {std::move(name), ARG_INT, false});
+std::vector<ArgSpec> arg_int_n(const std::string& name, int n) {
+    return std::vector<ArgSpec>(n, {name, ARG_INT, false});
 }
 
-std::vector<ArgSpec> arg_real_n(std::string name, int n) {
-    return std::vector<ArgSpec>(n, {std::move(name), ARG_REAL, false});
+std::vector<ArgSpec> arg_real_n(const std::string& name, int n) {
+    return std::vector<ArgSpec>(n, {name, ARG_REAL, false});
 }
 
 //──── Engine: constructor ─────────────────────────────────────────────────────
@@ -165,8 +165,8 @@ std::string Engine::cmd_usage_(const Engine::Command& cmd) {
 
     // n_required = 1-based position of the last non-optional lead slot
     // (rest slot excluded — it is handled separately at the tail)
-    int n_required = 0;
-    for (int i = 0; i < (int)n_lead; ++i)
+    std::size_t n_required = 0;
+    for (std::size_t i = 0; i < n_lead; ++i)
         if (!spec[i].optional) n_required = i + 1;
 
     std::vector<Token> toks;
@@ -185,19 +185,22 @@ std::string Engine::cmd_usage_(const Engine::Command& cmd) {
     }
 
     // Count check (ARG_REST contributes 0 or 1 depending on whether tail exists)
-    if ((int)toks.size() < n_required)
+    if (toks.size() < n_required)
         return "missing required argument <" + spec[toks.size()].name + ">";
     if (!has_rest && toks.size() > spec.size())
         return "unexpected extra argument";
 
-    // Type check non-rest tokens
+    // Type check non-rest tokens. ARG_REAL accepts an integer token and
+    // promotes it to double — the action sees a real-typed value in that slot,
+    // matching Tcl validate_args and the Fortran post-validate normalisation.
     for (std::size_t i = 0; i < toks.size(); ++i) {
         const auto& s = spec[i];
         const auto& v = toks[i].value;
         bool ok = true;
         switch (s.kind) {
             case ARG_INT:  ok = std::holds_alternative<int>(v);         break;
-            case ARG_REAL: ok = std::holds_alternative<double>(v);      break;
+            case ARG_REAL: ok = std::holds_alternative<double>(v)
+                              || std::holds_alternative<int>(v);        break;
             case ARG_CHAR: ok = std::holds_alternative<std::string>(v); break;
             default: break;  // ARG_REST: no type check
         }
@@ -206,16 +209,25 @@ std::string Engine::cmd_usage_(const Engine::Command& cmd) {
                                  : (s.kind==ARG_REAL) ? "real" : "string";
             return "argument <" + s.name + "> expects " + expected;
         }
-        out.push_back(v);
+        if (s.kind == ARG_REAL && std::holds_alternative<int>(v))
+            out.push_back(static_cast<double>(std::get<int>(v)));
+        else
+            out.push_back(v);
     }
 
-    // Append rest arg if present
+    // Append rest arg if present. Mirrors Tcl (cmdgraph-1.0.tm:543-544) and
+    // Fortran: a non-empty tail is appended; an empty tail is omitted; an empty
+    // tail in a required rest slot is the same "missing required argument" the
+    // count check above raises for missing lead slots.
     if (has_rest) {
         std::size_t rest_start = toks.empty() ? arg_start : toks.back().end;
         while (rest_start < line.size() && line[rest_start] == ' ') ++rest_start;
         std::string tail = line.substr(rest_start);
-        if (!tail.empty() || !spec.back().optional)
+        if (!tail.empty()) {
             out.push_back(tail);
+        } else if (!spec.back().optional) {
+            return "missing required argument <" + spec.back().name + ">";
+        }
     }
 
     return {};
@@ -231,6 +243,11 @@ bool Engine::cmd_matches_(const Engine::Command& cmd, const std::string& input) 
 }
 
 //──── Helpers: I/O ───────────────────────────────────────────────────────────
+
+void Engine::emit_info_(const std::string& msg) {
+    last_message = msg;
+    if (out_) *out_ << msg << '\n';
+}
 
 void Engine::emit_error_(const std::string& msg) {
     last_error = msg;
@@ -257,23 +274,61 @@ void Engine::emit_help_(const std::vector<Command>& cmds) {
 
 //──── DAG validation ─────────────────────────────────────────────────────────
 
+// DFS over goto/do_goto edges between concrete states. On the first back-edge
+// (target is gray), sets found=true with ancestor=target / descendant=u and
+// unwinds. Mirrors Fortran find_cycle/dfs (cmdgraph_sm.f90:1245-1299) and Tcl
+// detect_cycle (cmdgraph-1.0.tm:261).
 void Engine::dfs_(const std::vector<Engine::State>& states,
-                 std::size_t idx, std::vector<int>& color) {
-    if (color[idx] == 2) return;
-    if (color[idx] == 1)
-        throw std::runtime_error(
-            "cmdgraph: cycle involving state '" + states[idx].name + "'");
-    color[idx] = 1;
-    for (const auto& cmd : states[idx].commands) {
-        if (cmd.kind == EdgeKind::Goto || cmd.kind == EdgeKind::DoGoto) {
-            auto it = std::ranges::find_if(states, [&](const State& s){
-                return s.name == cmd.target && s.prompt.has_value();
-            });
-            if (it != states.end())
-                Engine::dfs_(states, static_cast<std::size_t>(it - states.begin()), color);
+                 std::size_t              u,
+                 std::vector<int>&        color,
+                 std::vector<std::size_t>& parent,
+                 bool&                    found,
+                 std::size_t&             ancestor,
+                 std::size_t&             descendant) {
+    color[u] = 1;
+    for (const auto& cmd : states[u].commands) {
+        if (cmd.kind != EdgeKind::Goto && cmd.kind != EdgeKind::DoGoto) continue;
+        auto it = std::ranges::find_if(states, [&](const State& s){
+            return s.name == cmd.target && s.prompt.has_value();
+        });
+        if (it == states.end()) continue;             // unknown/abstract; validated earlier
+        auto v = static_cast<std::size_t>(it - states.begin());
+        switch (color[v]) {
+        case 0:
+            parent[v] = u;
+            Engine::dfs_(states, v, color, parent, found, ancestor, descendant);
+            if (found) return;
+            break;
+        case 1:
+            found      = true;
+            ancestor   = v;
+            descendant = u;
+            return;
+        default: break;   // 2 = black, already done
         }
     }
-    color[idx] = 2;
+    color[u] = 2;
+}
+
+std::string Engine::build_cycle_message_(const std::vector<Engine::State>& states,
+                                         std::size_t                     ancestor,
+                                         std::size_t                     descendant,
+                                         const std::vector<std::size_t>& parent) {
+    // Walk parent[] up from descendant to ancestor; reverse; close with ancestor.
+    std::vector<std::size_t> path;
+    path.push_back(descendant);
+    std::size_t cur = descendant;
+    while (cur != ancestor) {
+        cur = parent[cur];
+        path.push_back(cur);
+    }
+    std::ranges::reverse(path);
+    path.push_back(ancestor);                          // close
+
+    std::string msg = "cmdgraph: cycle detected: " + states[path[0]].name;
+    for (std::size_t i = 1; i < path.size(); ++i)
+        msg += " -> " + states[path[i]].name;
+    return msg;
 }
 
 //──── apply_edge ─────────────────────────────────────────────────────────────
@@ -343,19 +398,19 @@ RC Engine::apply_edge_(const Command& cmd, const ArgList& args) {
 
 //──── Construction ───────────────────────────────────────────────────────────
 
-void Engine::add_state(std::string name, std::optional<std::string> prompt) {
+void Engine::add_state(const std::string& name, const std::optional<std::string>& prompt) {
     if (finalized_)
         throw std::runtime_error("cmdgraph: add_state after finalize");
     if (find_state_(name) != std::string::npos)
         throw std::runtime_error("cmdgraph: state '" + name + "' already exists");
     State s;
-    s.name   = std::move(name);
-    s.prompt = std::move(prompt);
+    s.name   = name;
+    s.prompt = prompt;
     states_.push_back(std::move(s));
 }
 
-void Engine::add_command(std::string state_name, std::string spec,
-                          EdgeKind kind, CommandOptions opts) {
+void Engine::add_command(const std::string& state_name, const std::string& spec,
+                          EdgeKind kind, const CommandOptions& opts) {
     if (finalized_)
         throw std::runtime_error("cmdgraph: add_command after finalize");
     std::size_t idx = find_state_(state_name);
@@ -367,36 +422,69 @@ void Engine::add_command(std::string state_name, std::string spec,
             throw std::runtime_error(
                 "cmdgraph: ARG_REST must be the last spec (command '" + spec + "')");
 
+    // Construction-time validation: each edge kind has required slots; reject
+    // missing values up-front rather than failing silently at runtime.
+    // Canonical wording (matches Fortran die_missing and Tcl parse_edge):
+    //   cmdgraph: <kind> edge '<spec>' missing required <proc|target>
+    switch (kind) {
+        case EdgeKind::Action:
+            if (!opts.proc)
+                throw std::runtime_error(
+                    "cmdgraph: action edge '" + spec + "' missing required proc");
+            break;
+        case EdgeKind::Goto:
+            if (opts.target.empty())
+                throw std::runtime_error(
+                    "cmdgraph: goto edge '" + spec + "' missing required target");
+            break;
+        case EdgeKind::DoGoto:
+            if (opts.target.empty())
+                throw std::runtime_error(
+                    "cmdgraph: do_goto edge '" + spec + "' missing required target");
+            if (!opts.proc)
+                throw std::runtime_error(
+                    "cmdgraph: do_goto edge '" + spec + "' missing required proc");
+            break;
+        case EdgeKind::DoPop:
+            if (!opts.proc)
+                throw std::runtime_error(
+                    "cmdgraph: do_pop edge '" + spec + "' missing required proc");
+            break;
+        case EdgeKind::Pop:
+        case EdgeKind::Quit:
+            break;
+    }
+
     Command cmd;
     cmd.spec   = spec;
     parse_spec(spec, cmd.req, cmd.opt);
     cmd.kind   = kind;
-    cmd.target = std::move(opts.target);
-    cmd.proc   = std::move(opts.proc);
-    cmd.help   = std::move(opts.help);
-    cmd.args   = std::move(opts.args);
+    cmd.target = opts.target;
+    cmd.proc   = opts.proc;
+    cmd.help   = opts.help;
+    cmd.args   = opts.args;
     states_[idx].own_cmds.push_back(std::move(cmd));
 }
 
-void Engine::add_include(std::string state_name, std::string included) {
+void Engine::add_include(const std::string& state_name, const std::string& included) {
     if (finalized_)
         throw std::runtime_error("cmdgraph: add_include after finalize");
     std::size_t idx = find_state_(state_name);
     if (idx == std::string::npos)
         throw std::runtime_error("cmdgraph: unknown state '" + state_name + "'");
-    states_[idx].includes.push_back(std::move(included));
+    states_[idx].includes.push_back(included);
 }
 
-void Engine::set_on_enter(std::string state_name, OnEnterFn proc) {
+void Engine::set_on_enter(const std::string& state_name, const OnEnterFn& proc) {
     if (finalized_)
         throw std::runtime_error("cmdgraph: set_on_enter after finalize");
     std::size_t idx = find_state_(state_name);
     if (idx == std::string::npos)
         throw std::runtime_error("cmdgraph: unknown state '" + state_name + "'");
-    states_[idx].on_enter = std::move(proc);
+    states_[idx].on_enter = proc;
 }
 
-void Engine::finalize(std::string initial) {
+void Engine::finalize(const std::string& initial) {
     if (finalized_)
         throw std::runtime_error("cmdgraph: already finalized");
 
@@ -445,9 +533,24 @@ void Engine::finalize(std::string initial) {
         }
     }
 
-    // DAG check on goto/do_goto edges between concrete states
-    std::vector<int> color(states_.size(), 0);
-    Engine::dfs_(states_, init, color);
+    // DAG check on goto/do_goto edges between concrete states. Iterate every
+    // concrete state as a DFS root so cycles in components unreachable from
+    // the initial state are still caught — mirrors Fortran find_cycle and Tcl
+    // detect_cycle (both loop over all states).
+    std::vector<int>         color (states_.size(), 0);
+    std::vector<std::size_t> parent(states_.size(), 0);
+    bool        found      = false;
+    std::size_t ancestor   = 0;
+    std::size_t descendant = 0;
+    for (std::size_t i = 0; i < states_.size(); ++i) {
+        if (!states_[i].prompt) continue;              // skip abstract
+        if (color[i] != 0)      continue;
+        Engine::dfs_(states_, i, color, parent, found, ancestor, descendant);
+        if (found) break;
+    }
+    if (found)
+        throw std::runtime_error(
+            Engine::build_cycle_message_(states_, ancestor, descendant, parent));
 
     initial_state_idx_ = init;
     finalized_ = true;
@@ -463,50 +566,72 @@ void Engine::set_io(std::istream* in, std::ostream* out, std::ostream* err) {
     if (err) err_ = err;
 }
 
-RC Engine::dispatch(std::string line) {
+// First non-separator index ≥ i (or s.size() if none).
+// Matches Tcl strip_leading_arg_space / Fortran strip_leading_arg_space.
+[[nodiscard]] static std::size_t strip_leading_arg_space_(const std::string& s, std::size_t i) {
+    while (i < s.size() && s[i] == ' ') ++i;
+    return i;
+}
+
+// Index of the first separator (space) at or after i that is not inside a
+// double-quoted span, or s.size() if none.  Matches Tcl/Fortran
+// first_arg_separator (single-char ARG_DELIMITERS == " ").
+[[nodiscard]] static std::size_t first_arg_separator_(const std::string& s, std::size_t i) {
+    bool in_quote = false;
+    for (; i < s.size(); ++i) {
+        char c = s[i];
+        if (c == '"') in_quote = !in_quote;
+        else if (!in_quote && c == ' ') return i;
+    }
+    return s.size();
+}
+
+RC Engine::dispatch(const std::string& line) {
     if (!finalized_ || stack_.empty()) return RC::Exited;
 
-    // Strip trailing whitespace
-    while (!line.empty() && line.back() == ' ') line.pop_back();
-    if (line.empty()) return RC::Ok;
+    // Split first token Tcl/Fortran-style: raw substring up to the first
+    // unquoted space.  No type inference, no quote stripping on the command
+    // name itself — anything goes; the prefix matcher just won't find it.
+    // (Previously C++ tokenised the first word and rejected numeric tokens
+    // as "command name must be a word"; Tcl/Fortran accept the literal and
+    // route via the unknown channel, which is the canonical contract.)
+    std::size_t cmd_start = strip_leading_arg_space_(line, 0);
+    if (cmd_start >= line.size()) return RC::Ok;
 
-    // Extract command name (first token — must be a bare word)
-    std::vector<Token> name_tok;
-    try { name_tok = tokenize(line, 0, 1); }
-    catch (const std::runtime_error& e) { emit_error_(e.what()); return RC::Error; }
-
-    if (name_tok.empty()) return RC::Ok;
-    if (!std::holds_alternative<std::string>(name_tok[0].value)) {
-        emit_error_("command name must be a word");
-        return RC::Error;
-    }
-    std::string cmd_name = std::get<std::string>(name_tok[0].value);
-    std::size_t arg_off  = name_tok[0].end;
+    std::size_t cmd_end = first_arg_separator_(line, cmd_start);
+    std::string cmd_name = line.substr(cmd_start, cmd_end - cmd_start);
+    std::size_t arg_off  = (cmd_end < line.size())
+                         ? strip_leading_arg_space_(line, cmd_end + 1)
+                         : line.size();
 
     const auto& cmds = states_[stack_.back().state_idx].commands;
 
-    // Check for graph-defined help before the built-in
-    bool graph_has_help = std::any_of(cmds.begin(), cmds.end(),
-        [](const Command& c){ return c.spec == "help" || c.spec == "?"; });
-
-    if (!graph_has_help && (cmd_name == "help" || cmd_name == "?")) {
-        emit_help_(cmds);
-        return RC::Ok;
-    }
-
-    // Prefix matching
+    // Prefix matching first (Tcl pattern); built-in help/? is the fall-through
+    // when no command matches.  A graph-defined help/? naturally wins because
+    // the prefix matcher finds it as a real command.
     std::vector<const Command*> matches;
     for (const auto& c : cmds)
         if (Engine::cmd_matches_(c, cmd_name)) matches.push_back(&c);
 
     if (matches.empty()) {
-        emit_error_("unknown: " + cmd_name);
+        if (cmd_name == "help" || cmd_name == "?") {
+            emit_help_(cmds);
+            return RC::Ok;
+        }
+        // Route via the info channel — matches Tcl emit_info / Fortran emit_info
+        // so last_message carries the diagnostic (parity contract).
+        emit_info_("unknown: " + cmd_name);
         return RC::Unknown;
     }
     if (matches.size() > 1) {
-        std::string msg = "ambiguous '" + cmd_name + "':";
-        for (const auto* c : matches) msg += " " + c->spec;
-        emit_error_(msg);
+        // Canonical wording (locked decision):
+        //   ambiguous: <cmd> matches a, b
+        std::string msg = "ambiguous: " + cmd_name + " matches ";
+        for (std::size_t i = 0; i < matches.size(); ++i) {
+            if (i) msg += ", ";
+            msg += matches[i]->spec;
+        }
+        emit_info_(msg);
         return RC::Ambiguous;
     }
 
@@ -531,29 +656,53 @@ void Engine::run() {
     }
 }
 
-bool Engine::run_file(std::string path, bool echo,
-                       RC* out_stat, int* out_line) {
+// Drive the engine from a script file.  Blank / `#`-comment lines are skipped
+// (matches Tcl cmdgraph-1.0.tm:424-426 and Fortran cmdgraph_sm.f90:429-430).
+// Echo defaults ON and goes through emit_info_ so last_message tracks the
+// echoed prompt+line — same contract as the other two impls.  On a failing
+// dispatch, errmsg is taken from last_error (Error) or last_message
+// (Unknown / Ambiguous, which are info-channel events in the parity contract).
+// Open-failure discriminator: ok==false && *out_line==0.
+bool Engine::run_file(const std::string& path, bool echo,
+                       RC* out_stat, int* out_line, std::string* out_errmsg) {
+    if (out_stat)   *out_stat   = RC::Ok;
+    if (out_line)   *out_line   = 0;
+    if (out_errmsg) out_errmsg->clear();
+
     std::ifstream f(path);
     if (!f) {
-        if (out_stat) *out_stat = RC::Error;
-        if (out_line) *out_line = 0;
+        // Populate last_error silently — do NOT write to the error channel
+        // (matches Tcl set_error / Fortran set_error; the channel is reserved
+        // for events that occurred during dispatch, not for the harness call).
+        last_error = "could not open script file: " + path;
+        if (out_errmsg) *out_errmsg = last_error;
         return false;
     }
+
     std::string line;
     int lno = 0;
     while (is_running() && std::getline(f, line)) {
         ++lno;
-        if (echo && out_) *out_ << line << '\n';
+
+        // Skip blank lines and #-comment lines (first non-space char is #).
+        std::size_t first = line.find_first_not_of(" \t");
+        if (first == std::string::npos) continue;
+        if (line[first] == '#')         continue;
+
+        if (echo) {
+            const auto& st = states_[stack_.back().state_idx];
+            emit_info_((st.prompt ? *st.prompt : std::string{}) + line);
+        }
+
         RC rc = dispatch(line);
         if (rc == RC::Exited) break;
         if (rc != RC::Ok && rc != RC::Transitioned) {
-            if (out_stat) *out_stat = rc;
-            if (out_line) *out_line = lno;
+            if (out_stat)   *out_stat = rc;
+            if (out_line)   *out_line = lno;
+            if (out_errmsg) *out_errmsg = (rc == RC::Error) ? last_error : last_message;
             return false;
         }
     }
-    if (out_stat) *out_stat = RC::Ok;
-    if (out_line) *out_line = lno;
     return true;
 }
 

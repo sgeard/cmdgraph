@@ -63,6 +63,11 @@ program utest_cmdgraph
     call check_int("built-in ? returns RC_OK", eng%dispatch("?"), RC_OK)
     call check_int("real arg action returns RC_OK", eng%dispatch("real -1.25d2"), RC_OK)
     call check_log("real arg parsed", last_real_arg == -125.0d0, .true.)
+    ! Note: this `r(eal)` command has no arg spec, so parse_args creates the
+    ! list node from the literal type — there is no validation/promotion path
+    ! to exercise here.  Int → real promotion (typed-real slot accepts an
+    ! integer literal and normalises to real(8)) is tested in
+    ! test_int_to_real_promotion below.
     call check_int("char arg action returns RC_OK", eng%dispatch("word /tmp/path"), RC_OK)
     call check_str("char arg parsed", last_word_arg, "/tmp/path")
     call check_int("quoted char arg returns RC_OK", eng%dispatch('word "two words"'), RC_OK)
@@ -141,6 +146,7 @@ program utest_cmdgraph
     call test_run_with_prompt()
     call test_include_override()
     call test_validate_args_char()
+    call test_int_to_real_promotion()
 
     ! --- version ---
     call check_int("version major",  CMDGRAPH_VERSION%major, 1)
@@ -1535,5 +1541,30 @@ contains
         call check_str("char arg value",           last_word_arg, "hello")
         call check_int("int token for char → RC_ERROR", e%dispatch("word 42"), RC_ERROR)
     end subroutine test_validate_args_char
+
+    subroutine test_int_to_real_promotion()
+        ! Typed ARG_REAL slot accepts an integer literal; the post-validate
+        ! normaliser replaces the integer node with a real(8) node so the
+        ! action receives a real-typed value. Parity with Tcl/C++.
+        type(engine_t) :: e
+        call e%add_state("root", prompt="> ")
+        call e%add_command("root", "r(eal)", EDGE_ACTION, proc=act_real, &
+                           args=[arg_is_real("x")])
+        call e%finalize("root")
+        call e%set_io_units(output_unit=QUIET_UNIT, error_unit=QUIET_UNIT)
+        ! Decimal literal continues to work.
+        last_real_arg = 0.0d0
+        call check_int("typed real arg decimal → RC_OK", &
+                       e%dispatch("real 3.14"), RC_OK)
+        call check_log("typed real arg decimal value", &
+                       last_real_arg > 3.13d0 .and. last_real_arg < 3.15d0, .true.)
+        ! Integer literal is promoted to real(8) and the action sees a real
+        ! node, not an integer node.
+        last_real_arg = 0.0d0
+        call check_int("typed real arg accepts int (promoted) → RC_OK", &
+                       e%dispatch("real 7"), RC_OK)
+        call check_log("typed real arg int-promoted value", &
+                       last_real_arg == 7.0d0, .true.)
+    end subroutine test_int_to_real_promotion
 
 end program utest_cmdgraph

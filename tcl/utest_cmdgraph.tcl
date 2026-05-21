@@ -32,8 +32,8 @@ namespace eval probe {
 # Test action procs
 proc act_outer {args} { probe::record act_outer $args }
 proc act_inner {args} { probe::record act_inner $args }
-proc gate_ok   {args} { probe::record gate_ok   $args; return 1 }
-proc gate_no   {args} { probe::record gate_no   $args; return 0 }
+proc gate_ok   {args} { probe::record gate_ok   $args; return "go" }
+proc gate_no   {args} { probe::record gate_no   $args; return "" }
 proc act_throw {args} { probe::record act_throw $args; error "deliberate" }
 proc custom_h  {args} { probe::record custom_h  $args }
 
@@ -142,20 +142,20 @@ check "goto called no proc"         [probe::count] 0
 eng dispatch "back"
 check "pop returns to previous"     [eng current_state] outer
 
-# --- do_goto: truthy ---
+# --- do_goto: non-empty return transitions ---
 
 probe::reset
 eng dispatch "try"
-check "do_goto truthy transitions"  [eng current_state] inner
-check "do_goto called gate proc"    [lindex [probe::last] 0] gate_ok
+check "do_goto non-empty transitions"  [eng current_state] inner
+check "do_goto called gate proc"       [lindex [probe::last] 0] gate_ok
 eng dispatch "back"
 
-# --- do_goto: falsy ---
+# --- do_goto: empty-string return stays ---
 
 probe::reset
 eng dispatch "fail"
-check "do_goto falsy stays"         [eng current_state] outer
-check "do_goto falsy called proc"   [lindex [probe::last] 0] gate_no
+check "do_goto empty stays"            [eng current_state] outer
+check "do_goto empty called proc"      [lindex [probe::last] 0] gate_no
 
 # --- do_goto: error in action ---
 
@@ -390,6 +390,22 @@ foreach h [probe::all] {
 }
 check "on_enter does not fire on fail"   $fired 0
 
+# --- do_goto with literal "0" return: transitions with ctx "0" (parity rule) ---
+# Regression for boolean-coercion bug: "0", "no", "false" are non-empty
+# strings, so they must be treated as valid contexts and transition.
+
+probe::reset
+ec dispatch "select 0"
+check "do_goto with '0' transitions"     [ec current_state]   detail
+check "context set to '0' literal"       [ec current_context] 0
+
+set on_enter_call ""
+foreach h [probe::all] {
+    if {[lindex $h 0] eq "enter_detail"} { set on_enter_call $h }
+}
+check "on_enter sees '0' context"        [lindex $on_enter_call 1] 0
+ec dispatch "back"
+
 # --- cmdgraph::context returns "" outside dispatch ---
 
 check "context is empty outside action"  [cmdgraph::context] ""
@@ -400,8 +416,8 @@ ec destroy
 
 proc noop_action  {args} { return }
 proc throw_action {args} { error "boom" }
-proc ok_gate      {args} { return 1 }
-proc no_gate      {args} { return 0 }
+proc ok_gate      {args} { return "go" }
+proc no_gate      {args} { return "" }
 
 set rc_graph {
     home {
@@ -410,8 +426,8 @@ set rc_graph {
             a(ction) {action  noop_action  help "ok"}
             ae(rror) {action  throw_action help "action errors"}
             g(o)     {goto    other        help "transitioned"}
-            t(ry)    {do_goto other ok_gate      help "do_goto truthy"}
-            f(ail)   {do_goto other no_gate      help "do_goto falsy"}
+            t(ry)    {do_goto other ok_gate      help "do_goto returns non-empty"}
+            f(ail)   {do_goto other no_gate      help "do_goto returns empty"}
             e(rror)  {do_goto other throw_action help "do_goto errors"}
             s(ave)   {action  noop_action  help "save"}
             s(ub)    {action  noop_action  help "sub"}
@@ -694,6 +710,51 @@ check_cycle "cycle via included command" {
     b      { prompt "b> " includes {nav} commands {} }
 } a "a -> b -> a"
 
+# --- construction-time edge validation (proc/target slots required) ---
+# Parity contract (canonical wording — matches Fortran die_missing and
+# C++ add_command throw):
+#   cmdgraph: <kind> edge '<spec>' missing required <proc|target>
+
+proc check_missing {label graph initial expected} {
+    global pass fail
+    set ok [catch {cmdgraph::Engine create mr_eng $graph $initial} err]
+    if {$ok != 1} {
+        puts "FAIL: $label (expected error, construction succeeded)"
+        incr fail
+        mr_eng destroy
+        return
+    }
+    if {$err ne $expected} {
+        puts "FAIL: $label\n  expected: $expected\n  actual:   $err"
+        incr fail
+        return
+    }
+    puts "PASS: $label"
+    incr pass
+}
+
+check_missing "action edge missing proc" {
+    r { prompt "r> " commands { a(ct) {action} } }
+} r "cmdgraph: action edge 'a(ct)' missing required proc"
+
+check_missing "goto edge missing target" {
+    r { prompt "r> " commands { g(o) {goto} } }
+} r "cmdgraph: goto edge 'g(o)' missing required target"
+
+check_missing "do_goto edge missing target" {
+    r { prompt "r> " commands { t(ry) {do_goto "" act_outer} } }
+} r "cmdgraph: do_goto edge 't(ry)' missing required target"
+
+check_missing "do_goto edge missing proc" {
+    r { prompt "r> " commands { t(ry) {do_goto dest ""} }
+        }
+    dest { prompt "d> " commands { b(ack) {pop} } }
+} r "cmdgraph: do_goto edge 't(ry)' missing required proc"
+
+check_missing "do_pop edge missing proc" {
+    r { prompt "r> " commands { c(ommit) {do_pop} } }
+} r "cmdgraph: do_pop edge 'c(ommit)' missing required proc"
+
 # --- do_pop: invoke proc then pop on success ---
 
 set commit_called 0
@@ -794,8 +855,12 @@ check "arg spec real accepts d exponent"   [arg_eng dispatch "real -1.25d2"] ok
 check "arg spec real passes original text" [lindex [probe::last] 1] -1.25d2
 
 probe::reset
-check "arg spec real rejects integer token" [arg_eng dispatch "real 7"] error
-check "arg spec real mismatch not invoked" [probe::count] 0
+# Int → real promotion: an integer literal in a real slot is accepted; the
+# action receives the raw token (Tcl is dynamically typed). Parity with
+# C++ ARG_REAL int-variant promotion and Fortran post-validate normalisation.
+check "arg spec real accepts int token"    [arg_eng dispatch "real 7"] ok
+check "arg spec real int-promoted invoked" [probe::count] 1
+check "arg spec real int-promoted value"   [lindex [probe::last] 1] 7
 
 probe::reset
 check "arg spec char accepts nonnumeric"   [arg_eng dispatch "word /tmp/path"] ok

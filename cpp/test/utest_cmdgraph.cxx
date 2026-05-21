@@ -289,7 +289,13 @@ static void test_arg_real() {
     g_last_real = 0.0;
     check_int("real arg dispatch", rc(eng.dispatch("real 3.14")), RC_OK);
     check_bool("real arg captured", g_last_real > 3.13 && g_last_real < 3.15, true);
-    check_int("real arg rejects int token", rc(eng.dispatch("real 2")), RC_ERROR);
+    // Int → real promotion: an integer literal in a real slot is accepted and
+    // the action receives a double-valued variant (parity with Tcl/Fortran).
+    g_last_real = 0.0;
+    check_int("real arg accepts int token (promoted)",
+              rc(eng.dispatch("real 2")), RC_OK);
+    check_bool("real arg int-promoted value",
+               g_last_real > 1.99 && g_last_real < 2.01, true);
     // Fortran-style exponents
     g_last_real = 0.0;
     check_int("real d-exponent dispatch",  rc(eng.dispatch("real 1.5d2")), RC_OK);
@@ -376,16 +382,21 @@ static void test_run_file() {
 }
 
 static void test_io_suppress() {
-    // Suppress both channels; verify last_error/last_message still set
-    std::ostringstream null_oss;
+    // Suppress both channels; verify the engine still populates
+    // last_message / last_error (the in-memory mirrors of the channels).
+    // Under the parity contract, "unknown" is an info-channel event so it
+    // populates last_message; last_error is reserved for genuine error events.
+    // (set_io with nullptr is a no-op — pass throwaway streams instead.)
+    std::ostringstream sink_out, sink_err;
     Engine eng;
-    eng.set_io(nullptr, nullptr, nullptr);  // suppress
+    eng.set_io(nullptr, &sink_out, &sink_err);
     eng.add_state("s", "s> ");
     eng.add_command("s", "q(uit)", EdgeKind::Quit);
     eng.finalize("s");
-    (void)eng.dispatch("zzz");  // testing last_error, not RC
-    // last_error should still be set even with suppressed channel
-    check_bool("suppress: last_error set", !eng.last_error.empty(), true);
+    (void)eng.dispatch("zzz");  // unknown → emit_info_ → last_message
+    check_bool("suppress: last_message set",  !eng.last_message.empty(), true);
+    check_str ("suppress: last_message text",  eng.last_message, "unknown: zzz");
+    check_bool("suppress: last_error empty",   eng.last_error.empty(),   true);
 }
 
 static void test_introspection() {
@@ -451,6 +462,30 @@ static void test_rest_of_line() {
     check_int("rest-only dispatch", rc(eng2.dispatch("rest hello world")), RC_OK);
     check_int("rest-only nargs", g_rest_nargs, 1);
     check_str("rest-only str", g_rest_str, "hello world");
+
+    // Empty required rest → "missing required argument <name>" (parity with
+    // Tcl/Fortran — both refuse to invoke the action with an empty rest slot).
+    g_rest_nargs = -1;
+    check_int("empty required rest rc",
+              rc(eng2.dispatch("rest")), RC_ERROR);
+    check_int("empty required rest action not invoked", g_rest_nargs, -1);
+    check_str("empty required rest last_error", eng2.last_error,
+              "missing required argument <msg>");
+
+    // Optional rest is allowed to be empty; the action is invoked with zero args.
+    Engine eng3;
+    eng3.set_io(nullptr, &oss, &oss);
+    eng3.add_state("s", "s> ");
+    eng3.add_command("s", "r(est)", EdgeKind::Action,
+                     {.proc=act_rest, .help="rest",
+                      .args={arg_is_rest("msg", true)}});
+    eng3.add_command("s", "q", EdgeKind::Quit);
+    eng3.finalize("s");
+    g_rest_nargs = -1;
+    check_int("empty optional rest rc",
+              rc(eng3.dispatch("rest")), RC_OK);
+    check_int("empty optional rest nargs (no rest pushed)",
+              g_rest_nargs, 0);
 }
 
 static void test_array_specs() {
@@ -599,6 +634,49 @@ static void test_builder_errors() {
             e.add_command("a","x",EdgeKind::Action,
                 {.args={arg_is_rest("r"), arg_is_int("n")}});
         }), true);
+
+    // Construction-time edge validation — canonical wording must be byte-
+    // identical to Fortran die_missing and Tcl parse_edge (parity contract):
+    //   cmdgraph: <kind> edge '<spec>' missing required <proc|target>
+    auto throw_msg = [](auto fn) -> std::string {
+        try { fn(); return {}; }
+        catch (const std::runtime_error& e) { return e.what(); }
+    };
+
+    check_str("action edge missing proc msg",
+        throw_msg([]{
+            Engine e; e.add_state("r","r> ");
+            e.add_command("r","a(ct)",EdgeKind::Action);
+        }),
+        "cmdgraph: action edge 'a(ct)' missing required proc");
+
+    check_str("goto edge missing target msg",
+        throw_msg([]{
+            Engine e; e.add_state("r","r> ");
+            e.add_command("r","g(o)",EdgeKind::Goto);
+        }),
+        "cmdgraph: goto edge 'g(o)' missing required target");
+
+    check_str("do_goto edge missing target msg",
+        throw_msg([]{
+            Engine e; e.add_state("r","r> ");
+            e.add_command("r","t(ry)",EdgeKind::DoGoto,{.proc=act_outer});
+        }),
+        "cmdgraph: do_goto edge 't(ry)' missing required target");
+
+    check_str("do_goto edge missing proc msg",
+        throw_msg([]{
+            Engine e; e.add_state("r","r> "); e.add_state("d","d> ");
+            e.add_command("r","t(ry)",EdgeKind::DoGoto,{.target="d"});
+        }),
+        "cmdgraph: do_goto edge 't(ry)' missing required proc");
+
+    check_str("do_pop edge missing proc msg",
+        throw_msg([]{
+            Engine e; e.add_state("r","r> ");
+            e.add_command("r","c(ommit)",EdgeKind::DoPop);
+        }),
+        "cmdgraph: do_pop edge 'c(ommit)' missing required proc");
 }
 
 // ── Coverage completers ───────────────────────────────────────────────────────
@@ -611,9 +689,12 @@ static void test_unmatched_quotes() {
     std::ostringstream oss;
     Engine eng = build_eng(&oss, &oss);
 
-    // Unmatched quote in the command name position (tokenize throws, caught in dispatch)
-    check_int("unmatched quote in cmd → RC_ERROR",
-              rc(eng.dispatch("\"unterminated")), RC_ERROR);
+    // Unmatched quote in the command name position: the raw-substring
+    // splitter treats the rest of the input as inside-quote, so the cmd
+    // name is taken literally (including the leading quote) and falls
+    // through the prefix matcher as an unknown — matches Tcl/Fortran.
+    check_int("unmatched quote in cmd → RC_UNKNOWN",
+              rc(eng.dispatch("\"unterminated")), RC_UNKNOWN);
 
     // Unmatched quote in args without a spec (no-spec path in validate_and_build)
     Engine eng2;
@@ -800,15 +881,23 @@ static void test_run_method() {
 }
 
 static void test_run_file_missing_stat() {
-    // run_file on missing file with out_stat and out_line (lines 543-545)
+    // run_file on a missing file.  Parity contract (matches Tcl/Fortran):
+    //   ok==false && *out_line==0  → file-open failure (out_stat unchanged)
+    //   ok==false && *out_line>0   → dispatch failure on that line
+    // last_error and *out_errmsg both carry "could not open script file: <path>".
     std::ostringstream oss;
     Engine eng = build_eng(&oss, &oss);
     RC stat = RC::Ok;
     int line = -1;
-    bool ok = eng.run_file("/tmp/cmdgraph_cpp_nosuchfile_utest.txt", false, &stat, &line);
-    check_bool("run_file missing returns false", !ok, true);
-    check_int("run_file missing stat", rc(stat), RC_ERROR);
-    check_int("run_file missing line", line, 0);
+    std::string errmsg;
+    const std::string path = "/tmp/cmdgraph_cpp_nosuchfile_utest.txt";
+    bool ok = eng.run_file(path, false, &stat, &line, &errmsg);
+    check_bool("run_file missing returns false",         !ok,            true);
+    check_int ("run_file missing line is 0 (open-fail)", line,           0);
+    check_str ("run_file missing last_error canonical",  eng.last_error,
+               "could not open script file: " + path);
+    check_str ("run_file missing out_errmsg canonical",  errmsg,
+               "could not open script file: " + path);
 }
 
 static void test_reset_before_finalize() {
@@ -821,10 +910,16 @@ static void test_reset_before_finalize() {
 }
 
 static void test_command_name_not_word() {
-    // Dispatch where the first token is not a bare word (lines 485-486)
+    // Parity contract: the command name is a raw substring (no type
+    // inference), so a numeric first token is just a literal command
+    // name that doesn't match anything → RC_UNKNOWN via the info channel
+    // (matches Tcl/Fortran; the prior C++ "command name must be a word"
+    // path is gone).
     std::ostringstream oss;
     Engine eng = build_eng(&oss, &oss);
-    check_int("numeric cmd name → RC_ERROR", rc(eng.dispatch("42 foo")), RC_ERROR);
+    check_int("numeric cmd name → RC_UNKNOWN",
+              rc(eng.dispatch("42 foo")), RC_UNKNOWN);
+    check_str("numeric cmd name last_message", eng.last_message, "unknown: 42");
 }
 
 // ── main ──────────────────────────────────────────────────────────────────────

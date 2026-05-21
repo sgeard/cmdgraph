@@ -8,7 +8,8 @@ non-demo projects, and — just as importantly — records what is deliberately
 
 It supersedes the earlier `codex_issues` scratch list, reconciled against the
 state of the tree at r1447. Updated 2026-05-16 to reflect the C++ port and
-versioning.
+versioning. Further updated 2026-05-20 to record the cross-implementation
+parity contract and the harness that enforces it.
 
 ## Guiding principle
 
@@ -115,15 +116,66 @@ The original top priorities have largely landed. Do not re-implement these:
   `action_result_t` stays a plain data-transfer object with public fields
   (no invariants to protect), the constructors add ergonomics only.
 
-- **C++ port** (2026-05-16, full parity with Tcl and Fortran). C++23, single
-  header `include/cmdgraph.hxx` + `src/cmdgraph.cxx`, static library built by
-  Makefile (primary: icpx, secondary: g++). Builder API, all edge kinds, all
-  arg spec kinds including `ARG_REST`, introspection (`available_commands`,
-  `state_path`), `run` / `run_file` / `reset`, `[[nodiscard]]` on `RC` and
-  `ActionResult`, `CommandOptions` with `= {}` on all fields. Tokeniser uses
-  `std::from_chars`; accepts `d`/`D` as Fortran-style exponent synonym for
-  `e`/`E`. Demos: `app/main.cxx` (REPL), `cad_2d/cad_2d.cxx` (2D CAD).
-  115 unit tests, 0 failing (icpx and g++ clean).
+- **C++ port** (2026-05-16; behaviour parity completed 2026-05-20). C++23,
+  single header `include/cmdgraph.hxx` + `src/cmdgraph.cxx`, static library
+  built by Makefile (primary: icpx, secondary: g++). Builder API, all edge
+  kinds, all arg spec kinds including `ARG_REST`, introspection
+  (`available_commands`, `state_path`), `run` / `run_file` / `reset`,
+  `[[nodiscard]]` on `RC` and `ActionResult`, `CommandOptions` with `= {}` on
+  all fields. Tokeniser uses `std::from_chars`; accepts `d`/`D` as
+  Fortran-style exponent synonym for `e`/`E`. Demos: `app/main.cxx` (REPL),
+  `cad_2d/cad_2d.cxx` (2D CAD). 158 unit tests, 0 failing (icpx and g++
+  clean). Full behaviour parity with Tcl and Fortran is now enforced by the
+  parity harness — see the cross-implementation parity entry above for the
+  contract.
+- **Cross-implementation parity contract + harness** (2026-05-20, all three
+  implementations). A static three-language review surfaced a cluster of
+  behaviour drift between the Tcl/Fortran/C++ ports — different error channels
+  for `unknown`/`ambiguous`, C++ DAG validation only seeded from the initial
+  state, C++ `run_file` missing comment/blank-line skipping and echo-via-info
+  defaults, ambiguous-format wording variance, empty required `rest` accepted
+  silently by C++, integer literal rejected in real arg slots by all three.
+  A ten-phase resolution plan locked each behaviour to a single canonical
+  contract (mostly the Tcl baseline) and propagated it to the other two:
+  - Engine error channel: `unknown:`/`ambiguous:` route via `emit_info_` so they
+    update `last_message`, not `last_error`. `last_error` is for action and
+    parser errors only. `run_file` open-failure → `ok==false && line==0` is the
+    documented discriminator across all three.
+  - Ambiguous wording: `ambiguous: <cmd> matches a, b` (comma-space join),
+    byte-identical across impls.
+  - DAG validation: DFS from every concrete state as a root, not just the
+    initial state — cycles in unreachable components are still caught. Cycle
+    message: `cmdgraph: cycle detected: A -> B -> ... -> A` (path-trace via
+    parent[] DFS), byte-identical across impls.
+  - Construction-time validation: action / `do_pop` without `proc`, `goto` /
+    `do_goto` without `target`, and `do_goto` without `proc`, all rejected at
+    `add_command` with byte-identical wording
+    `cmdgraph: <kind> edge '<spec>' missing required <proc|target>`.
+  - `do_goto` truthiness: non-empty result transitions, empty stays. `"0"` /
+    `"no"` / `"false"` are valid context values, not "stay" signals. Tcl
+    previously used `string is boolean -strict` and was the outlier; now
+    aligned.
+  - Empty required `rest`: rejected as `missing required argument <name>`
+    across all three (was silently accepted as `""` in C++).
+  - Int→real promotion: an integer literal in a `real` arg slot is accepted
+    and promoted. Tcl passes the raw token (dynamic types); C++ pushes a
+    `double` variant; Fortran replaces the `dlist_node_integer` with
+    `real_node(real(ival,8))` in a post-validate pass (because `validate_args`
+    is `intent(in)`).
+
+  All of the above is enforced by a cross-language parity harness at
+  `tools/parity/`. Runners in Tcl, Fortran and C++ build a byte-identical
+  canonical graph (see `tools/parity/GRAPH.md`), each consumes the same
+  `scripts/*.in` and writes a normalised trailer (`ok rc line state
+  last_message last_error`). The driver `tools/parity/run.tcl` diffs each
+  channel against `tools/parity/golden/` and cross-checks impls against each
+  other. Ten golden cases cover basic actions, comment/blank skip, unknown,
+  ambiguous, `do_goto`-zero, `do_goto` stay/go, int→real, required-rest
+  empty, numeric first token, and open-failure. Run with `make -C
+  tools/parity && tclsh tools/parity/run.tcl` (defaults to gfortran + g++;
+  `F=ifx CXX=icpx` for the primary toolchain). The original ROADMAP item
+  "structured script results … both impls in parity" pre-dated the C++ port
+  and is now fully reconciled across all three.
 - **Versioning** (2026-05-16, all three implementations). Each implementation
   exposes a version type with four accessors — `major`, `minor`, `patch`,
   `string` — and a library-level constant `CMDGRAPH_VERSION`. Version is a
@@ -147,9 +199,14 @@ The original top priorities have largely landed. Do not re-implement these:
    list. Consistent with the existing arg-spec intent (actions trust the
    list) rather than new scope — but low urgency: defer until a real
    action is duplicating default-fill logic, not before.
-4. **Update demos to use arg specs.** `app/main.f90`, `cad_2d/cad_2d.f90`,
-   `app/main.cxx`, and `cad_2d/cad_2d.cxx` still validate args manually;
-   migrate them once the spec path is settled.
+4. ~~**Update demos to use arg specs.**~~ **Done 2026-05-20.** The library
+   demos (`app/main.f90`, `app/main.cxx`) were already on arg specs. The
+   cad_2d demos used a dual-arity `point` command (`x y` vs `from id dx
+   dy`) that could not be specced as one command; both were migrated by
+   splitting into two peer commands `point <x:real> <y:real>` and `from
+   <id:int> <dx:real> <dy:real>`, each with a single-arity spec validated
+   by the engine. Help auto-renders the specs; actions are pure typed
+   accessors.
 
 ## Known limitations — not worth fixing
 

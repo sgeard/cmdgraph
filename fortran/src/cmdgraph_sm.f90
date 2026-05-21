@@ -539,6 +539,7 @@ contains
                     if (.not. has_balanced_quotes(rest)) then
                         call emit_error(this, "unmatched quote in arguments")
                         rc = RC_ERROR
+                        call args%clear()
                         return
                     end if
                     call parse_args(rest, args)
@@ -554,6 +555,11 @@ contains
                         call args%clear()
                         return
                     end if
+                    ! Post-validate normalisation: a token parsed as integer in
+                    ! a real slot is promoted to real(8) so the action receives
+                    ! a real-typed node (parity with Tcl/C++).
+                    call normalise_int_to_real( &
+                        this%states(sidx_cur)%commands(match_idx)%args, args)
                 end if
             end block
             rc = apply_edge(this, match_idx, args)
@@ -1099,11 +1105,13 @@ contains
         class(engine_t), intent(inout)           :: this
         character(len=*), intent(in)             :: cmd
         integer                                  :: sidx, i, clen, rlen, flen
-        character(len=:), allocatable            :: req, opt, full, msg
+        character(len=:), allocatable            :: req, opt, full, msg, sep
+        logical                                  :: first
 
-        sidx = this%stack(this%stack_top)%state_idx
-        clen = len(cmd)
-        msg = "ambiguous: " // cmd // " matches"
+        sidx  = this%stack(this%stack_top)%state_idx
+        clen  = len(cmd)
+        msg   = "ambiguous: " // cmd // " matches"
+        first = .true.
         do i = 1, size(this%states(sidx)%commands)
             req = this%states(sidx)%commands(i)%req
             opt = this%states(sidx)%commands(i)%opt
@@ -1112,7 +1120,16 @@ contains
             flen = len(full)
             if (clen >= rlen .and. clen <= flen) then
                 if (full(1:clen) == cmd) then
-                    msg = msg // " " // this%states(sidx)%commands(i)%spec
+                    ! Canonical wording (matches Tcl / C++): the first match is
+                    ! introduced by a space after "matches"; subsequent matches
+                    ! are joined with ", ".
+                    if (first) then
+                        sep   = " "
+                        first = .false.
+                    else
+                        sep = ", "
+                    end if
+                    msg = msg // sep // this%states(sidx)%commands(i)%spec
                 end if
             end if
         end do
@@ -1450,8 +1467,14 @@ contains
                     return
                 end select
             case (ARG_REAL)
+                ! Promote int → real: an integer literal is accepted in a real
+                ! slot.  The actual node-type substitution is done by
+                ! `normalise_int_to_real` after this routine returns (validate
+                ! has intent(in) args so it cannot mutate the list itself).
                 select type (node)
                 type is (dlist_node_real)
+                    continue
+                type is (dlist_node_integer)
                     continue
                 class default
                     msg = "argument <" // trim(spec(i)%name) // "> expects real"
@@ -1472,5 +1495,28 @@ contains
 
         ok = .true.
     end subroutine validate_args
+
+    ! Post-validate normalisation. For every ARG_REAL slot whose actual list
+    ! node is an integer (which validate_args accepts), replace it in place
+    ! with a real(8) node so the action sees a real-typed value. Mirrors the
+    ! C++ ARG_REAL int-variant promotion and the Tcl validate_args acceptance.
+    subroutine normalise_int_to_real(spec, args)
+        type(arg_spec_t),  intent(in)         :: spec(:)
+        type(dlist_t),     intent(inout)      :: args
+        class(dlist_node_data_t), allocatable :: node
+        integer                               :: i, n, ival
+
+        n = min(size(spec), args%size())
+        do i = 1, n
+            if (spec(i)%kind /= ARG_REAL) cycle
+            node = args%get(i)
+            select type (node)
+            type is (dlist_node_integer)
+                ival = node%data
+                call args%remove(i)
+                call args%insert(i, real_node(real(ival, 8)))
+            end select
+        end do
+    end subroutine normalise_int_to_real
 
 end submodule cmdgraph_sm
