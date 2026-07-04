@@ -41,6 +41,7 @@ cpp: | $(BIN)
 
 clean:
 	@rm -rvf $(BIN)
+	@rm -fv *.mod *.smod
 
 veryclean: clean
 	@rm -rvf .work

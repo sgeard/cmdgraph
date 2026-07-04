@@ -113,10 +113,35 @@ contains
         rv = action_ok()
     end function act_update
 
+    function act_prev(args, ctx) result(rv)
+        type(dlist_t), intent(in)    :: args
+        character(len=*), intent(in) :: ctx
+        type(action_result_t)        :: rv
+        integer                      :: id
+        character(len=16)            :: buf
+        id = arg_i(args, 1)
+        if (id <= 0) then
+            rv = action_ok()
+        else
+            write(buf,'(i0)') id
+            rv = action_ok(trim(buf))
+        end if
+    end function act_prev
+
     subroutine enter_detail(ctx)
         character(len=*), intent(in) :: ctx
         write(*,'(2a)') "entered detail ctx=", ctx
     end subroutine enter_detail
+
+    subroutine enter_toola(ctx)
+        character(len=*), intent(in) :: ctx
+        write(*,'(2a)') "entered toola ctx=", ctx
+    end subroutine enter_toola
+
+    subroutine enter_toolb(ctx)
+        character(len=*), intent(in) :: ctx
+        write(*,'(2a)') "entered toolb ctx=", ctx
+    end subroutine enter_toolb
 
 end module parity_procs
 
@@ -154,6 +179,7 @@ program runner_f
     call eng%add_command("root", "z(ero)",  EDGE_DO_GOTO, target="detail", &
                          proc=act_zero, help="zero-ctx do_goto")
     call eng%add_command("root", "g(o)",    EDGE_GOTO,    target="detail", help="go")
+    call eng%add_command("root", "t(ool)",  EDGE_GOTO,    target="toola", help="tool mode")
     call eng%add_command("root", "q(uit)",  EDGE_QUIT,    help="quit")
 
     call eng%add_state("detail", prompt="detail> ")
@@ -164,6 +190,21 @@ program runner_f
                          help="update note", args=[arg_is_rest("note")])
     call eng%add_command("detail", "b(ack)",   EDGE_POP,    help="back")
     call eng%add_command("detail", "q(uit)",   EDGE_QUIT,   help="quit")
+
+    call eng%add_state("toola", prompt="toola> ")
+    call eng%set_on_enter("toola", enter_toola)
+    call eng%add_command("toola", "n(ext)",  EDGE_SWAP,   target="toolb", help="swap to toolb")
+    call eng%add_command("toola", "w(here)", EDGE_ACTION, proc=act_where, help="show context")
+    call eng%add_command("toola", "b(ack)",  EDGE_POP,    help="back")
+    call eng%add_command("toola", "q(uit)",  EDGE_QUIT,   help="quit")
+
+    call eng%add_state("toolb", prompt="toolb> ")
+    call eng%set_on_enter("toolb", enter_toolb)
+    call eng%add_command("toolb", "p(rev)",  EDGE_DO_SWAP, target="toola", &
+                         proc=act_prev, help="swap to toola", args=[arg_is_int("id")])
+    call eng%add_command("toolb", "w(here)", EDGE_ACTION,  proc=act_where, help="show context")
+    call eng%add_command("toolb", "b(ack)",  EDGE_POP,     help="back")
+    call eng%add_command("toolb", "q(uit)",  EDGE_QUIT,    help="quit")
 
     call eng%finalize("root")
 

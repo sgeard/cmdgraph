@@ -35,7 +35,7 @@ struct Version {
 };
 
 /// Compile-time library version constant.
-inline constexpr Version CMDGRAPH_VERSION{1, 1, 0};
+inline constexpr Version CMDGRAPH_VERSION{1, 3, 0};
 
 //──── Arg spec kinds ──────────────────────────────────────────────────────────
 
@@ -114,7 +114,9 @@ enum class EdgeKind {
     DoGoto,  ///< Invoke proc; non-empty return value pushes target with that value as context
     Pop,     ///< Pop the stack — the canonical back/esc path (no proc)
     DoPop,   ///< Invoke proc, then pop on success (commit-and-return)
-    Quit     ///< Exit the engine
+    Quit,    ///< Exit the engine
+    Swap,    ///< Replace the top frame with target (pop-then-push), empty context (no proc)
+    DoSwap   ///< Invoke proc; non-empty return replaces the top frame with target, that value as context
 };
 
 //──── Dispatch return codes ───────────────────────────────────────────────────
@@ -193,7 +195,7 @@ public:
     /// @brief Add a command edge to @p state.
     /// @param state  Owning state name.
     /// @param spec   Command spec, e.g. "p(airs)" — required prefix + optional suffix.
-    /// @param kind   Edge behaviour (Action, Goto, DoGoto, Pop, DoPop, Quit).
+    /// @param kind   Edge behaviour (Action, Goto, DoGoto, Pop, DoPop, Quit, Swap, DoSwap).
     /// @param opts   Target state, proc, help text, and arg specs.
     void add_command (const std::string& state, const std::string& spec, EdgeKind kind,
                       const CommandOptions& opts = {});

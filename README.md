@@ -236,6 +236,8 @@ state <name> {
     command {spec} pop                               [help "..."]
     command {spec} do_pop   <proc>                   [help "..."] [{ arg ... }]
     command {spec} quit                              [help "..."]
+    command {spec} swap     <target>                 [help "..."]
+    command {spec} do_swap  <target> <proc>          [help "..."] [{ arg ... }]
 }
 
 abstract <name> {
@@ -266,6 +268,8 @@ A complete example is in [`tools/example.cgl`](tools/example.cgl).
 | `EDGE_POP`      | `EdgeKind::Pop`      | `pop`       | Pop the stack (back / esc) |
 | `EDGE_DO_POP`   | `EdgeKind::DoPop`    | `do_pop`    | Invoke proc, then pop on success (commit-and-return) |
 | `EDGE_QUIT`     | `EdgeKind::Quit`     | `quit`      | Exit the engine |
+| `EDGE_SWAP`     | `EdgeKind::Swap`     | `swap`      | Replace the top frame with target (pop-then-push, no proc) — the tool-switch edge |
+| `EDGE_DO_SWAP`  | `EdgeKind::DoSwap`   | `do_swap`   | Invoke proc; non-empty return replaces the top frame with target and return value as context (`""` stays) |
 
 ### Arg specs
 
@@ -547,7 +551,9 @@ chosen to match the deployment environment.
 
 The graph must be a directed acyclic graph on `goto` / `do_goto` edges between
 concrete states. `pop` and `do_pop` are the return paths and are not
-constrained. `finalize` validates the DAG and rejects cycles.
+constrained; `swap` and `do_swap` replace the top frame (pop-then-push) and are
+inherently cyclic, so they too are exempt. `finalize` validates the DAG on the
+`goto` / `do_goto` edges and rejects cycles.
 
 The Tcl distribution additionally ships `cmdgraph::Shell` — a Python
 `cmd.Cmd`-style façade that introspects a subclass's `do_<spec>` methods to

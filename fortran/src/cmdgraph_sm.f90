@@ -100,6 +100,11 @@ contains
                 call die_missing(this, "goto", spec, "target", stat, errmsg)
                 return
             end if
+        case (EDGE_SWAP)
+            if (.not. allocated(new_cmd%target)) then
+                call die_missing(this, "swap", spec, "target", stat, errmsg)
+                return
+            end if
         case (EDGE_DO_GOTO)
             if (.not. allocated(new_cmd%target)) then
                 call die_missing(this, "do_goto", spec, "target", stat, errmsg)
@@ -107,6 +112,15 @@ contains
             end if
             if (.not. associated(new_cmd%proc)) then
                 call die_missing(this, "do_goto", spec, "proc", stat, errmsg)
+                return
+            end if
+        case (EDGE_DO_SWAP)
+            if (.not. allocated(new_cmd%target)) then
+                call die_missing(this, "do_swap", spec, "target", stat, errmsg)
+                return
+            end if
+            if (.not. associated(new_cmd%proc)) then
+                call die_missing(this, "do_swap", spec, "proc", stat, errmsg)
                 return
             end if
         case (EDGE_DO_POP)
@@ -299,11 +313,13 @@ contains
                 call move_alloc(merged, this%states(i)%commands)
             end do
 
-            ! Validate goto/do_goto targets
+            ! Validate goto/do_goto/swap/do_swap targets
             do i = 1, size(this%states)
                 do j = 1, size(this%states(i)%commands)
-                    if (this%states(i)%commands(j)%kind == EDGE_GOTO .or. &
-                        this%states(i)%commands(j)%kind == EDGE_DO_GOTO) then
+                    if (this%states(i)%commands(j)%kind == EDGE_GOTO    .or. &
+                        this%states(i)%commands(j)%kind == EDGE_DO_GOTO .or. &
+                        this%states(i)%commands(j)%kind == EDGE_SWAP    .or. &
+                        this%states(i)%commands(j)%kind == EDGE_DO_SWAP) then
                         tidx = find_state_idx(this, this%states(i)%commands(j)%target)
                         if (tidx == 0) then
                             emsg = "cmdgraph: state '" // this%states(i)%name // &
@@ -326,8 +342,9 @@ contains
             end do
 
             ! Validate DAG-ness of forward edges (goto/do_goto) between concrete
-            ! states. pop is the return path; abstract states are command
-            ! mix-ins, not nodes.
+            ! states. pop is the return path; swap/do_swap replace the top frame
+            ! (pop-then-push) so they are inherently cyclic and exempt too;
+            ! abstract states are command mix-ins, not nodes.
             call find_cycle(this, has_cycle, cycle_msg)
             if (has_cycle) then
                 emsg = cycle_msg
@@ -1013,6 +1030,35 @@ contains
                     rc = RC_TRANSITIONED
                 end if
             end if
+        case (EDGE_SWAP)
+            ! Replace the top frame: pop-then-push, empty context.
+            tidx = find_state_idx(this, this%states(sidx)%commands(cmd_idx)%target)
+            this%stack_top = this%stack_top - 1
+            call push_stack(this, tidx, "")
+            call fire_on_enter(this)
+            rc = RC_TRANSITIONED
+        case (EDGE_DO_SWAP)
+            ctx = this%stack(this%stack_top)%context
+            r = this%states(sidx)%commands(cmd_idx)%proc(args, ctx)
+            if (r%errored) then
+                if (allocated(r%errmsg)) then
+                    if (len(r%errmsg) > 0) call emit_error(this, r%errmsg)
+                end if
+                rc = RC_ERROR
+            else if (allocated(r%value)) then
+                if (len(r%value) > 0) then
+                    ! Non-empty return replaces the top frame with that value as context.
+                    tidx = find_state_idx(this, this%states(sidx)%commands(cmd_idx)%target)
+                    this%stack_top = this%stack_top - 1
+                    call push_stack(this, tidx, r%value)
+                    call fire_on_enter(this)
+                    rc = RC_TRANSITIONED
+                else
+                    rc = RC_OK
+                end if
+            else
+                rc = RC_OK
+            end if
         case (EDGE_QUIT)
             this%stack_top = 0
             rc = RC_EXITED
@@ -1261,7 +1307,9 @@ contains
     end subroutine raise
 
     ! DFS cycle detection over goto/do_goto edges between concrete states.
-    ! Sets found=.true. and emits a "A -> B -> ... -> A" message on first cycle.
+    ! pop/do_pop/swap/do_swap are exempt (return/replace paths, not forward
+    ! tree-edges). Sets found=.true. and emits a "A -> B -> ... -> A" message
+    ! on first cycle.
     subroutine find_cycle(this, found, msg)
         class(engine_t), intent(in)                          :: this
         logical, intent(out)                                 :: found
@@ -1299,7 +1347,7 @@ contains
         color(u) = 1
         do j = 1, size(this%states(u)%commands)
             kind = this%states(u)%commands(j)%kind
-            if (kind /= EDGE_GOTO .and. kind /= EDGE_DO_GOTO) cycle
+            if (kind /= EDGE_GOTO .and. kind /= EDGE_DO_GOTO) cycle  ! swap/pop/quit exempt
             vidx = find_state_idx(this, this%states(u)%commands(j)%target)
             if (vidx == 0) cycle                                ! validated earlier
             if (.not. allocated(this%states(vidx)%prompt)) cycle ! abstract; validated earlier

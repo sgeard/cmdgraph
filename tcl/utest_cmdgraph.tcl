@@ -823,6 +823,16 @@ set ok [catch {cmdgraph::Engine create pop_eng $pop_graph a} err]
 check "pop is not a cycle edge" $ok 0
 if {$ok == 0} { pop_eng destroy }
 
+# swap/do_swap replace the top frame (pop-then-push) so a mutually-swapping
+# a<->b pair is inherently cyclic yet valid — exempt from the DAG check.
+set swap_dag_graph {
+    a { prompt "a> " commands { n {swap b} } }
+    b { prompt "b> " commands { p {do_swap a gate_ok} } }
+}
+set ok [catch {cmdgraph::Engine create swap_dag_eng $swap_dag_graph a} err]
+check "swap/do_swap are not cycle edges" $ok 0
+if {$ok == 0} { swap_dag_eng destroy }
+
 # cycle involving an include — the include itself is just command mix-in, but
 # if it contributes a goto that closes a cycle between concrete states, that
 # IS a cycle and should be reported.
@@ -877,6 +887,20 @@ check_missing "do_pop edge missing proc" {
     r { prompt "r> " commands { c(ommit) {do_pop} } }
 } r "cmdgraph: do_pop edge 'c(ommit)' missing required proc"
 
+check_missing "swap edge missing target" {
+    r { prompt "r> " commands { n(ext) {swap} } }
+} r "cmdgraph: swap edge 'n(ext)' missing required target"
+
+check_missing "do_swap edge missing target" {
+    r { prompt "r> " commands { p(ick) {do_swap "" act_outer} } }
+} r "cmdgraph: do_swap edge 'p(ick)' missing required target"
+
+check_missing "do_swap edge missing proc" {
+    r { prompt "r> " commands { p(ick) {do_swap dest ""} }
+        }
+    dest { prompt "d> " commands { b(ack) {pop} } }
+} r "cmdgraph: do_swap edge 'p(ick)' missing required proc"
+
 # --- do_pop: invoke proc then pop on success ---
 
 set commit_called 0
@@ -915,6 +939,59 @@ check "do_pop: esc pops"             [dp_eng dispatch "esc"]       transitioned
 check "do_pop: back in home"         [dp_eng current_state]        home
 
 dp_eng destroy
+
+# --- swap / do_swap: replace the top frame (pop-then-push) ---
+
+proc enter_swap_a {} { probe::record enter_swap_a [cmdgraph::context] }
+proc enter_swap_b {} { probe::record enter_swap_b [cmdgraph::context] }
+
+set swap_graph {
+    root  { prompt "r> " commands { g(o) {goto toola}  q(uit) {quit} } }
+    toola {
+        prompt   "a> "
+        on_enter enter_swap_a
+        commands { n(ext) {swap toolb}  b(ack) {pop} }
+    }
+    toolb {
+        prompt   "b> "
+        on_enter enter_swap_b
+        commands {
+            p(ick) {do_swap toola act_select help "swap back with ctx"}
+            v(eto) {do_swap toola gate_no    help "empty return stays"}
+            e(rr)  {do_swap toola act_throw  help "error stays"}
+            b(ack) {pop}
+        }
+    }
+}
+cmdgraph::Engine create sw_eng $swap_graph root
+
+# go pushes toola; next swaps (replace) to toolb
+check "swap: go to toola"            [sw_eng dispatch "go"]     transitioned
+check "swap: in toola"               [sw_eng current_state]     toola
+probe::reset
+check "swap: next swaps to toolb"    [sw_eng dispatch "next"]   transitioned
+check "swap: in toolb"               [sw_eng current_state]     toolb
+check "swap: empties context"        [sw_eng current_context]   ""
+check "swap: on_enter toolb fired"   [lindex [probe::last] 0]   enter_swap_b
+
+# do_swap error stays; empty-return stays
+check "do_swap: error stays"         [sw_eng dispatch "err"]    error
+check "do_swap: still in toolb"      [sw_eng current_state]     toolb
+check "do_swap: empty stays"         [sw_eng dispatch "veto"]   ok
+check "do_swap: still in toolb (2)"  [sw_eng current_state]     toolb
+
+# do_swap non-empty return swaps back to toola with the returned context
+probe::reset
+check "do_swap: pick transitions"    [sw_eng dispatch "pick 7"] transitioned
+check "do_swap: in toola"            [sw_eng current_state]     toola
+check "do_swap: context is 7"        [sw_eng current_context]   7
+check "do_swap: on_enter toola ctx"  [probe::last]              {enter_swap_a 7}
+
+# replace-not-push: a single back from toola returns to root
+check "swap: back to root"           [sw_eng dispatch "back"]   transitioned
+check "swap: in root"                [sw_eng current_state]     root
+
+sw_eng destroy
 
 # --- declarative argument validation ---
 
@@ -1270,9 +1347,9 @@ emsg_eng destroy
 
 set v [cmdgraph::version]
 check "version major"  [dict get $v major]  1
-check "version minor"  [dict get $v minor]  2
-check "version patch"  [dict get $v patch]  1
-check "version string" [dict get $v string] "1.2.1"
+check "version minor"  [dict get $v minor]  3
+check "version patch"  [dict get $v patch]  0
+check "version string" [dict get $v string] "1.3.0"
 
 # --- Done ---
 

@@ -89,7 +89,10 @@ namespace eval ::dsl::ctx {
         switch -- $edge {
             action  { set c_proc   [lindex $args $pos]; incr pos }
             goto    { set c_target [lindex $args $pos]; incr pos }
+            swap    { set c_target [lindex $args $pos]; incr pos }
             do_goto { set c_target [lindex $args $pos]; incr pos
+                      set c_proc   [lindex $args $pos]; incr pos }
+            do_swap { set c_target [lindex $args $pos]; incr pos
                       set c_proc   [lindex $args $pos]; incr pos }
             pop     {}
             do_pop  { set c_proc   [lindex $args $pos]; incr pos }
@@ -253,6 +256,8 @@ proc fortran_emit_cmd {state_name spec cmd} {
         pop     EDGE_POP
         do_pop  EDGE_DO_POP
         quit    EDGE_QUIT
+        swap    EDGE_SWAP
+        do_swap EDGE_DO_SWAP
     } $edge]
 
     set opts {}
@@ -444,6 +449,8 @@ proc cpp_emit_cmd {state_name spec cmd} {
         pop     Pop
         do_pop  DoPop
         quit    Quit
+        swap    Swap
+        do_swap DoSwap
     } $edge]
 
     set opts {}

@@ -23,7 +23,14 @@ proc act_open  {args} {
 proc act_zero  {args} { return "0" }
 proc act_where {args} { puts "where: ctx=[cmdgraph::context]"; return "" }
 proc act_update {args} { puts "update: [lindex $args 0]";      return "" }
+proc act_prev  {args} {
+    set id [lindex $args 0]
+    if {$id <= 0} { return "" }
+    return $id
+}
 proc enter_detail {} { puts "entered detail ctx=[cmdgraph::context]" }
+proc enter_toola  {} { puts "entered toola ctx=[cmdgraph::context]" }
+proc enter_toolb  {} { puts "entered toolb ctx=[cmdgraph::context]" }
 
 proc build {} {
     set graph {
@@ -38,6 +45,7 @@ proc build {} {
                 {o(pen)}  {do_goto detail act_open args {{id int}} help {open id}}
                 {z(ero)}  {do_goto detail act_zero help {zero-ctx do_goto}}
                 {g(o)}    {goto detail help {go}}
+                {t(ool)}  {goto toola help {tool mode}}
                 {q(uit)}  {quit help {quit}}
             }
         }
@@ -49,6 +57,26 @@ proc build {} {
                 {u(pdate)} {do_pop act_update args {{note rest}} help {update note}}
                 {b(ack)}   {pop help {back}}
                 {q(uit)}   {quit help {quit}}
+            }
+        }
+        toola {
+            prompt {toola> }
+            on_enter enter_toola
+            commands {
+                {n(ext)}  {swap toolb help {swap to toolb}}
+                {w(here)} {action act_where help {show context}}
+                {b(ack)}  {pop help {back}}
+                {q(uit)}  {quit help {quit}}
+            }
+        }
+        toolb {
+            prompt {toolb> }
+            on_enter enter_toolb
+            commands {
+                {p(rev)}  {do_swap toola act_prev args {{id int}} help {swap to toola}}
+                {w(here)} {action act_where help {show context}}
+                {b(ack)}  {pop help {back}}
+                {q(uit)}  {quit help {quit}}
             }
         }
     }

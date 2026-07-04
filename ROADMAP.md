@@ -14,7 +14,8 @@ to record the 1.1.0 release bump that absorbs the Tcl `do_goto` truthiness
 behavioural break introduced by that contract. Same day, further updated to
 record the 1.2.0 release in the Tcl distribution only — `cmdgraph::Shell`
 façade — and the consequent narrowing of the cross-impl major/minor sync rule
-to engine semantics.
+to engine semantics. Updated 2026-07-04 to record the 1.3.0 release across all
+three implementations — the `swap` / `do_swap` frame-replacing edge pair.
 
 ## Guiding principle
 
@@ -250,6 +251,30 @@ The original top priorities have largely landed. Do not re-implement these:
   1.0.1); the Tcl distribution moves to 1.2.0 alone. The Tcl module file
   is renamed `cmdgraph-1.1.tm` → `cmdgraph-1.2.tm` so module-path version
   discovery matches the `package provide` directive.
+- **1.3.0 release — `swap` / `do_swap` edges** (2026-07-04, all three
+  implementations). A new edge-kind pair that **replaces the top stack frame**
+  (pop-then-push) instead of pushing: `swap <target>` mirrors `goto` but
+  replace-not-push; `do_swap <target> <proc>` mirrors `do_goto` (proc error →
+  stay with error; empty return → stay; non-empty return → replace the top
+  frame with the target and that value as the new context). Motivated by the
+  first real driver to need it — 2d_cad's tool switching, where selecting a new
+  tool must **replace** the current modal tool state rather than stack another
+  one, and where tools switch to each other freely (an inherently cyclic
+  relationship). Because a swap is pop-then-push it does not deepen the stack
+  and is inherently cyclic, so — like `pop` / `do_pop` — swap edges are
+  **exempt from the `goto` / `do_goto` acyclicity check** at `finalize`; only
+  their target's existence and concreteness are validated. This is an engine-
+  semantics addition and thus lands across the parity contract: Fortran and C++
+  bump 1.1.0 → **1.3.0** and Tcl 1.2.1 → **1.3.0**, keeping the shared engine
+  `major`/`minor` synchronised (the trio skips the Tcl-only 1.2 line so the
+  same minor never denotes two different engines). The Tcl module file is
+  renamed `cmdgraph-1.2.1.tm` → `cmdgraph-1.3.0.tm`. The parity graph gains a
+  `toola`/`toolb` mutual-swap pair (cases `11_swap`, `12_do_swap`) that pins the
+  DAG exemption and the replace-not-push semantics across all three impls; the
+  `.cgl` codegen learns the two new keywords. Guiding principle preserved:
+  cmdgraph provides the language structure for its applications, so a missing
+  language element is added to the engine (cohesively, under the parity
+  contract) rather than worked around in the driver.
 
 ## Bigger — defer until a real workflow demands it
 

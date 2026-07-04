@@ -1,0 +1,10 @@
+root> t
+entered toola ctx=
+toola> n
+entered toolb ctx=
+toolb> p 0
+toolb> p 7
+entered toola ctx=7
+toola> w
+where: ctx=7
+toola> b

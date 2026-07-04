@@ -290,6 +290,9 @@ void Engine::dfs_(const std::vector<Engine::State>& states,
                  std::size_t&             descendant) {
     color[u] = 1;
     for (const auto& cmd : states[u].commands) {
+        // Only goto/do_goto are forward tree-edges. pop/do_pop are the return
+        // path; swap/do_swap replace the top frame (pop-then-push) and are
+        // inherently cyclic — all exempt from the acyclicity check.
         if (cmd.kind != EdgeKind::Goto && cmd.kind != EdgeKind::DoGoto) continue;
         auto it = std::ranges::find_if(states, [&](const State& s){
             return s.name == cmd.target && s.prompt.has_value();
@@ -392,6 +395,31 @@ RC Engine::apply_edge_(const Command& cmd, const ArgList& args) {
         return stack_.empty() ? RC::Exited : RC::Transitioned;
     }
 
+    case EdgeKind::Swap: {
+        // Replace the top frame: pop-then-push, empty context.
+        std::size_t tidx = find_state_(cmd.target);
+        stack_.pop_back();
+        push_state(tidx, {});
+        return RC::Transitioned;
+    }
+
+    case EdgeKind::DoSwap: {
+        if (!cmd.proc) return RC::Ok;
+        auto r = cmd.proc(args, ctx);
+        if (r.errored) {
+            if (r.errmsg) emit_error_(*r.errmsg);
+            return RC::Error;
+        }
+        if (r.value && !r.value->empty()) {
+            // Non-empty return replaces the top frame with that value as context.
+            std::size_t tidx = find_state_(cmd.target);
+            stack_.pop_back();
+            push_state(tidx, *r.value);
+            return RC::Transitioned;
+        }
+        return RC::Ok;
+    }
+
     case EdgeKind::Quit:
         stack_.clear();
         return RC::Exited;
@@ -440,6 +468,11 @@ void Engine::add_command(const std::string& state_name, const std::string& spec,
                 throw std::runtime_error(
                     "cmdgraph: goto edge '" + spec + "' missing required target");
             break;
+        case EdgeKind::Swap:
+            if (opts.target.empty())
+                throw std::runtime_error(
+                    "cmdgraph: swap edge '" + spec + "' missing required target");
+            break;
         case EdgeKind::DoGoto:
             if (opts.target.empty())
                 throw std::runtime_error(
@@ -447,6 +480,14 @@ void Engine::add_command(const std::string& state_name, const std::string& spec,
             if (!opts.proc)
                 throw std::runtime_error(
                     "cmdgraph: do_goto edge '" + spec + "' missing required proc");
+            break;
+        case EdgeKind::DoSwap:
+            if (opts.target.empty())
+                throw std::runtime_error(
+                    "cmdgraph: do_swap edge '" + spec + "' missing required target");
+            if (!opts.proc)
+                throw std::runtime_error(
+                    "cmdgraph: do_swap edge '" + spec + "' missing required proc");
             break;
         case EdgeKind::DoPop:
             if (!opts.proc)
@@ -522,7 +563,8 @@ void Engine::finalize(const std::string& initial) {
 
     for (const auto& st : states_) {
         for (const auto& cmd : st.commands) {
-            if (cmd.kind == EdgeKind::Goto || cmd.kind == EdgeKind::DoGoto) {
+            if (cmd.kind == EdgeKind::Goto || cmd.kind == EdgeKind::DoGoto ||
+                cmd.kind == EdgeKind::Swap || cmd.kind == EdgeKind::DoSwap) {
                 std::size_t ti = find_state_(cmd.target);
                 if (ti == std::string::npos)
                     throw std::runtime_error(

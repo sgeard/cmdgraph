@@ -18,6 +18,8 @@ program utest_cmdgraph
     integer, save :: last_rest_nargs = -1
     integer, save :: last_rest_int = -1
     character(len=:), save, allocatable :: last_rest_str
+    integer, save :: swap_enter_a = 0, swap_enter_b = 0
+    character(len=:), save, allocatable :: swap_ctx_b
 
     type(engine_t) :: eng
 
@@ -150,12 +152,15 @@ program utest_cmdgraph
     call test_include_override()
     call test_validate_args_char()
     call test_int_to_real_promotion()
+    call test_swap()
+    call test_do_swap()
+    call test_swap_builder_errors()
 
     ! --- version ---
     call check_int("version major",  CMDGRAPH_VERSION%major, 1)
-    call check_int("version minor",  CMDGRAPH_VERSION%minor, 1)
+    call check_int("version minor",  CMDGRAPH_VERSION%minor, 3)
     call check_int("version patch",  CMDGRAPH_VERSION%patch, 0)
-    call check_str("version string", CMDGRAPH_VERSION%string(), "1.1.0")
+    call check_str("version string", CMDGRAPH_VERSION%string(), "1.3.0")
 
     ! --- Done ---
     write(*,'(/,a,i0,a,i0,a,i0,a)') "Results: ", pass+fail, " tests, ", pass, " passed, ", fail, " failed"
@@ -1441,6 +1446,152 @@ contains
         call check_int("do_pop at root → RC_EXITED", e%dispatch("commit"), RC_EXITED)
         call check_log("engine stopped", e%is_running(), .false.)
     end subroutine test_do_pop_at_root
+
+    subroutine build_swap_graph(e)
+        ! root --go--> toola <==swap==> toolb ; the toola<->toolb swap cycle
+        ! finalizes cleanly, proving swap edges are DAG-exempt.
+        type(engine_t), intent(inout) :: e
+        call e%add_state("root",  prompt="r> ")
+        call e%add_command("root", "g(o)",   EDGE_GOTO, target="toola")
+        call e%add_command("root", "q(uit)", EDGE_QUIT)
+        call e%add_state("toola", prompt="a> ")
+        call e%set_on_enter("toola", enter_swap_a)
+        call e%add_command("toola", "n(ext)", EDGE_SWAP, target="toolb")
+        call e%add_command("toola", "b(ack)", EDGE_POP)
+        call e%add_state("toolb", prompt="b> ")
+        call e%set_on_enter("toolb", enter_swap_b)
+        call e%add_command("toolb", "p(ick)", EDGE_DO_SWAP, target="toola", proc=act_swap_pick)
+        call e%add_command("toolb", "f(ail)", EDGE_DO_SWAP, target="toola", proc=act_fail_msg)
+        call e%add_command("toolb", "b(ack)", EDGE_POP)
+    end subroutine build_swap_graph
+
+    subroutine test_swap()
+        ! SWAP replaces the top frame (pop-then-push): after go+next, a single
+        ! back lands in root, not toola — the depth did not grow.
+        type(engine_t) :: e
+        integer        :: s
+        swap_enter_a = 0
+        swap_enter_b = 0
+        call build_swap_graph(e)
+        call e%finalize("root", stat=s)
+        call check_int("swap-cycle graph finalizes", s, 0)
+        call check_str("starts in root", e%current_state(), "root")
+
+        call check_int("go transitions", e%dispatch("go"),   RC_TRANSITIONED)
+        call check_str("now in toola",   e%current_state(),  "toola")
+        call check_int("on_enter toola fired", swap_enter_a, 1)
+
+        call check_int("next swaps",      e%dispatch("next"), RC_TRANSITIONED)
+        call check_str("now in toolb",    e%current_state(),  "toolb")
+        call check_str("swap empties context", e%current_context(), "")
+        call check_int("on_enter toolb fired", swap_enter_b, 1)
+
+        ! Replace-not-push: one pop returns to root (would be toola if swap pushed).
+        call check_int("back transitions",  e%dispatch("back"), RC_TRANSITIONED)
+        call check_str("popped to root",     e%current_state(),  "root")
+    end subroutine test_swap
+
+    subroutine test_do_swap()
+        ! DO_SWAP: proc error stays (RC_ERROR); empty return stays (RC_OK);
+        ! non-empty return replaces the top frame with that value as context.
+        type(engine_t) :: e
+        swap_enter_a = 0
+        swap_enter_b = 0
+        if (allocated(swap_ctx_b)) deallocate(swap_ctx_b)
+        call build_swap_graph(e)
+        call e%finalize("root")
+        call e%set_io_units(error_unit=QUIET_UNIT)
+
+        call check_int("go to toola",   e%dispatch("go"),   RC_TRANSITIONED)
+        call check_int("next to toolb",  e%dispatch("next"), RC_TRANSITIONED)
+
+        ! error path — stays in toolb, no swap
+        call check_int("do_swap error stays",  e%dispatch("fail"), RC_ERROR)
+        call check_str("still in toolb",       e%current_state(),  "toolb")
+
+        ! empty-return path — pick with id<=0 vetoes the swap
+        call check_int("do_swap empty stays",  e%dispatch("pick 0"), RC_OK)
+        call check_str("still in toolb again", e%current_state(),    "toolb")
+
+        ! non-empty return — swap to toola, id as context, on_enter sees it
+        swap_enter_a = 0
+        call check_int("do_swap transitions",  e%dispatch("pick 7"), RC_TRANSITIONED)
+        call check_str("now in toola",         e%current_state(),    "toola")
+        call check_str("context is 7",         e%current_context(),  "7")
+        call check_int("on_enter toola fired", swap_enter_a, 1)
+
+        ! Replace-not-push: one back from toola returns to root.
+        call check_int("back to root", e%dispatch("back"), RC_TRANSITIONED)
+        call check_str("in root",      e%current_state(),  "root")
+    end subroutine test_do_swap
+
+    subroutine test_swap_builder_errors()
+        ! swap needs a target; do_swap needs target + proc; bad swap target
+        ! is caught at finalize.
+        type(engine_t)                :: e
+        integer                       :: s
+        character(len=:), allocatable :: m
+
+        block
+            type(engine_t) :: e1
+            call e1%add_state("s", prompt="> ")
+            call e1%add_command("s", "n(ext)", EDGE_SWAP, stat=s, errmsg=m)
+            call check_int("swap without target -> stat", s, 1)
+            call check_log("swap errmsg mentions target", &
+                           index(m, "missing required target") > 0, .true.)
+        end block
+
+        block
+            type(engine_t) :: e2
+            call e2%add_state("s", prompt="> ")
+            call e2%add_command("s", "p(ick)", EDGE_DO_SWAP, target="s", stat=s, errmsg=m)
+            call check_int("do_swap without proc -> stat", s, 1)
+            call check_log("do_swap errmsg mentions proc", &
+                           index(m, "missing required proc") > 0, .true.)
+        end block
+
+        ! Bad swap target surfaces at finalize, like goto.
+        call e%add_state("only", prompt="> ")
+        call e%add_command("only", "n(ext)", EDGE_SWAP, target="ghost")
+        call e%finalize("only", stat=s, errmsg=m)
+        call check_int("bad swap target -> finalize stat", s, 1)
+        call check_log("finalize errmsg names unknown state", &
+                       index(m, "'ghost'") > 0, .true.)
+    end subroutine test_swap_builder_errors
+
+    function act_swap_pick(args, ctx) result(rv)
+        ! id<=0 -> no value (veto the swap); else return "<id>" as context.
+        type(dlist_t), intent(in)             :: args
+        character(len=*), intent(in)          :: ctx
+        type(action_result_t)                 :: rv
+        class(dlist_node_data_t), allocatable :: n
+        character(len=16)                     :: buf
+        if (args%size() /= 1) then
+            rv%errored = .true.
+            return
+        end if
+        n = args%get(1)
+        select type (n)
+        type is (dlist_node_integer)
+            if (n%data > 0) then
+                write(buf, '(i0)') n%data
+                rv%value = trim(buf)
+            end if
+        class default
+            rv%errored = .true.
+        end select
+    end function act_swap_pick
+
+    subroutine enter_swap_a(ctx)
+        character(len=*), intent(in) :: ctx
+        swap_enter_a = swap_enter_a + 1
+    end subroutine enter_swap_a
+
+    subroutine enter_swap_b(ctx)
+        character(len=*), intent(in) :: ctx
+        swap_enter_b = swap_enter_b + 1
+        swap_ctx_b = ctx
+    end subroutine enter_swap_b
 
     subroutine test_stack_resize()
         ! Push 8 states deep to exceed the initial stack capacity of 8,

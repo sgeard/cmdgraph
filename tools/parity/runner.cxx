@@ -49,8 +49,19 @@ static ActionResult act_update(const ArgList& a, const std::string&) {
     std::cout << "update: " << arg_str(a[0]) << '\n';
     return action_ok();
 }
+static ActionResult act_prev(const ArgList& a, const std::string&) {
+    int id = arg_int(a[0]);
+    if (id <= 0) return action_ok();
+    return action_ok(std::to_string(id));
+}
 static void enter_detail(const std::string& ctx) {
     std::cout << "entered detail ctx=" << ctx << '\n';
+}
+static void enter_toola(const std::string& ctx) {
+    std::cout << "entered toola ctx=" << ctx << '\n';
+}
+static void enter_toolb(const std::string& ctx) {
+    std::cout << "entered toolb ctx=" << ctx << '\n';
 }
 
 int main(int argc, char** argv) {
@@ -78,6 +89,7 @@ int main(int argc, char** argv) {
     eng.add_command("root", "z(ero)",  EdgeKind::DoGoto,
                     {.target="detail", .proc=act_zero, .help="zero-ctx do_goto"});
     eng.add_command("root", "g(o)",    EdgeKind::Goto,  {.target="detail", .help="go"});
+    eng.add_command("root", "t(ool)",  EdgeKind::Goto,  {.target="toola", .help="tool mode"});
     eng.add_command("root", "q(uit)",  EdgeKind::Quit,  {.help="quit"});
 
     eng.add_state("detail", "detail> ");
@@ -88,6 +100,22 @@ int main(int argc, char** argv) {
                     {.proc=act_update, .help="update note", .args={arg_is_rest("note")}});
     eng.add_command("detail", "b(ack)",   EdgeKind::Pop,  {.help="back"});
     eng.add_command("detail", "q(uit)",   EdgeKind::Quit, {.help="quit"});
+
+    eng.add_state("toola", "toola> ");
+    eng.set_on_enter("toola", enter_toola);
+    eng.add_command("toola", "n(ext)",  EdgeKind::Swap,   {.target="toolb", .help="swap to toolb"});
+    eng.add_command("toola", "w(here)", EdgeKind::Action, {.proc=act_where, .help="show context"});
+    eng.add_command("toola", "b(ack)",  EdgeKind::Pop,    {.help="back"});
+    eng.add_command("toola", "q(uit)",  EdgeKind::Quit,   {.help="quit"});
+
+    eng.add_state("toolb", "toolb> ");
+    eng.set_on_enter("toolb", enter_toolb);
+    eng.add_command("toolb", "p(rev)",  EdgeKind::DoSwap,
+                    {.target="toola", .proc=act_prev, .help="swap to toola",
+                     .args={arg_is_int("id")}});
+    eng.add_command("toolb", "w(here)", EdgeKind::Action, {.proc=act_where, .help="show context"});
+    eng.add_command("toolb", "b(ack)",  EdgeKind::Pop,    {.help="back"});
+    eng.add_command("toolb", "q(uit)",  EdgeKind::Quit,   {.help="quit"});
 
     eng.finalize("root");
 

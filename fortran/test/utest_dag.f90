@@ -19,6 +19,7 @@ program utest_dag
     call test_stat_zero_on_success()
     call test_errmsg_unallocated_on_success()
     call test_pop_does_not_form_cycle()
+    call test_swap_does_not_form_cycle()
 
     write(*,'(/,a,i0,a,i0,a,i0,a)') "DAG tests: ", pass+fail, " total, ", &
                                     pass, " passed, ", fail, " failed"
@@ -126,6 +127,20 @@ contains
         call eng%finalize("a", stat=stat, errmsg=msg)
         call expect_ok("pop is not a cycle edge", stat, msg)
     end subroutine test_pop_does_not_form_cycle
+
+    subroutine test_swap_does_not_form_cycle()
+        ! swap/do_swap replace the top frame (pop-then-push) so a mutually
+        ! swapping a<->b pair is inherently cyclic yet valid — exempt from the check.
+        type(engine_t)                :: eng
+        integer                       :: stat
+        character(len=:), allocatable :: msg
+        call eng%add_state("a", prompt="a> ")
+        call eng%add_state("b", prompt="b> ")
+        call eng%add_command("a", "toB", EDGE_SWAP, target="b")
+        call eng%add_command("b", "toA", EDGE_DO_SWAP, target="a", proc=noop)
+        call eng%finalize("a", stat=stat, errmsg=msg)
+        call expect_ok("swap/do_swap are not cycle edges", stat, msg)
+    end subroutine test_swap_does_not_form_cycle
 
     ! ===== assertions =====
 

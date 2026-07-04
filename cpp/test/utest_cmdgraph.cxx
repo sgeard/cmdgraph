@@ -927,6 +927,154 @@ static void test_command_name_not_word() {
 
 // ── main ──────────────────────────────────────────────────────────────────────
 
+// ── swap / do_swap ────────────────────────────────────────────────────────────
+
+static int         g_swap_enter_a = 0;
+static int         g_swap_enter_b = 0;
+static std::string g_swap_ctx_a;
+
+static ActionResult act_swap_pick(const ArgList& args, const std::string&) {
+    // id<=0 → empty value (veto the swap); else return "<id>" as context.
+    int id = args.empty() ? 0 : arg_int(args[0]);
+    if (id > 0) {
+        char buf[16];
+        std::snprintf(buf, sizeof(buf), "%d", id);
+        return action_ok(buf);
+    }
+    return action_ok();
+}
+
+static void enter_swap_a(const std::string& ctx) { ++g_swap_enter_a; g_swap_ctx_a = ctx; }
+static void enter_swap_b(const std::string&)     { ++g_swap_enter_b; }
+
+// root --go--> toola <==swap==> toolb ; the toola<->toolb swap cycle
+// finalizes cleanly, proving swap edges are DAG-exempt.
+static Engine build_swap_eng(std::ostream* err = nullptr) {
+    Engine eng;
+    if (err) eng.set_io(nullptr, nullptr, err);
+    eng.add_state("root", "r> ");
+    eng.add_command("root", "g(o)",   EdgeKind::Goto, {.target="toola"});
+    eng.add_command("root", "q(uit)", EdgeKind::Quit);
+    eng.add_state("toola", "a> ");
+    eng.set_on_enter("toola", enter_swap_a);
+    eng.add_command("toola", "n(ext)", EdgeKind::Swap, {.target="toolb"});
+    eng.add_command("toola", "b(ack)", EdgeKind::Pop);
+    eng.add_state("toolb", "b> ");
+    eng.set_on_enter("toolb", enter_swap_b);
+    eng.add_command("toolb", "p(ick)", EdgeKind::DoSwap,
+                    {.target="toola", .proc=act_swap_pick, .args={arg_is_int("id")}});
+    eng.add_command("toolb", "f(ail)", EdgeKind::DoSwap,
+                    {.target="toola", .proc=act_fail_msg});
+    eng.add_command("toolb", "b(ack)", EdgeKind::Pop);
+    eng.finalize("root");
+    return eng;
+}
+
+static void test_swap() {
+    // SWAP replaces the top frame (pop-then-push): after go+next, a single
+    // back lands in root, not toola — the depth did not grow.
+    g_swap_enter_a = g_swap_enter_b = 0;
+    Engine eng = build_swap_eng();
+    check_str("swap: starts in root", eng.current_state(), "root");
+    check_int("swap: go rc", rc(eng.dispatch("go")), RC_TRANSITIONED);
+    check_str("swap: in toola", eng.current_state(), "toola");
+    check_int("swap: on_enter toola", g_swap_enter_a, 1);
+
+    check_int("swap: next rc", rc(eng.dispatch("next")), RC_TRANSITIONED);
+    check_str("swap: in toolb", eng.current_state(), "toolb");
+    check_str("swap: empty context", eng.current_context(), "");
+    check_int("swap: on_enter toolb", g_swap_enter_b, 1);
+    check_int("swap: depth unchanged", (int)eng.state_path().size(), 2);
+
+    // replace-not-push: one back returns to root
+    check_int("swap: back rc", rc(eng.dispatch("back")), RC_TRANSITIONED);
+    check_str("swap: popped to root", eng.current_state(), "root");
+}
+
+static void test_do_swap() {
+    // DO_SWAP: error stays (RC_Error); empty return stays (RC_Ok); non-empty
+    // return replaces the top frame with that value as context.
+    std::ostringstream oss;
+    g_swap_enter_a = g_swap_enter_b = 0;
+    g_swap_ctx_a.clear();
+    Engine eng = build_swap_eng(&oss);
+    (void)eng.dispatch("go");
+    (void)eng.dispatch("next");
+
+    check_int("do_swap: error rc", rc(eng.dispatch("fail")), RC_ERROR);
+    check_str("do_swap: error stays", eng.current_state(), "toolb");
+    check_int("do_swap: empty rc", rc(eng.dispatch("pick 0")), RC_OK);
+    check_str("do_swap: empty stays", eng.current_state(), "toolb");
+
+    g_swap_enter_a = 0;
+    check_int("do_swap: pick rc", rc(eng.dispatch("pick 7")), RC_TRANSITIONED);
+    check_str("do_swap: in toola", eng.current_state(), "toola");
+    check_str("do_swap: context is 7", eng.current_context(), "7");
+    check_int("do_swap: on_enter toola", g_swap_enter_a, 1);
+    check_str("do_swap: on_enter saw ctx", g_swap_ctx_a, "7");
+    check_int("do_swap: depth unchanged", (int)eng.state_path().size(), 2);
+
+    check_int("do_swap: back rc", rc(eng.dispatch("back")), RC_TRANSITIONED);
+    check_str("do_swap: popped to root", eng.current_state(), "root");
+}
+
+static void test_swap_builder_errors() {
+    auto throw_msg = [](auto fn) -> std::string {
+        try { fn(); return {}; }
+        catch (const std::runtime_error& e) { return e.what(); }
+    };
+
+    check_str("swap edge missing target msg",
+        throw_msg([]{
+            Engine e; e.add_state("r","r> ");
+            e.add_command("r","n(ext)",EdgeKind::Swap);
+        }),
+        "cmdgraph: swap edge 'n(ext)' missing required target");
+
+    check_str("do_swap edge missing target msg",
+        throw_msg([]{
+            Engine e; e.add_state("r","r> ");
+            e.add_command("r","p(ick)",EdgeKind::DoSwap,{.proc=act_outer});
+        }),
+        "cmdgraph: do_swap edge 'p(ick)' missing required target");
+
+    check_str("do_swap edge missing proc msg",
+        throw_msg([]{
+            Engine e; e.add_state("r","r> "); e.add_state("d","d> ");
+            e.add_command("r","p(ick)",EdgeKind::DoSwap,{.target="d"});
+        }),
+        "cmdgraph: do_swap edge 'p(ick)' missing required proc");
+
+    auto throws = [](auto fn) -> bool {
+        try { fn(); return false; }
+        catch (const std::runtime_error&) { return true; }
+    };
+    check_bool("swap unknown target throws at finalize",
+        throws([]{
+            Engine e; e.add_state("a","a> ");
+            e.add_command("a","n",EdgeKind::Swap,{.target="ghost"});
+            e.finalize("a");
+        }), true);
+}
+
+static void test_swap_not_cycle() {
+    // swap/do_swap replace the top frame (pop-then-push) so a mutually-swapping
+    // a<->b pair is inherently cyclic yet valid — exempt from the DAG check.
+    auto throws = [](auto fn) -> bool {
+        try { fn(); return false; }
+        catch (const std::runtime_error&) { return true; }
+    };
+    check_bool("swap/do_swap not a cycle edge",
+        throws([]{
+            Engine e;
+            e.add_state("a","a> ");
+            e.add_state("b","b> ");
+            e.add_command("a","n",EdgeKind::Swap,{.target="b"});
+            e.add_command("b","p",EdgeKind::DoSwap,{.target="a", .proc=act_outer});
+            e.finalize("a");
+        }), false);
+}
+
 int main() {
     test_initial_state();
     test_action_edge();
@@ -964,11 +1112,15 @@ int main() {
     test_run_file_missing_stat();
     test_reset_before_finalize();
     test_command_name_not_word();
+    test_swap();
+    test_do_swap();
+    test_swap_builder_errors();
+    test_swap_not_cycle();
 
     check_int("version major",  CMDGRAPH_VERSION.major, 1);
-    check_int("version minor",  CMDGRAPH_VERSION.minor, 1);
+    check_int("version minor",  CMDGRAPH_VERSION.minor, 3);
     check_int("version patch",  CMDGRAPH_VERSION.patch, 0);
-    check_str("version string", CMDGRAPH_VERSION.string(), "1.1.0");
+    check_str("version string", CMDGRAPH_VERSION.string(), "1.3.0");
 
     std::cout << "\nResults: " << (g_pass + g_fail) << " tests, "
               << g_pass << " passed, " << g_fail << " failed\n";

@@ -28,6 +28,7 @@ module cmdgraph
     public :: arg_is_int, arg_is_real, arg_is_char, arg_is_rest
     public :: arg_int_n, arg_real_n
     public :: EDGE_ACTION, EDGE_GOTO, EDGE_DO_GOTO, EDGE_POP, EDGE_DO_POP, EDGE_QUIT
+    public :: EDGE_SWAP, EDGE_DO_SWAP
     public :: RC_OK, RC_UNKNOWN, RC_AMBIGUOUS, RC_TRANSITIONED, RC_EXITED, RC_ERROR
     public :: ARG_INT, ARG_REAL, ARG_CHAR, ARG_REST
     public :: QUIET_UNIT
@@ -44,7 +45,7 @@ module cmdgraph
     end type version_t
 
     !! Compile-time library version constant.
-    type(version_t), parameter :: CMDGRAPH_VERSION = version_t(1, 1, 0)
+    type(version_t), parameter :: CMDGRAPH_VERSION = version_t(1, 3, 0)
 
     interface
         module function version_t_string(this) result(s)
@@ -79,6 +80,8 @@ module cmdgraph
     integer, parameter :: EDGE_POP     = 4  !! Pop the stack — the canonical back/esc path (no proc)
     integer, parameter :: EDGE_DO_POP  = 5  !! Invoke proc, then pop on success (commit-and-return)
     integer, parameter :: EDGE_QUIT    = 6  !! Exit the engine
+    integer, parameter :: EDGE_SWAP    = 7  !! Replace the top frame with target (pop-then-push), empty context (no proc)
+    integer, parameter :: EDGE_DO_SWAP = 8  !! Invoke proc; non-empty return replaces the top frame with target, that value as context
 
     integer, parameter :: RC_OK           = 0  !! Action ran, DoGoto stayed, help shown, or blank line
     integer, parameter :: RC_UNKNOWN      = 1  !! No command matched the input

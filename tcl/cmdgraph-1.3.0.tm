@@ -71,7 +71,17 @@
 #                                    commit-and-return pattern); a Tcl
 #                                    error in the proc leaves the stack
 #                                    alone
+#   swap    state_name             — replace the top frame with the target
+#                                    (pop-then-push), empty context, no proc
+#   do_swap state_name proc_name   — invoke proc; a non-empty return replaces
+#                                    the top frame with the target (the
+#                                    returned string becomes the new context);
+#                                    empty string stays. Like do_goto but
+#                                    replace-not-push — the tool-switch edge.
 #   quit                           — exit the engine
+#
+# swap/do_swap replace the top frame so they are inherently cyclic and, like
+# pop, are exempt from the goto/do_goto DAG (acyclicity) check.
 #
 # Action contract:
 #   - Action procs take {args} (variadic), parse their own arguments.
@@ -119,8 +129,8 @@ namespace eval cmdgraph {
     namespace export Engine arg_int_n arg_real_n version
 
     variable version_major 1
-    variable version_minor 2
-    variable version_patch 1
+    variable version_minor 3
+    variable version_patch 0
 
     proc version {} {
         variable version_major
@@ -215,7 +225,7 @@ oo::class create cmdgraph::Engine {
             dict for {spec data} [dict get $sdef commands] {
                 set edge [dict get $data edge]
                 set kind [dict get $edge kind]
-                if {$kind in {goto do_goto}} {
+                if {$kind in {goto do_goto swap do_swap}} {
                     set target [dict get $edge target]
                     if {![dict exists $graph $target]} {
                         error "cmdgraph: state '$state' has '$spec' targeting unknown state '$target'"
@@ -228,6 +238,8 @@ oo::class create cmdgraph::Engine {
         }
         # Pass 4: enforce DAG. The structural graph formed by goto/do_goto edges
         # between concrete states must be acyclic — pop is the return path,
+        # swap/do_swap replace the top frame (pop-then-push) and are inherently
+        # cyclic so they too are exempt (built only from goto/do_goto below),
         # abstract states are command mix-ins, not nodes. DFS with white/gray/
         # black colouring detects back-edges.
         set forward {}
@@ -319,6 +331,13 @@ oo::class create cmdgraph::Engine {
                     error "cmdgraph: goto edge '$spec' missing required target"
                 }
             }
+            swap {
+                set target [lindex $edge 1]
+                set rest   [lrange $edge 2 end]
+                if {$target eq ""} {
+                    error "cmdgraph: swap edge '$spec' missing required target"
+                }
+            }
             do_goto {
                 set target [lindex $edge 1]
                 set proc_  [lindex $edge 2]
@@ -328,6 +347,17 @@ oo::class create cmdgraph::Engine {
                 }
                 if {$proc_ eq ""} {
                     error "cmdgraph: do_goto edge '$spec' missing required proc"
+                }
+            }
+            do_swap {
+                set target [lindex $edge 1]
+                set proc_  [lindex $edge 2]
+                set rest   [lrange $edge 3 end]
+                if {$target eq ""} {
+                    error "cmdgraph: do_swap edge '$spec' missing required target"
+                }
+                if {$proc_ eq ""} {
+                    error "cmdgraph: do_swap edge '$spec' missing required proc"
                 }
             }
             do_pop {
@@ -761,12 +791,28 @@ oo::class create cmdgraph::Engine {
                 my fire_on_enter
                 return "transitioned"
             }
+            swap {
+                set stack [lreplace $stack end end [list [dict get $edge target] ""]]
+                my fire_on_enter
+                return "transitioned"
+            }
             do_goto {
                 set r [my invoke [dict get $edge proc] $arg_list]
                 if {[dict get $r errored]} { return "error" }
                 set v [dict get $r value]
                 if {$v ne ""} {
                     lappend stack [list [dict get $edge target] $v]
+                    my fire_on_enter
+                    return "transitioned"
+                }
+                return "ok"
+            }
+            do_swap {
+                set r [my invoke [dict get $edge proc] $arg_list]
+                if {[dict get $r errored]} { return "error" }
+                set v [dict get $r value]
+                if {$v ne ""} {
+                    set stack [lreplace $stack end end [list [dict get $edge target] $v]]
                     my fire_on_enter
                     return "transitioned"
                 }
@@ -1071,4 +1117,4 @@ oo::class create cmdgraph::Shell {
     }
 }
 
-package provide cmdgraph 1.2.1
+package provide cmdgraph 1.3.0
