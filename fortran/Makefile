@@ -13,12 +13,17 @@ PERF_DIR := perf
 F_EXTRA_GF  := -Wno-unused-dummy-argument
 F_EXTRA_IFX := -diag-disable 7712
 
-# Canonical options for requested compiler
+# --- Compiler selection: default ifx (release), validated ------------------
+F ?= ifx
+VALID_F := gfortran ifx lfortran flang
+ifeq ($(filter $(F),$(VALID_F)),)
+  $(error Unknown Fortran compiler 'F=$(F)' -- choose one of: $(VALID_F))
+endif
+
+# Canonical compiler options, generated into foptions_$(F).mk by generate_fopts.tcl
 OPTIONS_FNAME := foptions_$(F).mk
-ifneq ($(F),)
 $(OPTIONS_FNAME): generate_fopts.tcl
 	tclsh generate_fopts.tcl $(F) $(OPTIONS_FNAME)
-endif
 
 -include $(OPTIONS_FNAME)
 
@@ -117,7 +122,7 @@ distclean: veryclean
 help:
 	@echo "Targets : all, utest, clean, veryclean, distclean"
 	@echo "          coverage, coverage-gcov, coverage-clean"
-	@echo "Options : F=gfortran|ifx|lfortran|flang  debug=1"
+	@echo "Options : F=gfortran|ifx|lfortran|flang (default ifx)  debug=1"
 	@echo "LIB_SRC = $(LIB_SRC)"
 	@echo "LIB_OBJ = $(LIB_OBJ)"
 	@echo "TEST_BIN= $(TEST_BIN)"

@@ -18,20 +18,35 @@ F_LOPTS  := -Wl,-z,execstack $(F_LOPTS_GF)
 }
     
 dict set c ifx {
-ODIR     := obj_intel_$(BUILD)
+ifdef valgrind
+  ODIR := obj_intel_$(BUILD)_vg
+else
+  ODIR := obj_intel_$(BUILD)
+endif
 MOD_OPTS := -module $(ODIR) -I$(ODIR)
-F_BASE   := -stand f23 -fpp $(F_EXTRA_IFX)
+F_BASE   := -stand f23 -fpp -diag-disable=7712 $(F_EXTRA_IFX)
 ifdef debug
     F_BUILD := -g -debug-parameters -O0 -check all -warn all -fPIC
 else
-    F_BUILD := -O3 -fp-model precise -fprotect-parens -xHost -warn all -fPIC
+    # -xHost targets this host's full ISA (AVX-512 on the 7950X), which
+    # valgrind 3.20 cannot decode -- it SIGILLs on the first AVX-512 op.
+    # valgrind=1 caps codegen at AVX2 and builds into a separate
+    # obj_intel_release_vg dir so the production -xHost objects are untouched.
+    # Use -mavx2, not -xCORE-AVX2: the -x form adds a "genuine Intel" runtime
+    # CPU check that aborts on this AMD host; -m sets the ISA with no vendor lock.
+    ifdef valgrind
+        F_ISA := -mavx2
+    else
+        F_ISA := -xHost
+    endif
+    F_BUILD := -O3 -fp-model precise -fprotect-parens $(F_ISA) -warn all -fPIC
 endif
 F_LOPTS  := -static-intel -Wl,-z,noexecstack $(F_LOPTS_IFX)
 }
 
 dict set c lfortran {
 ODIR     := obj_lf_$(BUILD)
-MOD_OPTS :=
+MOD_OPTS := -J$(ODIR) -I$(ODIR)
 F_BASE   := --cpp --generate-object-code $(F_EXTRA_LF)
 ifdef debug
     F_BUILD := -g
@@ -43,19 +58,33 @@ F_LOPTS  := $(F_LOPTS_LF)
 
 dict set c flang {
 ODIR     := obj_flang_$(BUILD)
-MOD_OPTS := -J$(ODIR) -I$(ODIR)
-F_BASE   := -cpp -DNO_PDT $(F_EXTRA_FL)
+MOD_OPTS := -module-dir $(ODIR) -I$(ODIR)
+# -Qunused-arguments: F_OPTS (incl. MOD_OPTS) is reused on the link step, where
+# flang's driver warns that -module-dir is unused for a pure link.  ifx/gfortran
+# don't warn on the equivalent; this driver flag silences it (a -Wno-... form is
+# rejected by flang's frontend, which errors on unknown diagnostic options).
+F_BASE   := -cpp -DNO_PDT -Qunused-arguments $(F_EXTRA_FL)
 ifdef debug
     F_BUILD := -g
 else
     F_BUILD := -O3
 endif
 ifeq ($(shell uname -m),x86_64)
-    F_LOPTS  := -L/usr/lib/gcc/x86_64-mageia-linux/12 -B/usr/lib/gcc/x86_64-mageia-linux/12
+    # -no-pie: flang links a PIE by default, but the C shims projects link
+    # (osshim.c in libsqr.a, cmdwin_spawn.c) are compiled without -fPIC, so their
+    # absolute relocations are rejected in a PIE (R_X86_64_32). ifx and gfortran
+    # do not force PIE; match them. Android (the aarch64 branch below) MUST stay
+    # PIE, so this is x86_64-only.
+    F_LOPTS  := -no-pie -L/usr/lib/gcc/x86_64-mageia-linux/12 -B/usr/lib/gcc/x86_64-mageia-linux/12
 else
     F_LOPTS  := -L/data/data/com.termux/files/usr/lib/clang/21/lib
 endif
-F_LOPTS += -Wl,-z,execstack $(F_LOPTS_FL)
+# Non-executable stack (W^X): Android forbids an exec stack, and it is the
+# safer default everywhere. Requires that no internal procedure is passed by
+# argument or assigned to a procedure pointer -- gfortran/flang implement that
+# with a stack trampoline, which needs an exec stack. Keep such procedures at
+# module level.
+F_LOPTS += -Wl,-z,noexecstack $(F_LOPTS_FL)
 }
 
 # =============================================================================
@@ -85,6 +114,12 @@ set header_mk "
 #   F_LOPTS_IFX  - ifx link flags
 #   F_LOPTS_LF   - lfortran link flags
 #   F_LOPTS_FL   - flang link flags
+#
+# Knobs (set on the make command line):
+#   debug=1      - debug build (-O0 -check all ...)
+#   valgrind=1   - ifx only: cap codegen at AVX2 (-mavx2 instead of -xHost)
+#                  so the binary runs under valgrind 3.20, which cannot decode
+#                  AVX-512; builds into obj_intel_release_vg.
 
 
 ifdef debug
