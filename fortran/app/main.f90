@@ -29,11 +29,38 @@ module library
 
 contains
 
+    ! Parse a book id out of the string context. Returns .false. on a malformed
+    ! context. The id-as-string round-trip through the context is the parity
+    ! contract; only the parse is factored out here.
+    function ctx_to_id(ctx, id) result(ok)
+        character(len=*), intent(in) :: ctx
+        integer,          intent(out) :: id
+        logical                       :: ok
+        integer                       :: iostat
+        read(ctx, *, iostat=iostat) id
+        ok = (iostat == 0)
+    end function ctx_to_id
+
+    ! Shared body for r(ead)/t(itle): resolve the context id and print arr(id).
+    ! `arr` is assumed-length, so it accepts both `summaries` and `titles`.
+    function print_indexed(arr, ctx) result(rv)
+        character(len=*), intent(in) :: arr(:)
+        character(len=*), intent(in) :: ctx
+        type(action_result_t)        :: rv
+        integer                      :: id
+        if (.not. ctx_to_id(ctx, id)) then
+            rv = action_error()
+            return
+        end if
+        write(*,'(a)') trim(arr(id))
+    end function print_indexed
+
     function act_list(args, ctx) result(rv)
         type(dlist_t), intent(in)             :: args
         character(len=*), intent(in)          :: ctx
         type(action_result_t)                 :: rv
         integer                               :: i
+        ! associate (args => args, ctx => ctx)   ! unused: lists a fixed table
         do i = 1, N_BOOKS
             write(*,'(2x,i0,2x,a)') i, trim(titles(i))
         end do
@@ -47,6 +74,7 @@ contains
         integer                               :: id
         character(len=16)                     :: buf
         character(len=40)                     :: msg
+        ! associate (ctx => ctx)   ! unused: id arrives as an arg, not context
 
         n = args%get(1)
         select type (n)
@@ -69,6 +97,7 @@ contains
         class(dlist_node_data_t), allocatable :: n
         integer                               :: i, hits
         character(len=:), allocatable         :: needle
+        ! associate (ctx => ctx)   ! unused: searches titles, ignores context
 
         n = args%get(1)
         select type (n)
@@ -89,6 +118,7 @@ contains
         type(dlist_t), intent(in)             :: args
         character(len=*), intent(in)          :: ctx
         type(action_result_t)                 :: rv
+        ! associate (args => args, ctx => ctx)   ! unused: prints a greeting
         write(*,'(a)') "Welcome to the library."
     end function act_hello
 
@@ -96,34 +126,23 @@ contains
         type(dlist_t), intent(in)             :: args
         character(len=*), intent(in)          :: ctx
         type(action_result_t)                 :: rv
-        integer                               :: id, iostat
-        read(ctx, *, iostat=iostat) id
-        if (iostat /= 0) then
-            rv = action_error()
-            return
-        end if
-        write(*,'(a)') trim(summaries(id))
+        ! associate (args => args)   ! unused: id arrives as context
+        rv = print_indexed(summaries, ctx)
     end function act_read
 
     function act_title(args, ctx) result(rv)
         type(dlist_t), intent(in)             :: args
         character(len=*), intent(in)          :: ctx
         type(action_result_t)                 :: rv
-        integer                               :: id, iostat
-        read(ctx, *, iostat=iostat) id
-        if (iostat /= 0) then
-            rv = action_error()
-            return
-        end if
-        write(*,'(a)') trim(titles(id))
+        ! associate (args => args)   ! unused: id arrives as context
+        rv = print_indexed(titles, ctx)
     end function act_title
 
     subroutine enter_book(ctx)
         character(len=*), intent(in)          :: ctx
-        integer                               :: id, iostat
-        read(ctx, *, iostat=iostat) id
-        if (iostat == 0 .and. id >= 1 .and. id <= N_BOOKS) then
-            write(*,'(a,a)') "Opened: ", trim(titles(id))
+        integer                               :: id
+        if (ctx_to_id(ctx, id)) then
+            if (id >= 1 .and. id <= N_BOOKS) write(*,'(a,a)') "Opened: ", trim(titles(id))
         end if
     end subroutine enter_book
 

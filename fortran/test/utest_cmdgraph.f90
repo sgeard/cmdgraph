@@ -20,6 +20,12 @@ program utest_cmdgraph
     character(len=:), save, allocatable :: last_rest_str
     integer, save :: swap_enter_a = 0, swap_enter_b = 0
     character(len=:), save, allocatable :: swap_ctx_b
+    ! on_enter-ordering probe (Phase 5): the hook records the context it was
+    ! handed at fire time and a fire counter.  Stack depth is asserted via the
+    ! engine after the dispatch returns (== fire-time depth for these edges).
+    integer, save :: hook_fire_count = 0
+    character(len=:), save, allocatable :: hook_ctx_at_fire
+    character(len=:), save, allocatable :: last_node_type
 
     type(engine_t) :: eng
 
@@ -155,12 +161,20 @@ program utest_cmdgraph
     call test_swap()
     call test_do_swap()
     call test_swap_builder_errors()
+    call test_builder_error_messages_exact()
+    call test_state_capacity_growth()
+    call test_abbrev_boundaries()
+    call test_target_idx_transitions()
+    call test_on_enter_ordering()
+    call test_do_pop_error_keeps_frame()
+    call test_action_error_no_msg()
+    call test_tokeniser_edges()
 
     ! --- version ---
     call check_int("version major",  CMDGRAPH_VERSION%major, 1)
     call check_int("version minor",  CMDGRAPH_VERSION%minor, 3)
-    call check_int("version patch",  CMDGRAPH_VERSION%patch, 0)
-    call check_str("version string", CMDGRAPH_VERSION%string(), "1.3.0")
+    call check_int("version patch",  CMDGRAPH_VERSION%patch, 1)
+    call check_str("version string", CMDGRAPH_VERSION%string(), "1.3.1")
 
     ! --- Done ---
     write(*,'(/,a,i0,a,i0,a,i0,a)') "Results: ", pass+fail, " tests, ", pass, " passed, ", fail, " failed"
@@ -1558,6 +1572,342 @@ contains
         call check_log("finalize errmsg names unknown state", &
                        index(m, "'ghost'") > 0, .true.)
     end subroutine test_swap_builder_errors
+
+    ! A clean finalized engine (state "root" with a quit command).  intent(out)
+    ! resets it, so callers get a fresh engine each time — needed because the
+    ! sticky build error means a second failing op returns the FIRST message.
+    subroutine fresh_finalized(e)
+        type(engine_t), intent(out) :: e
+        call e%add_state("root", prompt="> ")
+        call e%add_command("root", "q(uit)", EDGE_QUIT)
+        call e%finalize("root")
+    end subroutine fresh_finalized
+
+    ! A clean unfinalized engine with a single concrete state "s".
+    subroutine fresh_state_s(e)
+        type(engine_t), intent(out) :: e
+        call e%add_state("s", prompt="> ")
+    end subroutine fresh_state_s
+
+    ! Byte-identity of build diagnostics is part of the three-language parity
+    ! contract, so assert the EXACT strings (not substrings) that R3
+    ! (builder_guard) and R4 (edge_kind_name / die_missing) must preserve.
+    ! Every failing op runs on a fresh engine (sticky error would otherwise
+    ! mask later messages).
+    subroutine test_builder_error_messages_exact()
+        type(engine_t)                :: e
+        integer                       :: s
+        character(len=:), allocatable :: m
+
+        ! --- already-finalized, per op (finalize itself keeps the un-prefixed form) ---
+        call fresh_finalized(e); call e%add_state("x", stat=s, errmsg=m)
+        call check_str("add_state finalized msg", m, "cmdgraph: add_state: engine already finalized")
+        call fresh_finalized(e); call e%add_command("root", "x(tra)", EDGE_QUIT, stat=s, errmsg=m)
+        call check_str("add_command finalized msg", m, "cmdgraph: add_command: engine already finalized")
+        call fresh_finalized(e); call e%add_include("root", "x", stat=s, errmsg=m)
+        call check_str("add_include finalized msg", m, "cmdgraph: add_include: engine already finalized")
+        call fresh_finalized(e); call e%set_on_enter("root", enter_detail, stat=s, errmsg=m)
+        call check_str("set_on_enter finalized msg", m, "cmdgraph: set_on_enter: engine already finalized")
+        call fresh_finalized(e); call e%finalize("root", stat=s, errmsg=m)
+        call check_str("finalize finalized msg", m, "cmdgraph: engine already finalized")
+
+        ! --- unknown state, per op that resolves one ---
+        call fresh_state_s(e); call e%add_command("missing", "a", EDGE_QUIT, stat=s, errmsg=m)
+        call check_str("add_command unknown-state msg", m, "cmdgraph: add_command: unknown state 'missing'")
+        call fresh_state_s(e); call e%add_include("nosuch", "s", stat=s, errmsg=m)
+        call check_str("add_include unknown-state msg", m, "cmdgraph: add_include: unknown state 'nosuch'")
+        call fresh_state_s(e); call e%set_on_enter("gone", enter_detail, stat=s, errmsg=m)
+        call check_str("set_on_enter unknown-state msg", m, "cmdgraph: set_on_enter: unknown state 'gone'")
+
+        ! --- duplicate state (add_state's inverted lookup) ---
+        block
+            type(engine_t) :: d
+            call d%add_state("home", prompt="> ")
+            call d%add_state("home", stat=s, errmsg=m)
+            call check_str("duplicate-state msg", m, "cmdgraph: state 'home' already added")
+        end block
+
+        ! --- die_missing, every kind/attr combination and first-error order ---
+        call fresh_state_s(e); call e%add_command("s", "a(ct)", EDGE_ACTION, stat=s, errmsg=m)
+        call check_str("action no-proc msg", m, "cmdgraph: action edge 'a(ct)' missing required proc")
+        call fresh_state_s(e); call e%add_command("s", "g", EDGE_GOTO, stat=s, errmsg=m)
+        call check_str("goto no-target msg", m, "cmdgraph: goto edge 'g' missing required target")
+        call fresh_state_s(e); call e%add_command("s", "n", EDGE_SWAP, stat=s, errmsg=m)
+        call check_str("swap no-target msg", m, "cmdgraph: swap edge 'n' missing required target")
+        call fresh_state_s(e); call e%add_command("s", "dg", EDGE_DO_GOTO, proc=act_outer, stat=s, errmsg=m)
+        call check_str("do_goto no-target msg", m, "cmdgraph: do_goto edge 'dg' missing required target")
+        ! target present, proc absent -> proc error only (target is checked first)
+        call fresh_state_s(e); call e%add_command("s", "dg2", EDGE_DO_GOTO, target="s", stat=s, errmsg=m)
+        call check_str("do_goto no-proc msg", m, "cmdgraph: do_goto edge 'dg2' missing required proc")
+        call fresh_state_s(e); call e%add_command("s", "ds", EDGE_DO_SWAP, proc=act_outer, stat=s, errmsg=m)
+        call check_str("do_swap no-target msg", m, "cmdgraph: do_swap edge 'ds' missing required target")
+        call fresh_state_s(e); call e%add_command("s", "ds2", EDGE_DO_SWAP, target="s", stat=s, errmsg=m)
+        call check_str("do_swap no-proc msg", m, "cmdgraph: do_swap edge 'ds2' missing required proc")
+        call fresh_state_s(e); call e%add_command("s", "c", EDGE_DO_POP, stat=s, errmsg=m)
+        call check_str("do_pop no-proc msg", m, "cmdgraph: do_pop edge 'c' missing required proc")
+
+        ! --- unknown edge kind ---
+        call fresh_state_s(e); call e%add_command("s", "x", 999, stat=s, errmsg=m)
+        call check_str("unknown edge-kind msg", m, "cmdgraph: unknown edge kind 999")
+    end subroutine test_builder_error_messages_exact
+
+    ! E5: exceed the initial states capacity (8) to exercise the doubling grow
+    ! path and the finalize trim; every state must still resolve and dispatch.
+    subroutine test_state_capacity_growth()
+        type(engine_t)   :: e
+        integer          :: i, s
+        character(len=8) :: nm
+
+        do i = 1, 12
+            write(nm,'("s",i0)') i
+            call e%add_state(trim(nm), prompt="> ")
+            call e%add_command(trim(nm), "q(uit)", EDGE_QUIT)
+        end do
+        call e%add_command("s1", "g(o)", EDGE_GOTO, target="s2")
+        call e%finalize("s1", stat=s)
+        call check_int("12-state finalize ok",           s, 0)
+        call check_int("states trimmed to exact count",  size(e%states), 12)
+        call check_str("initial state resolves",         e%current_state(), "s1")
+        call check_int("go transitions across grown set", e%dispatch("go"), RC_TRANSITIONED)
+        call check_str("landed in s2",                   e%current_state(), "s2")
+    end subroutine test_state_capacity_growth
+
+    ! E2/R2: abbreviation matching through dispatch — every boundary resolved
+    ! via the finalize-cached full — plus the exact ambiguous message.
+    subroutine test_abbrev_boundaries()
+        type(engine_t) :: e
+        integer        :: s
+
+        call e%add_state("root", prompt="> ")
+        call e%add_command("root", "pr(int)", EDGE_ACTION, proc=act_outer)
+        call e%finalize("root", stat=s)
+        call check_int("abbrev finalize ok",    s,                     0)
+        call check_int("exact-req matches",     e%dispatch("pr"),      RC_OK)
+        call check_int("mid-abbrev matches",    e%dispatch("pri"),     RC_OK)
+        call check_int("full-spec matches",     e%dispatch("print"),   RC_OK)
+        call check_int("one-char-over no match", e%dispatch("prints"), RC_UNKNOWN)
+        call check_int("sub-req no match",       e%dispatch("p"),      RC_UNKNOWN)
+
+        block
+            type(engine_t) :: e2
+            call e2%add_state("root", prompt="> ")
+            call e2%add_command("root", "s(ave)", EDGE_ACTION, proc=act_outer)
+            call e2%add_command("root", "s(ync)", EDGE_ACTION, proc=act_outer)
+            call e2%finalize("root")
+            call check_int("shared prefix is ambiguous", e2%dispatch("s"), RC_AMBIGUOUS)
+            call check_str("ambiguous message is canonical", e2%last_message, &
+                           "ambiguous: s matches s(ave), s(ync)")
+        end block
+    end subroutine test_abbrev_boundaries
+
+    ! E1: goto/swap/pop transitions resolve through the cached target_idx.
+    subroutine test_target_idx_transitions()
+        type(engine_t) :: e
+        integer        :: s
+
+        call e%add_state("a", prompt="a> ")
+        call e%add_state("b", prompt="b> ")
+        call e%add_command("a", "g(o)",   EDGE_GOTO, target="b")
+        call e%add_command("a", "n(ext)", EDGE_SWAP, target="b")
+        call e%add_command("b", "back",   EDGE_POP)
+        call e%finalize("a", stat=s)
+        call check_int("target_idx finalize ok",  s,                  0)
+        call check_str("starts in a",              e%current_state(),  "a")
+        call check_int("goto transitions",         e%dispatch("go"),   RC_TRANSITIONED)
+        call check_str("goto landed in b",         e%current_state(),  "b")
+        call check_int("pop returns",              e%dispatch("back"), RC_TRANSITIONED)
+        call check_str("popped back to a",         e%current_state(),  "a")
+        call check_int("swap transitions",         e%dispatch("next"), RC_TRANSITIONED)
+        call check_str("swap replaced frame -> b", e%current_state(),  "b")
+    end subroutine test_target_idx_transitions
+
+    function act_typecheck(args, ctx) result(rv)
+        type(dlist_t), intent(in)             :: args
+        character(len=*), intent(in)          :: ctx
+        type(action_result_t)                 :: rv
+        class(dlist_node_data_t), allocatable :: n
+        ! associate (ctx => ctx)   ! unused: inspects the parsed arg's node type
+        n = args%get(1)
+        if (.not. allocated(n)) then
+            last_node_type = "<none>"
+            return
+        end if
+        select type (n)
+        type is (dlist_node_integer); last_node_type = "int"
+        type is (dlist_node_real);    last_node_type = "real"
+        type is (dlist_node_char);    last_node_type = "char"
+        class default;                last_node_type = "?"
+        end select
+    end function act_typecheck
+
+    ! E3: tokeniser edge cases driven through dispatch (the helpers are private).
+    ! Covers the structural gaps the rewrite most affects, plus typed-token node
+    ! landing and the E3d lead+rest suffix arithmetic.
+    subroutine test_tokeniser_edges()
+        type(engine_t) :: e
+        integer        :: s, before
+
+        call e%add_state("home", prompt="> ")
+        call e%add_command("home", "a(ct)",  EDGE_ACTION, proc=act_outer)
+        call e%add_command("home", "t(ype)", EDGE_ACTION, proc=act_typecheck)
+        call e%add_command("home", "n(ote)", EDGE_ACTION, proc=act_rest, &
+                           args=[arg_is_int("id"), arg_is_rest("body")])
+        call e%finalize("home", stat=s)
+        call check_int("tok finalize ok", s, 0)
+
+        ! empty / all-delimiter lines: RC_OK, no action fired, state unchanged
+        before = last_act_outer_called
+        call check_int("empty line -> RC_OK",       e%dispatch(""),      RC_OK)
+        call check_int("all-delimiter line -> RC_OK", e%dispatch("     "), RC_OK)
+        call check_int("no action fired on blank",  last_act_outer_called, before)
+        call check_str("blank leaves state",        e%current_state(),   "home")
+
+        ! leading spaces before the command still resolve it
+        before = last_act_outer_called
+        call check_int("leading-space command -> RC_OK", e%dispatch("   act"), RC_OK)
+        call check_int("leading-space command fired",    last_act_outer_called, before + 1)
+
+        ! typed tokens land as the right node types (no arg spec -> raw parse)
+        call check_int("int token ok",    e%dispatch("type 42"),    RC_OK)
+        call check_str("42 -> int",       last_node_type, "int")
+        call check_int("real token ok",   e%dispatch("type 1.5"),   RC_OK)
+        call check_str("1.5 -> real",     last_node_type, "real")
+        call check_int("minus token ok",  e%dispatch("type -3"),    RC_OK)
+        call check_str("-3 -> int",       last_node_type, "int")
+        call check_int("plus token ok",   e%dispatch("type +7"),    RC_OK)
+        call check_str("+7 -> int",       last_node_type, "int")
+        call check_int("d-exp token ok",  e%dispatch("type 1.5d0"), RC_OK)
+        call check_str("1.5d0 -> real",   last_node_type, "real")
+        call check_int("word token ok",   e%dispatch("type hello"), RC_OK)
+        call check_str("hello -> char",   last_node_type, "char")
+
+        ! multiple spaces between the lead arg and the rest tail (E3d): the
+        ! tail's leading run is stripped, internal spacing preserved.
+        call check_int("multi-space lead+rest -> RC_OK", &
+            e%dispatch("note 5    buy  milk"), RC_OK)
+        call check_int("lead int parsed",        last_rest_int, 5)
+        call check_str("rest tail stripped+kept", last_rest_str, "buy  milk")
+
+        ! rest command with no tokens: the lead walk exhausts immediately (empty
+        ! tail), then validation reports the missing required lead arg.
+        call check_int("bare rest command -> RC_ERROR",        e%dispatch("note"),     RC_ERROR)
+        call check_int("blank-only rest command -> RC_ERROR",  e%dispatch("note    "), RC_ERROR)
+    end subroutine test_tokeniser_edges
+
+    ! on_enter probe: record the context handed to the hook and count fires.
+    subroutine enter_record(ctx)
+        character(len=*), intent(in) :: ctx
+        hook_ctx_at_fire = ctx
+        hook_fire_count  = hook_fire_count + 1
+    end subroutine enter_record
+
+    function act_ctx99(args, ctx) result(rv)
+        type(dlist_t), intent(in)    :: args
+        character(len=*), intent(in) :: ctx
+        type(action_result_t)        :: rv
+        ! associate (args => args, ctx => ctx)   ! unused: fixed context
+        rv = action_ok("99")
+    end function act_ctx99
+
+    function act_error_silent(args, ctx) result(rv)
+        type(dlist_t), intent(in)    :: args
+        character(len=*), intent(in) :: ctx
+        type(action_result_t)        :: rv
+        ! associate (args => args, ctx => ctx)   ! unused
+        rv = action_error()   ! errored, but no message
+    end function act_error_silent
+
+    ! R1 parity contract: on_enter fires AFTER the destination frame is in
+    ! place (it is handed the NEW context), and swap/do_swap pop the old frame
+    ! BEFORE pushing — so the resulting depth is +1 for goto/do_goto but
+    ! unchanged for swap/do_swap.
+    subroutine test_on_enter_ordering()
+        type(engine_t) :: e
+        integer        :: s, fires
+
+        call e%add_state("root", prompt="r> ")
+        call e%add_state("a",    prompt="a> ")
+        call e%add_state("b",    prompt="b> ")
+        call e%set_on_enter("a", enter_record)
+        call e%set_on_enter("b", enter_record)
+        call e%add_command("root", "g(o)", EDGE_GOTO,    target="a")
+        call e%add_command("a", "j(ump)",  EDGE_DO_GOTO, target="b", proc=act_ctx99)
+        call e%add_command("a", "s(wap)",  EDGE_SWAP,    target="b")
+        call e%add_command("a", "d(swap)", EDGE_DO_SWAP, target="b", proc=act_ctx99)
+        call e%add_command("b", "back",    EDGE_POP)
+        call e%add_command("b", "z(ap)",   EDGE_SWAP,    target="a")
+        call e%finalize("root", stat=s)
+        call check_int("ordering finalize ok", s, 0)
+        hook_fire_count = 0
+
+        ! goto: push a -> depth 2, hook fires with empty context
+        fires = hook_fire_count
+        call check_int("go transitions",          e%dispatch("go"), RC_TRANSITIONED)
+        call check_int("goto depth 2",            size(e%state_path()), 2)
+        call check_int("goto fired on_enter once", hook_fire_count - fires, 1)
+        call check_str("goto fires with empty ctx", hook_ctx_at_fire, "")
+
+        ! do_goto: push b -> depth 3, hook fires with the new context "99"
+        fires = hook_fire_count
+        call check_int("do_goto transitions",       e%dispatch("jump"), RC_TRANSITIONED)
+        call check_int("do_goto depth 3 (push)",    size(e%state_path()), 3)
+        call check_int("do_goto fired on_enter once", hook_fire_count - fires, 1)
+        call check_str("do_goto fires with new ctx", hook_ctx_at_fire, "99")
+
+        ! pop back to a — POP fires no on_enter
+        fires = hook_fire_count
+        call check_int("pop back to a",  e%dispatch("back"), RC_TRANSITIONED)
+        call check_str("back in a",      e%current_state(), "a")
+        call check_int("pop fires no on_enter", hook_fire_count - fires, 0)
+
+        ! swap: pop a then push b -> depth STAYS 2 (not 3), hook fires
+        fires = hook_fire_count
+        call check_int("swap transitions",          e%dispatch("swap"), RC_TRANSITIONED)
+        call check_int("swap depth stays 2 (pop-then-push)", size(e%state_path()), 2)
+        call check_int("swap fired on_enter once",  hook_fire_count - fires, 1)
+        call check_str("swap fires with empty ctx", hook_ctx_at_fire, "")
+
+        ! zap back to a (swap b->a), then do_swap: depth STAYS 2, context "99"
+        call check_int("zap back to a", e%dispatch("zap"), RC_TRANSITIONED)
+        fires = hook_fire_count
+        call check_int("do_swap transitions",        e%dispatch("dswap"), RC_TRANSITIONED)
+        call check_int("do_swap depth stays 2 (pop-then-push)", size(e%state_path()), 2)
+        call check_int("do_swap fired on_enter once", hook_fire_count - fires, 1)
+        call check_str("do_swap fires with new ctx", hook_ctx_at_fire, "99")
+    end subroutine test_on_enter_ordering
+
+    ! do_pop whose action errors must leave the frame in place (RC_ERROR, state
+    ! and running-flag unchanged) — the pop happens only on success.
+    subroutine test_do_pop_error_keeps_frame()
+        type(engine_t) :: e
+        call e%add_state("root",   prompt="> ")
+        call e%add_state("detail", prompt="d> ")
+        call e%add_command("root",   "g(o)",     EDGE_GOTO,   target="detail")
+        call e%add_command("detail", "c(ommit)", EDGE_DO_POP, proc=act_bad_msg)
+        call e%finalize("root")
+        call e%set_io_units(output_unit=QUIET_UNIT, error_unit=QUIET_UNIT)
+        call check_int("enter detail",              e%dispatch("go"),     RC_TRANSITIONED)
+        call check_int("do_pop error -> RC_ERROR",  e%dispatch("commit"), RC_ERROR)
+        call check_str("frame kept (still in detail)", e%current_state(), "detail")
+        call check_log("still running after do_pop error", e%is_running(), .true.)
+    end subroutine test_do_pop_error_keeps_frame
+
+    ! An action erroring with no message emits nothing but still returns
+    ! RC_ERROR (guards the nested-if errmsg emission in invoke_proc).  A prior
+    ! loud error seeds last_error; the silent error must not overwrite it.
+    subroutine test_action_error_no_msg()
+        type(engine_t)                :: e
+        character(len=:), allocatable :: before
+        call e%add_state("root", prompt="> ")
+        call e%add_command("root", "loud",   EDGE_ACTION, proc=act_bad_msg)
+        call e%add_command("root", "silent", EDGE_ACTION, proc=act_error_silent)
+        call e%finalize("root")
+        call e%set_io_units(output_unit=QUIET_UNIT, error_unit=QUIET_UNIT)
+        call check_int("loud action error -> RC_ERROR", e%dispatch("loud"), RC_ERROR)
+        before = e%last_error
+        call check_int("silent action error -> RC_ERROR", e%dispatch("silent"), RC_ERROR)
+        call check_str("silent error emits nothing (last_error unchanged)", e%last_error, before)
+    end subroutine test_action_error_no_msg
 
     function act_swap_pick(args, ctx) result(rv)
         ! id<=0 -> no value (veto the swap); else return "<id>" as context.

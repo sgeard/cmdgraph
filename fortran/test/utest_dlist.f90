@@ -13,6 +13,7 @@ program utest_dlist
     call test_assignment_deep_copies_nodes()
     call test_self_assignment_preserves_nodes()
     call test_insert_and_remove()
+    call test_replace()
     call test_iteration()
     call test_array_and_matrix_nodes()
     call test_finalize_on_scope_exit()
@@ -80,6 +81,39 @@ contains
         call check_int_node("remaining head after removes", a, 1, 20)
         call check_int_node("remaining tail after removes", a, 2, 40)
     end subroutine test_insert_and_remove
+
+    ! E4: in-place replace at 1-based index, including a type-changing
+    ! replacement, an out-of-range no-op, and size invariance.
+    subroutine test_replace()
+        type(dlist_t)                         :: a
+        class(dlist_node_data_t), allocatable :: node
+
+        call a%append(int_node(10))
+        call a%append(int_node(20))
+        call a%append(int_node(30))
+
+        call a%replace(1, int_node(11))         ! first
+        call a%replace(3, int_node(33))         ! last
+        call a%replace(2, real_node(2.5_dp))    ! middle, int -> real (type change)
+        call check_int("replace keeps size", a%size(), 3)
+        call check_int_node("replace first", a, 1, 11)
+        call check_int_node("replace last",  a, 3, 33)
+
+        node = a%get(2)
+        select type (node)
+        type is (dlist_node_real)
+            call check_log("replace changed node type to real", .true., .true.)
+            call check_log("replaced real value", node%data == 2.5_dp, .true.)
+        class default
+            call check_log("replace changed node type to real", .false., .true.)
+        end select
+
+        call a%replace(0,  int_node(99))        ! out of range low  -> no-op
+        call a%replace(4,  int_node(99))        ! out of range high -> no-op
+        call check_int("replace out-of-range keeps size", a%size(), 3)
+        call check_int_node("replace low no-op leaves head",  a, 1, 11)
+        call check_int_node("replace high no-op leaves tail", a, 3, 33)
+    end subroutine test_replace
 
     subroutine test_iteration()
         type(dlist_t) :: a

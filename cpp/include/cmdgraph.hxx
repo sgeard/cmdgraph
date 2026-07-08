@@ -35,7 +35,7 @@ struct Version {
 };
 
 /// Compile-time library version constant.
-inline constexpr Version CMDGRAPH_VERSION{1, 3, 0};
+inline constexpr Version CMDGRAPH_VERSION{1, 3, 1};
 
 //──── Arg spec kinds ──────────────────────────────────────────────────────────
 

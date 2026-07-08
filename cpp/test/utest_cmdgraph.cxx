@@ -1119,8 +1119,8 @@ int main() {
 
     check_int("version major",  CMDGRAPH_VERSION.major, 1);
     check_int("version minor",  CMDGRAPH_VERSION.minor, 3);
-    check_int("version patch",  CMDGRAPH_VERSION.patch, 0);
-    check_str("version string", CMDGRAPH_VERSION.string(), "1.3.0");
+    check_int("version patch",  CMDGRAPH_VERSION.patch, 1);
+    check_str("version string", CMDGRAPH_VERSION.string(), "1.3.1");
 
     std::cout << "\nResults: " << (g_pass + g_fail) << " tests, "
               << g_pass << " passed, " << g_fail << " failed\n";

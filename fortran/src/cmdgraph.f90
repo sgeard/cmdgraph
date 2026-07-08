@@ -45,7 +45,7 @@ module cmdgraph
     end type version_t
 
     !! Compile-time library version constant.
-    type(version_t), parameter :: CMDGRAPH_VERSION = version_t(1, 3, 0)
+    type(version_t), parameter :: CMDGRAPH_VERSION = version_t(1, 3, 1)
 
     interface
         module function version_t_string(this) result(s)
@@ -135,6 +135,13 @@ module cmdgraph
         procedure(action_fun), pointer, nopass           :: proc => null()
         character(len=:), allocatable                    :: help
         type(arg_spec_t),      allocatable               :: args(:)
+        ! Finalize-computed caches (invisible to drivers; command_info_t is the
+        ! public view).  target_idx: resolved state index for goto/swap kinds.
+        ! full: req // opt, the longest acceptable abbreviation.  rest_idx: the
+        ! ARG_REST arg slot (always the last), or 0 if none.
+        integer                                          :: target_idx = 0
+        character(len=:), allocatable                    :: full
+        integer                                          :: rest_idx = 0
     end type command_t
 
     !! Read-only description of one command in the current state, returned by
@@ -184,6 +191,9 @@ module cmdgraph
     type :: engine_t
         private
         type(state_t),       allocatable, public         :: states(:)
+        ! Number of states added so far; states(:) may be over-allocated during
+        ! construction (capacity-doubling).  finalize trims to exact count.
+        integer                                          :: state_count = 0
         type(stack_entry_t), allocatable                 :: stack(:)
         integer                                          :: stack_top = 0
         integer                                          :: initial_state_idx = 0

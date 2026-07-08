@@ -130,7 +130,7 @@ namespace eval cmdgraph {
 
     variable version_major 1
     variable version_minor 3
-    variable version_patch 0
+    variable version_patch 1
 
     proc version {} {
         variable version_major
@@ -1117,4 +1117,4 @@ oo::class create cmdgraph::Shell {
     }
 }
 
-package provide cmdgraph 1.3.0
+package provide cmdgraph 1.3.1
