@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 2.8% of total for procedures.">47 statements</a>
+                 title=" 2.3% of total for procedures.">52 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -160,6 +160,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -188,7 +191,7 @@ check <code>allocated(node)</code> before <code>select type</code>.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-lst~10"></span>
+              <span class="anchor" id="variable-lst~2"></span>
               class(<a href='../type/dlist_t.html'>dlist_t</a>),
             </td>
 <td>intent(inout)</td>
@@ -203,7 +206,7 @@ check <code>allocated(node)</code> before <code>select type</code>.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-idx~6"></span>
+              <span class="anchor" id="variable-idx~4"></span>
               integer,
             </td>
 <td>intent(in)</td>

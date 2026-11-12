@@ -107,6 +107,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -120,7 +122,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p></td>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/action_ok.html'>action_ok</a></td>
@@ -143,6 +152,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -156,7 +167,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p></td>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/append_ll.html'>append_ll</a></td>
@@ -168,6 +186,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -199,6 +220,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -212,7 +235,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p></td>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/arg_is_char.html'>arg_is_char</a></td>
@@ -235,6 +265,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -248,7 +280,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p></td>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/arg_is_int.html'>arg_is_int</a></td>
@@ -271,6 +310,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -284,7 +325,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p></td>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/arg_is_real.html'>arg_is_real</a></td>
@@ -307,6 +355,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -320,7 +370,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p></td>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/arg_is_rest.html'>arg_is_rest</a></td>
@@ -343,6 +400,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -356,7 +415,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p></td>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/arg_real_n.html'>arg_real_n</a></td>
@@ -379,6 +445,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -392,7 +460,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p></td>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/assign_ll.html'>assign_ll</a></td>
@@ -404,6 +479,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -430,6 +508,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -441,6 +522,96 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../interface/encoding_name.html'>encoding_name</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/encoding_supported.html'>encoding_supported</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/finalize_ll.html'>finalize_ll</a></td>
                  <td><a href='../module/dlist.html'>dlist</a></td>
                  <td>Interface</td>
@@ -450,6 +621,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -470,6 +644,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -490,6 +667,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -516,6 +696,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -572,6 +755,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -610,6 +796,32 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/replace_ll.html'>replace_ll</a></td>
+                 <td><a href='../module/dlist.html'>dlist</a></td>
+                 <td>Interface</td>
+                 <td><p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -630,6 +842,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -650,6 +865,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -659,6 +877,51 @@ Remove all elements.
 Index-based accessor (1-based).  Returns an allocatable polymorphic
 copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/strip_bom.html'>strip_bom</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			 </tbody></table>
              

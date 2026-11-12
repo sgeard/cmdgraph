@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p>31.3% of total for derived types.</p>Including implementation: 31 statements, 21.2% of total for derived types.">31 statements</a>
+                 title="<p>31.7% of total for derived types.</p>Including implementation: 32 statements, 20.9% of total for derived types.">32 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -339,6 +339,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -352,7 +354,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine add_state_engine(this, name, prompt, stat, errmsg)  
 </h3>
@@ -489,6 +498,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -502,7 +513,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine add_command_engine(this, state, spec, kind, target, proc, help, args, stat, errmsg)  
 </h3>
@@ -714,6 +732,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -727,7 +747,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine add_include_engine(this, state, included, stat, errmsg)  
 </h3>
@@ -864,6 +891,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -877,7 +906,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine set_on_enter_engine(this, state, proc, stat, errmsg)  
 </h3>
@@ -1014,6 +1050,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1027,7 +1065,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine finalize_engine(this, initial, stat, errmsg)  
 </h3>
@@ -1149,6 +1194,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1162,9 +1209,16 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
-    private module subroutine run_engine(this)  
+    private module subroutine run_engine(this, stat)  
 </h3>
 
   
@@ -1193,6 +1247,21 @@ State names on the stack, bottom-first.</p>
             <td><strong>this</strong></td>
             <td>
                 
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stat</strong></td>
+            <td>
+                <p><code>RUN_OK</code>, or <code>RUN_BAD_ENCODING</code></p>
             </td>
         </tr>
     </tbody>
@@ -1239,6 +1308,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1252,7 +1323,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function run_file_engine(this, path, echo, stat, errmsg, line) result(ok)  
 </h3>
@@ -1312,7 +1390,9 @@ State names on the stack, bottom-first.</p>
             <td>::</td>
             <td><strong>echo</strong></td>
             <td>
-                <p>If <code>.true.</code>, print each prompt+line as it is read</p>
+                <p>If <code>.true.</code>, print each prompt+line as it is read
+<code>RC_*</code> of the failing dispatch, <code>RUN_OPEN_FAILED</code>,
+<code>RUN_BAD_ENCODING</code>, or <code>RUN_OK</code></p>
             </td>
         </tr>
         <tr>
@@ -1327,7 +1407,7 @@ State names on the stack, bottom-first.</p>
             <td>::</td>
             <td><strong>stat</strong></td>
             <td>
-                <p>RC of the failing dispatch, or <code>RC_OK</code></p>
+                
             </td>
         </tr>
         <tr>
@@ -1357,7 +1437,7 @@ State names on the stack, bottom-first.</p>
             <td>::</td>
             <td><strong>line</strong></td>
             <td>
-                <p>1-based line number of the failure</p>
+                <p>1-based line number of the failure (0: open failure)</p>
             </td>
         </tr>
     </tbody>
@@ -1409,6 +1489,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1422,7 +1504,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine reset_engine(this, stat, errmsg)  
 </h3>
@@ -1529,6 +1618,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1542,7 +1633,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function dispatch_engine(this, line) result(rc)  
 </h3>
@@ -1639,6 +1737,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1652,7 +1752,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine set_io_units_engine(this, input_unit, output_unit, error_unit)  
 </h3>
@@ -1774,6 +1881,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1787,7 +1896,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function current_state_engine(this) result(name)  
 </h3>
@@ -1869,6 +1985,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1882,7 +2000,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function current_context_engine(this) result(ctx)  
 </h3>
@@ -1964,6 +2089,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1977,7 +2104,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function is_running_engine(this) result(b)  
 </h3>
@@ -2059,6 +2193,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -2072,7 +2208,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function available_commands_engine(this) result(cmds)  
 </h3>
@@ -2154,6 +2297,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -2167,7 +2312,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function state_path_engine(this) result(names)  
 </h3>

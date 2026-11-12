@@ -13,19 +13,19 @@ contains
     end function make_int_node
 
     module function make_real_node(v) result(n)
-        real(8), intent(in)   :: v
+        real(dp), intent(in)  :: v
         type(dlist_node_real) :: n
         n%data = v
     end function make_real_node
 
     module function make_real_a_node(v) result(n)
-        real(8), intent(in)     :: v(:)
+        real(dp), intent(in)    :: v(:)
         type(dlist_node_real_a) :: n
         n%data = v
     end function make_real_a_node
 
     module function make_real_m_node(v) result(n)
-        real(8), intent(in)     :: v(:,:)
+        real(dp), intent(in)    :: v(:,:)
         type(dlist_node_real_m) :: n
         n%data = v
     end function make_real_m_node
@@ -154,6 +154,30 @@ contains
 
     end subroutine remove_ll
 
+    module subroutine replace_ll(lst, idx, data)
+        class(dlist_t), intent(inout)        :: lst
+        integer, intent(in)                  :: idx
+        class(dlist_node_data_t), intent(in) :: data
+        integer                              :: i
+        type(dlist_node_t), pointer          :: this
+        if (idx < 1 .or. idx > lst%num_of_elements) then
+            return ! index out of range ignored
+        end if
+
+        ! Locate the node and re-allocate its data from the replacement.
+        ! Intrinsic assignment to the allocated polymorphic component would
+        ! suffice by the standard, but gfortran 16 copies a replacement of a
+        ! different dynamic type (e.g. int -> real) into the old, smaller
+        ! block; deallocate + sourced allocate is portable.
+        this => lst%begin
+        do i = 2, idx
+            this => this%next
+        end do
+        deallocate(this%data)
+        allocate(this%data, source=data)
+
+    end subroutine replace_ll
+
     module subroutine print_ll(lst, unit)
         use iso_fortran_env, only: output_unit
         class(dlist_t), intent(in)    :: lst
@@ -198,18 +222,6 @@ contains
         class(dlist_t), intent(in)    :: lst
         size_ll = lst%num_of_elements
     end function size_ll
-
-    integer function calc_size(lst)
-        class(dlist_t), intent(inout) :: lst
-        type(dlist_node_t), pointer   :: node
-        calc_size = 0
-        node => lst%begin
-        do
-            if (.not. associated(node)) exit
-            calc_size = calc_size + 1
-            node => node%next
-        end do
-    end function calc_size
 
     module subroutine clear_ll(lst)
         class(dlist_t), intent(inout) :: lst

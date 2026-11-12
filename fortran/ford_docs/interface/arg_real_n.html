@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title=" 7.6% of total for procedures.">127 statements</a>
+                 title=" 6.1% of total for procedures.">140 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -171,6 +171,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -184,7 +186,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
       <br>
       <h2>public module function arg_real_n(name, n) result(s)  
 </h2>
@@ -204,7 +213,7 @@ State names on the stack, bottom-first.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~9"></span>
+              <span class="anchor" id="variable-name~19"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -219,7 +228,7 @@ State names on the stack, bottom-first.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-n~12"></span>
+              <span class="anchor" id="variable-n~15"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -235,7 +244,7 @@ State names on the stack, bottom-first.</p>
     </tbody>
   </table>
 
-      <h3>Return Value <span class="anchor" id="variable-s~7"></span><small>type(<a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/type/arg_spec_t.html'>arg_spec_t</a>),allocatable,(:)</small></h3>
+      <h3>Return Value <span class="anchor" id="variable-s~16"></span><small>type(<a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/type/arg_spec_t.html'>arg_spec_t</a>),allocatable,(:)</small></h3>
     
     <br>
 

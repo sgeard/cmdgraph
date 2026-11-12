@@ -99,12 +99,12 @@ procedures.</p>
 <div class="codehilite"><pre><span></span><code><span class="k">use </span><span class="n">cmdgraph</span>
 <span class="k">type</span><span class="p">(</span><span class="n">engine_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">eng</span>
 
-<span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">add_state</span><span class="p">(</span><span class="s2">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&gt; &quot;</span><span class="p">)</span>
-<span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">add_command</span><span class="p">(</span><span class="s2">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;q(uit)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">EDGE_QUIT</span><span class="p">,</span><span class="w"> </span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;exit&quot;</span><span class="p">)</span>
-<span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">add_command</span><span class="p">(</span><span class="s2">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;s(elect)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">EDGE_DO_GOTO</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="o">=</span><span class="s2">&quot;detail&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                     </span><span class="n">proc</span><span class="o">=</span><span class="n">act_select</span><span class="p">,</span><span class="w"> </span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;select item &lt;id&gt;&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
-<span class="w">                     </span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">arg_is_int</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)])</span>
-<span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">finalize</span><span class="p">(</span><span class="s2">&quot;root&quot;</span><span class="p">)</span>
+<span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">add_state</span><span class="p">(</span><span class="s2">"root"</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span><span class="o">=</span><span class="s2">"&gt; "</span><span class="p">)</span>
+<span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">add_command</span><span class="p">(</span><span class="s2">"root"</span><span class="p">,</span><span class="w"> </span><span class="s2">"q(uit)"</span><span class="p">,</span><span class="w"> </span><span class="n">EDGE_QUIT</span><span class="p">,</span><span class="w"> </span><span class="n">help</span><span class="o">=</span><span class="s2">"exit"</span><span class="p">)</span>
+<span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">add_command</span><span class="p">(</span><span class="s2">"root"</span><span class="p">,</span><span class="w"> </span><span class="s2">"s(elect)"</span><span class="p">,</span><span class="w"> </span><span class="n">EDGE_DO_GOTO</span><span class="p">,</span><span class="w"> </span><span class="k">target</span><span class="o">=</span><span class="s2">"detail"</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                     </span><span class="n">proc</span><span class="o">=</span><span class="n">act_select</span><span class="p">,</span><span class="w"> </span><span class="n">help</span><span class="o">=</span><span class="s2">"select item &lt;id&gt;"</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                     </span><span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">arg_is_int</span><span class="p">(</span><span class="s2">"id"</span><span class="p">)])</span>
+<span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">finalize</span><span class="p">(</span><span class="s2">"root"</span><span class="p">)</span>
 <span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">run</span><span class="p">()</span>
 </code></pre></div>
 
@@ -201,6 +201,35 @@ procedures.</p>
 </tr>
 </tbody>
 </table>
+<h2><code>run</code> / <code>run_file</code> status</h2>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RUN_OK</code></td>
+<td>Ran to completion</td>
+</tr>
+<tr>
+<td><code>RUN_OPEN_FAILED</code></td>
+<td><code>run_file</code>: the script file could not be opened</td>
+</tr>
+<tr>
+<td><code>RUN_BAD_ENCODING</code></td>
+<td>A line is in an encoding the engine does not read</td>
+</tr>
+</tbody>
+</table>
+<p><code>run_file</code> otherwise reports the <code>RC_*</code> value of the failing line.</p>
+<h2>Input encoding</h2>
+<p>The engine reads ASCII and UTF-8 (a UTF-8 byte-order mark is dropped). Input
+that carries the signature of another encoding, or NUL bytes, is refused with
+<code>RUN_BAD_ENCODING</code>; the <code>ENC_*</code> constants name what was recognised. See
+<code>strip_bom</code>, <code>encoding_name</code> and <code>encoding_supported</code>.</p>
         </div>
           <div class="col-md-4">
             <div class="card card-body bg-light">

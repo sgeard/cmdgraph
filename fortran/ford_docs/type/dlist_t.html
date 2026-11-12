@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p>19.2% of total for derived types.</p>Including implementation: 66 statements, 45.2% of total for derived types.">19 statements</a>
+                 title="<p>19.8% of total for derived types.</p>Including implementation: 72 statements, 47.1% of total for derived types.">20 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -166,6 +166,7 @@
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-append">append</a>
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-insert">insert</a>
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-remove">remove</a>
+            <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-replace~2">replace</a>
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-size">size</a>
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-clear">clear</a>
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-get">get</a>
@@ -214,6 +215,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -259,6 +263,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -352,6 +359,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -445,6 +455,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -533,6 +546,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -621,6 +637,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -724,6 +743,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -792,6 +814,112 @@ check <code>allocated(node)</code> before <code>select type</code>.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-replace~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>replace</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/replace_ll.html'>replace_ll</a>
+        
+      </h3>
+    </div>
+        <div class="card-body">
+          
+          <p>Replace element data at 1-based index (no-op if out of range)</p>
+        </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                <h3>interface </h3>
+                  <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+                    <h3>
+    public module subroutine replace_ll(lst, idx, data)  
+</h3>
+
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lst</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>idx</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='dlist_node_data_t.html'>dlist_node_data_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>data</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-size"></span>
       <h3>
           procedure, public ::
@@ -812,6 +940,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -890,6 +1021,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -963,6 +1097,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
@@ -1056,6 +1193,9 @@ Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements ri
 Out-of-range low values prepend; out-of-range high values append.
 Remove the element at 1-based <code>idx</code>.
 Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
 Apply <code>f</code> to each element in reverse order.
 Print list contents to <code>unit</code> (default <code>output_unit</code>).
 Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.

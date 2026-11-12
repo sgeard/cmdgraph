@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="14.0% of total for modules and submodules.">264 statements</a>
+                 title="14.7% of total for modules and submodules.">305 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -144,12 +144,30 @@
             <a class="list-group-item" href="../module/cmdgraph.html#variable-edge_pop">EDGE_POP</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-edge_do_pop">EDGE_DO_POP</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-edge_quit">EDGE_QUIT</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-edge_swap">EDGE_SWAP</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-edge_do_swap">EDGE_DO_SWAP</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-rc_ok">RC_OK</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-rc_unknown">RC_UNKNOWN</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-rc_ambiguous">RC_AMBIGUOUS</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-rc_transitioned">RC_TRANSITIONED</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-rc_exited">RC_EXITED</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-rc_error">RC_ERROR</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-run_ok">RUN_OK</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-run_open_failed">RUN_OPEN_FAILED</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-run_bad_encoding">RUN_BAD_ENCODING</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_plain">ENC_PLAIN</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_utf8_bom">ENC_UTF8_BOM</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_utf16_le">ENC_UTF16_LE</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_utf16_be">ENC_UTF16_BE</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_utf32_le">ENC_UTF32_LE</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_utf32_be">ENC_UTF32_BE</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_utf7">ENC_UTF7</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_utf1">ENC_UTF1</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_utf_ebcdic">ENC_UTF_EBCDIC</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_scsu">ENC_SCSU</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_bocu1">ENC_BOCU1</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_gb18030">ENC_GB18030</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-enc_wide_no_bom">ENC_WIDE_NO_BOM</a>
         </div>
       </div>
     </div>
@@ -175,6 +193,9 @@
             <a class="list-group-item" href="../module/cmdgraph.html#interface-arg_real_n">arg_real_n</a>
             <a class="list-group-item" href="../module/cmdgraph.html#interface-action_ok">action_ok</a>
             <a class="list-group-item" href="../module/cmdgraph.html#interface-action_error">action_error</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-encoding_name">encoding_name</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-encoding_supported">encoding_supported</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-strip_bom">strip_bom</a>
         </div>
       </div>
     </div>
@@ -238,9 +259,9 @@
  State-graph driven command interpreter.</p>
 <p>Typical usage:</p>
 <div class="codehilite"><pre><span></span><code><span class="w"> </span><span class="k">type</span><span class="p">(</span><span class="n">engine_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">eng</span>
-<span class="w"> </span><span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">add_state</span><span class="p">(</span><span class="s2">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&gt; &quot;</span><span class="p">)</span>
-<span class="w"> </span><span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">add_command</span><span class="p">(</span><span class="s2">&quot;root&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;q(uit)&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">EDGE_QUIT</span><span class="p">,</span><span class="w"> </span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;exit&quot;</span><span class="p">)</span>
-<span class="w"> </span><span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">finalize</span><span class="p">(</span><span class="s2">&quot;root&quot;</span><span class="p">)</span>
+<span class="w"> </span><span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">add_state</span><span class="p">(</span><span class="s2">"root"</span><span class="p">,</span><span class="w"> </span><span class="n">prompt</span><span class="o">=</span><span class="s2">"&gt; "</span><span class="p">)</span>
+<span class="w"> </span><span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">add_command</span><span class="p">(</span><span class="s2">"root"</span><span class="p">,</span><span class="w"> </span><span class="s2">"q(uit)"</span><span class="p">,</span><span class="w"> </span><span class="n">EDGE_QUIT</span><span class="p">,</span><span class="w"> </span><span class="n">help</span><span class="o">=</span><span class="s2">"exit"</span><span class="p">)</span>
+<span class="w"> </span><span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">finalize</span><span class="p">(</span><span class="s2">"root"</span><span class="p">)</span>
 <span class="w"> </span><span class="k">call </span><span class="n">eng</span><span class="p">%</span><span class="n">run</span><span class="p">()</span>
 </code></pre></div>
 
@@ -301,7 +322,7 @@ parameter
             <td>::</td>
             <td><strong>CMDGRAPH_VERSION</strong></td>
 <td> =</td>
-                <td>version_t(1, 1, 0)</td>
+                <td>version_t(1, 4, 0)</td>
             <td>
                 
             </td>
@@ -496,6 +517,40 @@ parameter
         </tr>
         <tr>
             <td>
+              <span class="anchor" id="variable-edge_swap"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>EDGE_SWAP</strong></td>
+<td> =</td>
+                <td>7</td>
+            <td>
+                <p>Replace the top frame with target (pop-then-push), empty context (no proc)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-edge_do_swap"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>EDGE_DO_SWAP</strong></td>
+<td> =</td>
+                <td>8</td>
+            <td>
+                <p>Invoke proc; non-empty return replaces the top frame with target, that value as context</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
               <span class="anchor" id="variable-rc_ok"></span>
               integer,
             </td>
@@ -594,7 +649,280 @@ parameter
                 <td>5</td>
             <td>
                 <p>Action returned an error, or arg validation failed</p>
-<p>Return value from an action proc.  Use <code>action_ok</code> / <code>action_error</code>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-run_ok"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>RUN_OK</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>Ran to completion (same value as <code>RC_OK</code>)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-run_open_failed"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>RUN_OPEN_FAILED</strong></td>
+<td> =</td>
+                <td>-1</td>
+            <td>
+                <p><code>run_file</code>: the script file could not be opened</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-run_bad_encoding"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>RUN_BAD_ENCODING</strong></td>
+<td> =</td>
+                <td>-2</td>
+            <td>
+                <p>The input is in an encoding the engine does not read</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_plain"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_PLAIN</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>No signature: ASCII, UTF-8, or an 8-bit set (not validated)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_utf8_bom"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_UTF8_BOM</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>UTF-8 with a byte-order mark (the mark is dropped)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_utf16_le"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_UTF16_LE</strong></td>
+<td> =</td>
+                <td>2</td>
+            <td>
+                <p>UTF-16 / UCS-2, little-endian</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_utf16_be"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_UTF16_BE</strong></td>
+<td> =</td>
+                <td>3</td>
+            <td>
+                <p>UTF-16 / UCS-2, big-endian</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_utf32_le"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_UTF32_LE</strong></td>
+<td> =</td>
+                <td>4</td>
+            <td>
+                <p>UTF-32 / UCS-4, little-endian</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_utf32_be"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_UTF32_BE</strong></td>
+<td> =</td>
+                <td>5</td>
+            <td>
+                <p>UTF-32 / UCS-4, big-endian</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_utf7"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_UTF7</strong></td>
+<td> =</td>
+                <td>6</td>
+            <td>
+                <p>UTF-7</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_utf1"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_UTF1</strong></td>
+<td> =</td>
+                <td>7</td>
+            <td>
+                <p>UTF-1</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_utf_ebcdic"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_UTF_EBCDIC</strong></td>
+<td> =</td>
+                <td>8</td>
+            <td>
+                <p>UTF-EBCDIC</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_scsu"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_SCSU</strong></td>
+<td> =</td>
+                <td>9</td>
+            <td>
+                <p>SCSU</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_bocu1"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_BOCU1</strong></td>
+<td> =</td>
+                <td>10</td>
+            <td>
+                <p>BOCU-1</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_gb18030"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_GB18030</strong></td>
+<td> =</td>
+                <td>11</td>
+            <td>
+                <p>GB18030
+No signature, but NUL bytes: a 16- or 32-bit encoding written without
+a byte-order mark.</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc_wide_no_bom"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ENC_WIDE_NO_BOM</strong></td>
+<td> =</td>
+                <td>12</td>
+            <td>
+                <p>Return value from an action proc.  Use <code>action_ok</code> / <code>action_error</code>
 rather than direct initialisation.</p>
             </td>
         </tr>
@@ -631,6 +959,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -644,7 +974,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
       </div>
     <ul class="list-group">
         <li class="list-group-item">
@@ -667,7 +1004,7 @@ State names on the stack, bottom-first.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~4"></span>
+              <span class="anchor" id="variable-name~14"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -682,7 +1019,7 @@ State names on the stack, bottom-first.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-optional~2"></span>
+              <span class="anchor" id="variable-optional~6"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -732,6 +1069,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -745,7 +1084,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
       </div>
     <ul class="list-group">
         <li class="list-group-item">
@@ -768,7 +1114,7 @@ State names on the stack, bottom-first.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~5"></span>
+              <span class="anchor" id="variable-name~15"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -783,7 +1129,7 @@ State names on the stack, bottom-first.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-optional~3"></span>
+              <span class="anchor" id="variable-optional~7"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -833,6 +1179,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -846,7 +1194,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
       </div>
     <ul class="list-group">
         <li class="list-group-item">
@@ -869,7 +1224,7 @@ State names on the stack, bottom-first.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~6"></span>
+              <span class="anchor" id="variable-name~16"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -884,7 +1239,7 @@ State names on the stack, bottom-first.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-optional~4"></span>
+              <span class="anchor" id="variable-optional~8"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -934,6 +1289,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -947,7 +1304,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
       </div>
     <ul class="list-group">
         <li class="list-group-item">
@@ -970,7 +1334,7 @@ State names on the stack, bottom-first.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~7"></span>
+              <span class="anchor" id="variable-name~17"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -985,7 +1349,7 @@ State names on the stack, bottom-first.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-optional~5"></span>
+              <span class="anchor" id="variable-optional~9"></span>
               logical,
             </td>
 <td>intent(in),</td>
@@ -1035,6 +1399,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1048,7 +1414,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
       </div>
     <ul class="list-group">
         <li class="list-group-item">
@@ -1071,7 +1444,7 @@ State names on the stack, bottom-first.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~8"></span>
+              <span class="anchor" id="variable-name~18"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1086,7 +1459,7 @@ State names on the stack, bottom-first.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-n~11"></span>
+              <span class="anchor" id="variable-n~14"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1136,6 +1509,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1149,7 +1524,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
       </div>
     <ul class="list-group">
         <li class="list-group-item">
@@ -1172,7 +1554,7 @@ State names on the stack, bottom-first.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name~9"></span>
+              <span class="anchor" id="variable-name~19"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1187,7 +1569,7 @@ State names on the stack, bottom-first.</p>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-n~12"></span>
+              <span class="anchor" id="variable-n~15"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1237,6 +1619,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1250,7 +1634,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
       </div>
     <ul class="list-group">
         <li class="list-group-item">
@@ -1273,7 +1664,7 @@ State names on the stack, bottom-first.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-ctx~3"></span>
+              <span class="anchor" id="variable-ctx~8"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -1323,6 +1714,8 @@ Validate the graph and set the initial state.
 Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
 or if any state reference is unresolved.
 Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
 Execute commands from <code>path</code>, stopping at the first error.
 Returns <code>.true.</code> if the file ran to completion (or ended with quit).
 Rewind to the initial state without rebuilding the graph.
@@ -1336,7 +1729,14 @@ Context of the active state.
 Returns <code>.false.</code> after Quit or stack exhausted.
 Commands visible in the current state (own + included, help/? excluded).
 Result depends only on the state name; safe to cache keyed by state name.
-State names on the stack, bottom-first.</p>
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
       </div>
     <ul class="list-group">
         <li class="list-group-item">
@@ -1359,7 +1759,7 @@ State names on the stack, bottom-first.</p>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-msg"></span>
+              <span class="anchor" id="variable-msg~13"></span>
               character(len=*),
             </td>
 <td>intent(in),</td>
@@ -1380,6 +1780,301 @@ State names on the stack, bottom-first.</p>
     <small>type(<a href='../type/action_result_t.html'>action_result_t</a>)</small>
     </h4>
     
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-encoding_name"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public pure module function encoding_name(enc) result(name)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc~10"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>enc</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-encoding_supported"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public pure elemental module function encoding_supported(enc) result(ok)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc~11"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>enc</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-strip_bom"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    public pure module subroutine strip_bom(text, enc)  
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-text~9"></span>
+              character(len=:),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>text</strong></td>
+            <td>
+                <p>First line; a UTF-8 mark is removed</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enc~9"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>enc</strong></td>
+            <td>
+                <p>One of the <code>ENC_*</code> values</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
 
         </li>
     </ul>
@@ -1420,7 +2115,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-args"></span>
+              <span class="anchor" id="variable-args~11"></span>
               type(<a href='../type/dlist_t.html'>dlist_t</a>),
             </td>
 <td>intent(in)</td>
@@ -1435,7 +2130,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-ctx"></span>
+              <span class="anchor" id="variable-ctx~6"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1491,7 +2186,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-ctx~2"></span>
+              <span class="anchor" id="variable-ctx~7"></span>
               character(len=*),
             </td>
 <td>intent(in)</td>
@@ -1635,7 +2330,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-errored"></span>
+              <span class="anchor" id="variable-errored~2"></span>
               logical,
             </td>
               <td>public</td>
@@ -1669,7 +2364,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-errmsg"></span>
+              <span class="anchor" id="variable-errmsg~12"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1718,7 +2413,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-name"></span>
+              <span class="anchor" id="variable-name~11"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1735,7 +2430,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-kind"></span>
+              <span class="anchor" id="variable-kind~2"></span>
               integer,
             </td>
               <td>public</td>
@@ -1752,7 +2447,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-optional"></span>
+              <span class="anchor" id="variable-optional~5"></span>
               logical,
             </td>
               <td>public</td>
@@ -1801,7 +2496,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-spec~2"></span>
+              <span class="anchor" id="variable-spec~7"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1818,7 +2513,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-req~2"></span>
+              <span class="anchor" id="variable-req~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1835,7 +2530,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-opt~2"></span>
+              <span class="anchor" id="variable-opt~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1852,7 +2547,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-kind~3"></span>
+              <span class="anchor" id="variable-kind~4"></span>
               integer,
             </td>
               <td>public</td>
@@ -1869,7 +2564,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-target~2"></span>
+              <span class="anchor" id="variable-target~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
@@ -1886,7 +2581,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-args~3"></span>
+              <span class="anchor" id="variable-args~13"></span>
               type(<a href='../type/arg_spec_t.html'>arg_spec_t</a>),
             </td>
               <td>public,</td>
@@ -1903,7 +2598,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-help~2"></span>
+              <span class="anchor" id="variable-help~3"></span>
               character(len=:),
             </td>
               <td>public,</td>
