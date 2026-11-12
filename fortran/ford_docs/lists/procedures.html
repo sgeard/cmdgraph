@@ -177,6 +177,147 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../interface/add_command_engine.html'>add_command_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/add_include_engine.html'>add_include_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/add_state_engine.html'>add_state_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/append_arg_token.html'>append_arg_token</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/append_ll.html'>append_ll</a></td>
                  <td><a href='../module/dlist.html'>dlist</a></td>
                  <td>Interface</td>
@@ -198,6 +339,12 @@ Remove all elements.
 Index-based accessor (1-based).  Returns an allocatable polymorphic
 copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/apply_edge.html'>apply_edge</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/arg_int_n.html'>arg_int_n</a></td>
@@ -425,6 +572,12 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/arg_kind_name.html'>arg_kind_name</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/arg_real_n.html'>arg_real_n</a></td>
                  <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
                  <td>Interface</td>
@@ -493,6 +646,63 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../interface/available_commands_engine.html'>available_commands_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/build_cycle_message.html'>build_cycle_message</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/builder_guard.html'>builder_guard</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/char_node.html'>char_node</a></td>
                  <td><a href='../module/dlist.html'>dlist</a></td>
                  <td>Interface</td>
@@ -520,6 +730,195 @@ Remove all elements.
 Index-based accessor (1-based).  Returns an allocatable polymorphic
 copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/command_matches.html'>command_matches</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/command_usage.html'>command_usage</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/count_char.html'>count_char</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/current_context_engine.html'>current_context_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/current_state_engine.html'>current_state_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/dfs.html'>dfs</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/die_missing.html'>die_missing</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/dispatch_engine.html'>dispatch_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/edge_kind_name.html'>edge_kind_name</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/emit_error.html'>emit_error</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/emit_info.html'>emit_info</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/emit_prompt.html'>emit_prompt</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/encoding_name.html'>encoding_name</a></td>
@@ -612,6 +1011,51 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../interface/finalize_engine.html'>finalize_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/finalize_ll.html'>finalize_ll</a></td>
                  <td><a href='../module/dlist.html'>dlist</a></td>
                  <td>Interface</td>
@@ -635,6 +1079,36 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/find_cycle.html'>find_cycle</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/find_matches.html'>find_matches</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/find_state_idx.html'>find_state_idx</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/fire_on_enter.html'>fire_on_enter</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/first_arg_separator.html'>first_arg_separator</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/get_ll.html'>get_ll</a></td>
                  <td><a href='../module/dlist.html'>dlist</a></td>
                  <td>Interface</td>
@@ -656,6 +1130,12 @@ Remove all elements.
 Index-based accessor (1-based).  Returns an allocatable polymorphic
 copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/has_balanced_quotes.html'>has_balanced_quotes</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/insert_ll.html'>insert_ll</a></td>
@@ -685,6 +1165,69 @@ check <code>allocated(node)</code> before <code>select type</code>.</p></td>
                  <td><a href='../module/dlist.html'>dlist</a></td>
                  <td>Interface</td>
                  <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/invoke_proc.html'>invoke_proc</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/is_integer_token.html'>is_integer_token</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/is_real_token.html'>is_real_token</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/is_running_engine.html'>is_running_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/iterate_ll.html'>iterate_ll</a></td>
@@ -746,6 +1289,42 @@ check <code>allocated(node)</code> before <code>select type</code>.</p></td>
                  <td></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/merge_commands.html'>merge_commands</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/normalise_int_to_real.html'>normalise_int_to_real</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/parse_and_validate.html'>parse_and_validate</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/parse_args.html'>parse_args</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/parse_args_lead.html'>parse_args_lead</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/parse_spec.html'>parse_spec</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/print_ll.html'>print_ll</a></td>
                  <td><a href='../module/dlist.html'>dlist</a></td>
                  <td>Interface</td>
@@ -767,6 +1346,24 @@ Remove all elements.
 Index-based accessor (1-based).  Returns an allocatable polymorphic
 copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/propagate_build_error.html'>propagate_build_error</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/push_stack.html'>push_stack</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/raise.html'>raise</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/real_a_node.html'>real_a_node</a></td>
@@ -833,6 +1430,57 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../proc/report_ambiguous.html'>report_ambiguous</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/reset_engine.html'>reset_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/reverse_iterate_ll.html'>reverse_iterate_ll</a></td>
                  <td><a href='../module/dlist.html'>dlist</a></td>
                  <td>Interface</td>
@@ -856,6 +1504,210 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p></td>
                </tr>
 			   <tr>
+                 <td><a href='../interface/run_engine.html'>run_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/run_file_engine.html'>run_file_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/screen_line.html'>screen_line</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/set_build_error.html'>set_build_error</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/set_error.html'>set_error</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/set_io_units_engine.html'>set_io_units_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/set_on_enter_engine.html'>set_on_enter_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/show_help.html'>show_help</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
                  <td><a href='../interface/size_ll.html'>size_ll</a></td>
                  <td><a href='../module/dlist.html'>dlist</a></td>
                  <td>Interface</td>
@@ -877,6 +1729,57 @@ Remove all elements.
 Index-based accessor (1-based).  Returns an allocatable polymorphic
 copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/split_first_token.html'>split_first_token</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/state_path_engine.html'>state_path_engine</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td><p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p></td>
                </tr>
 			   <tr>
                  <td><a href='../interface/strip_bom.html'>strip_bom</a></td>
@@ -922,6 +1825,42 @@ and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <c
 Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
 <code>ENC_UTF8_BOM</code>.</p></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/strip_leading_arg_space.html'>strip_leading_arg_space</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/transition.html'>transition</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/unquote_arg_token.html'>unquote_arg_token</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/unsupported_message.html'>unsupported_message</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Function</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../proc/validate_args.html'>validate_args</a></td>
+                 <td><a href='../module/cmdgraph_sm.html'>cmdgraph_sm</a></td>
+                 <td>Subroutine</td>
+                 <td></td>
+               </tr>
+			   <tr>
+                 <td><a href='../interface/version_t_string.html'>version_t_string</a></td>
+                 <td><a href='../module/cmdgraph.html'>cmdgraph</a></td>
+                 <td>Interface</td>
+                 <td></td>
                </tr>
 			 </tbody></table>
              

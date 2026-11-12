@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p>31.7% of total for derived types.</p>Including implementation: 32 statements, 20.9% of total for derived types.">32 statements</a>
+                 title="<p>23.9% of total for derived types.</p>Including implementation: 32 statements, 17.2% of total for derived types.">32 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -134,8 +134,16 @@
       <div id="vars-0" class="collapse">
         <div class="list-group list-group-flush">
             <a class="list-group-item" href="../type/engine_t.html#variable-states">states</a>
+            <a class="list-group-item" href="../type/engine_t.html#variable-state_count">state_count</a>
+            <a class="list-group-item" href="../type/engine_t.html#variable-stack">stack</a>
+            <a class="list-group-item" href="../type/engine_t.html#variable-stack_top">stack_top</a>
+            <a class="list-group-item" href="../type/engine_t.html#variable-initial_state_idx">initial_state_idx</a>
+            <a class="list-group-item" href="../type/engine_t.html#variable-finalized">finalized</a>
             <a class="list-group-item" href="../type/engine_t.html#variable-build_error_stat">build_error_stat</a>
             <a class="list-group-item" href="../type/engine_t.html#variable-build_error_msg">build_error_msg</a>
+            <a class="list-group-item" href="../type/engine_t.html#variable-input_unit~2">input_unit</a>
+            <a class="list-group-item" href="../type/engine_t.html#variable-output_unit~2">output_unit</a>
+            <a class="list-group-item" href="../type/engine_t.html#variable-error_unit~2">error_unit</a>
             <a class="list-group-item" href="../type/engine_t.html#variable-last_message">last_message</a>
             <a class="list-group-item" href="../type/engine_t.html#variable-last_error">last_error</a>
         </div>
@@ -212,7 +220,7 @@
         <tr>
             <td>
               <span class="anchor" id="variable-states"></span>
-              type(state_t),
+              type(<a href='state_t.html'>state_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -222,6 +230,91 @@
             <td><strong>states</strong>(:)</td>
                 <td></td>
                 <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-state_count"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>state_count</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stack"></span>
+              type(<a href='stack_entry_t.html'>stack_entry_t</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>stack</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stack_top"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stack_top</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initial_state_idx"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initial_state_idx</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-finalized"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>finalized</strong></td>
+<td> =</td>
+                <td>.false.</td>
             <td>
                 
             </td>
@@ -256,6 +349,57 @@
             <td><strong>build_error_msg</strong></td>
                 <td></td>
                 <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-input_unit~2"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>input_unit</strong></td>
+<td> =</td>
+                <td>DEFAULT_INPUT_UNIT</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output_unit~2"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output_unit</strong></td>
+<td> =</td>
+                <td>DEFAULT_OUTPUT_UNIT</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error_unit~2"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>error_unit</strong></td>
+<td> =</td>
+                <td>DEFAULT_ERROR_UNIT</td>
             <td>
                 
             </td>
@@ -310,7 +454,7 @@
       <span class="anchor" id="boundprocedure-add_state"></span>
       <h3>
           procedure, public ::
-  <strong>add_state</strong> => add_state_engine
+  <strong>add_state</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/add_state_engine.html'>add_state_engine</a>
         
       </h3>
     </div>
@@ -321,7 +465,6 @@
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -364,6 +507,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine add_state_engine(this, name, prompt, stat, errmsg)  
+    <a href="../proc/add_state_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -469,7 +613,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-add_command"></span>
       <h3>
           procedure, public ::
-  <strong>add_command</strong> => add_command_engine
+  <strong>add_command</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/add_command_engine.html'>add_command_engine</a>
         
       </h3>
     </div>
@@ -480,7 +624,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -523,6 +666,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine add_command_engine(this, state, spec, kind, target, proc, help, args, stat, errmsg)  
+    <a href="../proc/add_command_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -703,7 +847,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-add_include"></span>
       <h3>
           procedure, public ::
-  <strong>add_include</strong> => add_include_engine
+  <strong>add_include</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/add_include_engine.html'>add_include_engine</a>
         
       </h3>
     </div>
@@ -714,7 +858,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -757,6 +900,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine add_include_engine(this, state, included, stat, errmsg)  
+    <a href="../proc/add_include_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -862,7 +1006,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-set_on_enter"></span>
       <h3>
           procedure, public ::
-  <strong>set_on_enter</strong> => set_on_enter_engine
+  <strong>set_on_enter</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/set_on_enter_engine.html'>set_on_enter_engine</a>
         
       </h3>
     </div>
@@ -873,7 +1017,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -916,6 +1059,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine set_on_enter_engine(this, state, proc, stat, errmsg)  
+    <a href="../proc/set_on_enter_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -1021,7 +1165,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-finalize"></span>
       <h3>
           procedure, public ::
-  <strong>finalize</strong> => finalize_engine
+  <strong>finalize</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/finalize_engine.html'>finalize_engine</a>
         
       </h3>
     </div>
@@ -1032,7 +1176,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -1075,6 +1218,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine finalize_engine(this, initial, stat, errmsg)  
+    <a href="../proc/finalize_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -1165,7 +1309,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-run"></span>
       <h3>
           procedure, public ::
-  <strong>run</strong> => run_engine
+  <strong>run</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/run_engine.html'>run_engine</a>
         
       </h3>
     </div>
@@ -1176,7 +1320,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -1219,6 +1362,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine run_engine(this, stat)  
+    <a href="../proc/run_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -1279,7 +1423,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-run_file"></span>
       <h3>
           procedure, public ::
-  <strong>run_file</strong> => run_file_engine
+  <strong>run_file</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/run_file_engine.html'>run_file_engine</a>
         
       </h3>
     </div>
@@ -1290,7 +1434,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -1333,6 +1476,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function run_file_engine(this, path, echo, stat, errmsg, line) result(ok)  
+    <a href="../proc/run_file_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -1460,7 +1604,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-reset"></span>
       <h3>
           procedure, public ::
-  <strong>reset</strong> => reset_engine
+  <strong>reset</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/reset_engine.html'>reset_engine</a>
         
       </h3>
     </div>
@@ -1471,7 +1615,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -1514,6 +1657,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine reset_engine(this, stat, errmsg)  
+    <a href="../proc/reset_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -1589,7 +1733,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-dispatch"></span>
       <h3>
           procedure, public ::
-  <strong>dispatch</strong> => dispatch_engine
+  <strong>dispatch</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/dispatch_engine.html'>dispatch_engine</a>
         
       </h3>
     </div>
@@ -1600,7 +1744,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -1643,6 +1786,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function dispatch_engine(this, line) result(rc)  
+    <a href="../proc/dispatch_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -1708,7 +1852,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-set_io_units"></span>
       <h3>
           procedure, public ::
-  <strong>set_io_units</strong> => set_io_units_engine
+  <strong>set_io_units</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/set_io_units_engine.html'>set_io_units_engine</a>
         
       </h3>
     </div>
@@ -1719,7 +1863,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -1762,6 +1905,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module subroutine set_io_units_engine(this, input_unit, output_unit, error_unit)  
+    <a href="../proc/set_io_units_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -1852,7 +1996,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-current_state"></span>
       <h3>
           procedure, public ::
-  <strong>current_state</strong> => current_state_engine
+  <strong>current_state</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/current_state_engine.html'>current_state_engine</a>
         
       </h3>
     </div>
@@ -1863,7 +2007,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -1906,6 +2049,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function current_state_engine(this) result(name)  
+    <a href="../proc/current_state_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -1956,7 +2100,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-current_context"></span>
       <h3>
           procedure, public ::
-  <strong>current_context</strong> => current_context_engine
+  <strong>current_context</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/current_context_engine.html'>current_context_engine</a>
         
       </h3>
     </div>
@@ -1967,7 +2111,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -2010,6 +2153,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function current_context_engine(this) result(ctx)  
+    <a href="../proc/current_context_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -2060,7 +2204,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-is_running"></span>
       <h3>
           procedure, public ::
-  <strong>is_running</strong> => is_running_engine
+  <strong>is_running</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/is_running_engine.html'>is_running_engine</a>
         
       </h3>
     </div>
@@ -2071,7 +2215,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -2114,6 +2257,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function is_running_engine(this) result(b)  
+    <a href="../proc/is_running_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -2164,7 +2308,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-available_commands"></span>
       <h3>
           procedure, public ::
-  <strong>available_commands</strong> => available_commands_engine
+  <strong>available_commands</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/available_commands_engine.html'>available_commands_engine</a>
         
       </h3>
     </div>
@@ -2175,7 +2319,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -2218,6 +2361,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function available_commands_engine(this) result(cmds)  
+    <a href="../proc/available_commands_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -2268,7 +2412,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <span class="anchor" id="boundprocedure-state_path"></span>
       <h3>
           procedure, public ::
-  <strong>state_path</strong> => state_path_engine
+  <strong>state_path</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/state_path_engine.html'>state_path_engine</a>
         
       </h3>
     </div>
@@ -2279,7 +2423,6 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
       <ul class="list-group">
           <li class="list-group-item">
                 <h3>interface </h3>
-                    
                   <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
 Add a command edge to <code>state</code>.
 Build an integer <code>arg_spec_t</code>.
@@ -2322,6 +2465,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
 <code>ENC_UTF8_BOM</code>.</p>
                     <h3>
     private module function state_path_engine(this) result(names)  
+    <a href="../proc/state_path_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   

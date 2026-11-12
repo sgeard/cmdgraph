@@ -91,7 +91,7 @@
 
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
-                 title="<p>19.8% of total for derived types.</p>Including implementation: 72 statements, 47.1% of total for derived types.">20 statements</a>
+                 title="<p>14.9% of total for derived types.</p>Including implementation: 72 statements, 38.7% of total for derived types.">20 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
@@ -126,7 +126,20 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/dlist_t.html#variable-begin">begin</a>
+            <a class="list-group-item" href="../type/dlist_t.html#variable-end">end</a>
+            <a class="list-group-item" href="../type/dlist_t.html#variable-num_of_elements">num_of_elements</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -166,10 +179,11 @@
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-append">append</a>
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-insert">insert</a>
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-remove">remove</a>
-            <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-replace~2">replace</a>
+            <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-replace">replace</a>
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-size">size</a>
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-clear">clear</a>
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-get">get</a>
+            <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-assign_ll">assign_ll</a>
             <a class="list-group-item" href="../type/dlist_t.html#boundprocedure-assignment%28%3D%29">assignment(=)</a>
         </div>
       </div>
@@ -189,6 +203,74 @@
     
     <br>
 
+    <section>
+    <h2>Components</h2>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-begin"></span>
+              type(<a href='dlist_node_t.html'>dlist_node_t</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>begin</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-end"></span>
+              type(<a href='dlist_node_t.html'>dlist_node_t</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>end</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-num_of_elements"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>num_of_elements</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    </section>
+    <br>
     
 
       <section>
@@ -277,6 +359,7 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p>
                     <h3>
     public module function iterate_ll(this, f) result(r)  
+    <a href="../proc/iterate_ll.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -373,6 +456,7 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p>
                     <h3>
     public module function reverse_iterate_ll(this, f) result(r)  
+    <a href="../proc/reverse_iterate_ll.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -469,6 +553,7 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p>
                     <h3>
     public module subroutine print_ll(lst, unit)  
+    <a href="../proc/print_ll.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -560,6 +645,7 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p>
                     <h3>
     public module subroutine append_ll(lst, data)  
+    <a href="../proc/append_ll.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -651,6 +737,7 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p>
                     <h3>
     public module subroutine insert_ll(lst, idx, data)  
+    <a href="../proc/insert_ll.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -757,6 +844,7 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p>
                     <h3>
     public module subroutine remove_ll(lst, idx)  
+    <a href="../proc/remove_ll.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -814,7 +902,7 @@ check <code>allocated(node)</code> before <code>select type</code>.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
-      <span class="anchor" id="boundprocedure-replace~2"></span>
+      <span class="anchor" id="boundprocedure-replace"></span>
       <h3>
           procedure, public ::
   <strong>replace</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/replace_ll.html'>replace_ll</a>
@@ -848,6 +936,7 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p>
                     <h3>
     public module subroutine replace_ll(lst, idx, data)  
+    <a href="../proc/replace_ll.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -954,6 +1043,7 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p>
                     <h3>
     public module function size_ll(lst)  
+    <a href="../proc/size_ll.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -1035,6 +1125,7 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p>
                     <h3>
     public module subroutine clear_ll(lst)  
+    <a href="../proc/clear_ll.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -1111,6 +1202,7 @@ copy of the node data.  Unallocated if <code>idx</code> is out of range —
 check <code>allocated(node)</code> before <code>select type</code>.</p>
                     <h3>
     public module function get_ll(this, idx) result(node)  
+    <a href="../proc/get_ll.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 </h3>
 
   
@@ -1173,10 +1265,98 @@ check <code>allocated(node)</code> before <code>select type</code>.</p>
           <div class="row">
               <div class="card mt-3">
     <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-assign_ll"></span>
+      <h3>
+          procedure, private ::
+  <strong>assign_ll</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                <h3>interface </h3>
+                  <p>Apply <code>f</code> to each element in forward order.
+Returns <code>.true.</code> if all elements were visited (i.e. <code>f</code> never set <code>ok=.false.</code>).
+Insert <code>data</code> at 1-based <code>idx</code>, shifting later elements right.
+Out-of-range low values prepend; out-of-range high values append.
+Remove the element at 1-based <code>idx</code>.
+Silently does nothing if <code>idx</code> is out-of-range.
+Replace the data at 1-based <code>idx</code> in place (one walk, no node churn).
+The new <code>data</code> may be a different dynamic type than the old.
+Silently does nothing if <code>idx</code> is out-of-range (matching <code>remove</code>).
+Apply <code>f</code> to each element in reverse order.
+Print list contents to <code>unit</code> (default <code>output_unit</code>).
+Renders the built-in node kinds; extensions print as <code>&lt;user-defined&gt;</code>.
+Append <code>data</code> to the tail of the list.
+Number of elements in the list.
+Remove all elements.
+Index-based accessor (1-based).  Returns an allocatable polymorphic
+copy of the node data.  Unallocated if <code>idx</code> is out of range —
+check <code>allocated(node)</code> before <code>select type</code>.</p>
+                    <h3>
+    public module subroutine assign_ll(lhs, rhs)  
+    <a href="../proc/assign_ll.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+</h3>
+
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lhs</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='dlist_t.html'>dlist_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rhs</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
       <span class="anchor" id="boundprocedure-assignment%28%3D%29"></span>
       <h3>
           generic, public ::
-  <strong>assignment(=)</strong> => assign_ll
+  <strong>assignment(=)</strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/type/dlist_t.html#boundprocedure-assign_ll'>assign_ll</a>
         
       </h3>
     </div>

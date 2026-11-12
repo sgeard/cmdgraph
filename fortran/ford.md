@@ -5,6 +5,9 @@ author: Simon Geard
 project_url:
 src_dir: src
 output_dir: ford_docs
+display: public
+         protected
+         private
 exclude_dir: build obj_intel_release obj_gfortran_release
 dbg: False
 ---

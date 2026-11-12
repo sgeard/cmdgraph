@@ -137,6 +137,10 @@
             <a class="list-group-item" href="../module/cmdgraph.html#variable-arg_real">ARG_REAL</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-arg_char">ARG_CHAR</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-arg_rest">ARG_REST</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-arg_delimiters">ARG_DELIMITERS</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-default_input_unit">DEFAULT_INPUT_UNIT</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-default_output_unit">DEFAULT_OUTPUT_UNIT</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#variable-default_error_unit">DEFAULT_ERROR_UNIT</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-quiet_unit">QUIET_UNIT</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-edge_action">EDGE_ACTION</a>
             <a class="list-group-item" href="../module/cmdgraph.html#variable-edge_goto">EDGE_GOTO</a>
@@ -185,6 +189,7 @@
       </a>
       <div id="inters-0" class="collapse">
         <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-version_t_string">version_t_string</a>
             <a class="list-group-item" href="../module/cmdgraph.html#interface-arg_is_int">arg_is_int</a>
             <a class="list-group-item" href="../module/cmdgraph.html#interface-arg_is_real">arg_is_real</a>
             <a class="list-group-item" href="../module/cmdgraph.html#interface-arg_is_char">arg_is_char</a>
@@ -193,8 +198,23 @@
             <a class="list-group-item" href="../module/cmdgraph.html#interface-arg_real_n">arg_real_n</a>
             <a class="list-group-item" href="../module/cmdgraph.html#interface-action_ok">action_ok</a>
             <a class="list-group-item" href="../module/cmdgraph.html#interface-action_error">action_error</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-run_file_engine">run_file_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-dispatch_engine">dispatch_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-current_state_engine">current_state_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-current_context_engine">current_context_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-is_running_engine">is_running_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-available_commands_engine">available_commands_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-state_path_engine">state_path_engine</a>
             <a class="list-group-item" href="../module/cmdgraph.html#interface-encoding_name">encoding_name</a>
             <a class="list-group-item" href="../module/cmdgraph.html#interface-encoding_supported">encoding_supported</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-add_state_engine">add_state_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-add_command_engine">add_command_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-add_include_engine">add_include_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-set_on_enter_engine">set_on_enter_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-finalize_engine">finalize_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-run_engine">run_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-reset_engine">reset_engine</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#interface-set_io_units_engine">set_io_units_engine</a>
             <a class="list-group-item" href="../module/cmdgraph.html#interface-strip_bom">strip_bom</a>
         </div>
       </div>
@@ -223,7 +243,10 @@
             <a class="list-group-item" href="../module/cmdgraph.html#type-version_t">version_t</a>
             <a class="list-group-item" href="../module/cmdgraph.html#type-action_result_t">action_result_t</a>
             <a class="list-group-item" href="../module/cmdgraph.html#type-arg_spec_t">arg_spec_t</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#type-command_t">command_t</a>
             <a class="list-group-item" href="../module/cmdgraph.html#type-command_info_t">command_info_t</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#type-state_t">state_t</a>
+            <a class="list-group-item" href="../module/cmdgraph.html#type-stack_entry_t">stack_entry_t</a>
             <a class="list-group-item" href="../module/cmdgraph.html#type-engine_t">engine_t</a>
         </div>
       </div>
@@ -273,8 +296,8 @@
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
               <ul class="list-inline">
-                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
                   <li class="list-inline-item"><a href='dlist.html'>dlist</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
               </ul>
             </li>
         </ul>
@@ -394,6 +417,76 @@ parameter
                 <td>4</td>
             <td>
                 
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-arg_delimiters"></span>
+              character(len=*),
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ARG_DELIMITERS</strong></td>
+<td> =</td>
+                <td>&#34; &#34;</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default_input_unit"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DEFAULT_INPUT_UNIT</strong></td>
+<td> =</td>
+                <td>stdin_unit</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default_output_unit"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DEFAULT_OUTPUT_UNIT</strong></td>
+<td> =</td>
+                <td>stdout_unit</td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default_error_unit"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>DEFAULT_ERROR_UNIT</strong></td>
+<td> =</td>
+                <td>stderr_unit</td>
+            <td>
+                <p>Sentinel passed to <code>set_io_units</code> to suppress an output or error stream.
+<code>-1</code> is safe: the standard guarantees <code>open(newunit=)</code> returns a negative
+value that is never <code>-1</code>, so a real file unit cannot collide with this sentinel.</p>
             </td>
         </tr>
         <tr>
@@ -937,6 +1030,60 @@ rather than direct initialisation.</p>
           <h2>Interfaces</h2>
               <div class="card">
     <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-version_t_string"></span>
+      <h3>        interface
+      </h3>
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module function version_t_string(this) result(s)  
+    <a href="../proc/version_t_string.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~41"></span>
+              class(<a href='../type/version_t.html'>version_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
       <span class="anchor" id="interface-arg_is_int"></span>
       <h3>        interface
       </h3>
@@ -987,6 +1134,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         <li class="list-group-item">
               <h3>
     public module function arg_is_int(name, optional) result(s)  
+    <a href="../proc/arg_is_int.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 
     </h3>
   
@@ -1097,6 +1245,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         <li class="list-group-item">
               <h3>
     public module function arg_is_real(name, optional) result(s)  
+    <a href="../proc/arg_is_real.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 
     </h3>
   
@@ -1207,6 +1356,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         <li class="list-group-item">
               <h3>
     public module function arg_is_char(name, optional) result(s)  
+    <a href="../proc/arg_is_char.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 
     </h3>
   
@@ -1317,6 +1467,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         <li class="list-group-item">
               <h3>
     public module function arg_is_rest(name, optional) result(s)  
+    <a href="../proc/arg_is_rest.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 
     </h3>
   
@@ -1427,6 +1578,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         <li class="list-group-item">
               <h3>
     public module function arg_int_n(name, n) result(s)  
+    <a href="../proc/arg_int_n.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 
     </h3>
   
@@ -1459,7 +1611,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-n~14"></span>
+              <span class="anchor" id="variable-n~19"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1537,6 +1689,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         <li class="list-group-item">
               <h3>
     public module function arg_real_n(name, n) result(s)  
+    <a href="../proc/arg_real_n.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 
     </h3>
   
@@ -1569,7 +1722,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-n~15"></span>
+              <span class="anchor" id="variable-n~20"></span>
               integer,
             </td>
 <td>intent(in)</td>
@@ -1647,6 +1800,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         <li class="list-group-item">
               <h3>
     public module function action_ok(ctx) result(rv)  
+    <a href="../proc/action_ok.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 
     </h3>
   
@@ -1742,6 +1896,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         <li class="list-group-item">
               <h3>
     public module function action_error(msg) result(rv)  
+    <a href="../proc/action_error.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 
     </h3>
   
@@ -1778,6 +1933,770 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
     <h4>
     Return Value
     <small>type(<a href='../type/action_result_t.html'>action_result_t</a>)</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-run_file_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module function run_file_engine(this, path, echo, stat, errmsg, line) result(ok)  
+    <a href="../proc/run_file_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~48"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-path~3"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>path</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-echo~2"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>echo</strong></td>
+            <td>
+                <p>If <code>.true.</code>, print each prompt+line as it is read
+<code>RC_*</code> of the failing dispatch, <code>RUN_OPEN_FAILED</code>,
+<code>RUN_BAD_ENCODING</code>, or <code>RUN_OK</code></p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stat~19"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stat</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-errmsg~18"></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td>optional,</td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>errmsg</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line~4"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line</strong></td>
+            <td>
+                <p>1-based line number of the failure (0: open failure)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-dispatch_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module function dispatch_engine(this, line) result(rc)  
+    <a href="../proc/dispatch_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~51"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line~5"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-current_state_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module function current_state_engine(this) result(name)  
+    <a href="../proc/current_state_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~52"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-current_context_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module function current_context_engine(this) result(ctx)  
+    <a href="../proc/current_context_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~53"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-is_running_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module function is_running_engine(this) result(b)  
+    <a href="../proc/is_running_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~54"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-available_commands_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module function available_commands_engine(this) result(cmds)  
+    <a href="../proc/available_commands_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~55"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/command_info_t.html'>command_info_t</a>), allocatable, (:)</small>
+    </h4>
+    
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-state_path_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module function state_path_engine(this) result(names)  
+    <a href="../proc/state_path_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~56"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable, (:)</small>
     </h4>
     
 
@@ -1837,6 +2756,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         <li class="list-group-item">
               <h3>
     public pure module function encoding_name(enc) result(name)  
+    <a href="../proc/encoding_name.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 
     </h3>
   
@@ -1932,6 +2852,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         <li class="list-group-item">
               <h3>
     public pure elemental module function encoding_supported(enc) result(ok)  
+    <a href="../proc/encoding_supported.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 
     </h3>
   
@@ -1970,6 +2891,1184 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
     <small>logical</small>
     </h4>
     
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-add_state_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module subroutine add_state_engine(this, name, prompt, stat, errmsg)  
+    <a href="../proc/add_state_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~42"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~13"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+                <p>Unique state identifier</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-prompt~5"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>prompt</strong></td>
+            <td>
+                <p>Displayed before each input line; omit for an abstract state</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stat~13"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stat</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-errmsg~13"></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td>optional,</td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>errmsg</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-add_command_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module subroutine add_command_engine(this, state, spec, kind, target, proc, help, args, stat, errmsg)  
+    <a href="../proc/add_command_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~43"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-state~5"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>state</strong></td>
+            <td>
+                <p>Owning state name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-spec~8"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>spec</strong></td>
+            <td>
+                <p>Command spec, e.g. <code>p(airs)</code> — required prefix + optional suffix</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-kind~5"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>kind</strong></td>
+            <td>
+                <p>Edge behaviour (<code>EDGE_*</code> constant)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-target~4"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>target</strong></td>
+            <td>
+                <p>Destination state (Goto / DoGoto)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-proc~4"></span>
+              procedure(<a href='../interface/action_fun.html'>action_fun</a>),
+            </td>
+<td></td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>proc</strong></td>
+            <td>
+                <p>Action / gate proc (Action, DoGoto, DoPop)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-help~4"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>help</strong></td>
+            <td>
+                <p>Shown by built-in help command</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-args~14"></span>
+              type(<a href='../type/arg_spec_t.html'>arg_spec_t</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>args</strong>(:)</td>
+            <td>
+                <p>Validated before proc is called</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stat~14"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stat</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-errmsg~14"></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td>optional,</td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>errmsg</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-add_include_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module subroutine add_include_engine(this, state, included, stat, errmsg)  
+    <a href="../proc/add_include_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~44"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-state~6"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>state</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-included~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>included</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stat~15"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stat</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-errmsg~15"></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td>optional,</td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>errmsg</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-set_on_enter_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module subroutine set_on_enter_engine(this, state, proc, stat, errmsg)  
+    <a href="../proc/set_on_enter_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~45"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-state~7"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>state</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-proc~5"></span>
+              procedure(<a href='../interface/on_enter_fun.html'>on_enter_fun</a>)
+            </td>
+<td></td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>proc</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stat~16"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stat</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-errmsg~16"></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td>optional,</td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>errmsg</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-finalize_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module subroutine finalize_engine(this, initial, stat, errmsg)  
+    <a href="../proc/finalize_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~46"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initial~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initial</strong></td>
+            <td>
+                <p>Name of the starting state</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stat~17"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stat</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-errmsg~17"></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td>optional,</td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>errmsg</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-run_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module subroutine run_engine(this, stat)  
+    <a href="../proc/run_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~47"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stat~18"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stat</strong></td>
+            <td>
+                <p><code>RUN_OK</code>, or <code>RUN_BAD_ENCODING</code></p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-reset_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module subroutine reset_engine(this, stat, errmsg)  
+    <a href="../proc/reset_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~49"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stat~20"></span>
+              integer,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stat</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-errmsg~19"></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td>optional,</td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>errmsg</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-set_io_units_engine"></span>
+      <h3>        interface
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>Add a concrete state (has a prompt) or abstract state (mix-in, no prompt).
+Add a command edge to <code>state</code>.
+Build an integer <code>arg_spec_t</code>.
+Build a real <code>arg_spec_t</code>.
+Build a character <code>arg_spec_t</code>.
+Build a rest <code>arg_spec_t</code> (verbatim remainder of the line; must be last).
+Return <code>n</code> copies of an integer spec (fixed-size tuple, e.g. a 2D point).
+Return <code>n</code> copies of a real spec.
+Successful result, optionally carrying a DoGoto context string.
+Error result, optionally with a message written to the error channel.
+Merge all commands from abstract state <code>included</code> into <code>state</code>.
+The state's own commands override included ones with the same spec.
+Register a hook called after every successful transition into <code>state</code>.
+Validate the graph and set the initial state.
+Sets <code>stat</code> non-zero if a cycle is detected in goto/do_goto edges
+or if any state reference is unresolved.
+Run an interactive loop reading from the configured input stream.
+The loop ends at end of input, on quit, or - having written the
+reason to the error channel - at a line in an unsupported encoding.
+Execute commands from <code>path</code>, stopping at the first error.
+Returns <code>.true.</code> if the file ran to completion (or ended with quit).
+Rewind to the initial state without rebuilding the graph.
+Clears the stack, contexts, <code>last_message</code>, and <code>last_error</code>.
+Redirect I/O channels.  Pass <code>QUIET_UNIT</code> to suppress a channel.
+Default: <code>stdin</code> / <code>stdout</code> / <code>stderr</code>.
+Dispatch one line of input.
+Performs prefix matching, arg validation, and edge traversal.
+Name of the active state.
+Context of the active state.
+Returns <code>.false.</code> after Quit or stack exhausted.
+Commands visible in the current state (own + included, help/? excluded).
+Result depends only on the state name; safe to cache keyed by state name.
+State names on the stack, bottom-first.
+Classify the first line of an input stream by its leading bytes
+and drop a UTF-8 byte-order mark.  <code>run</code> and <code>run_file</code> do this
+themselves; it is public for a caller that reads its own lines
+and hands them to <code>dispatch</code>.  An unallocated <code>text</code> is <code>ENC_PLAIN</code>.
+Display name of an <code>ENC_*</code> value, as used in the engine's messages.
+<code>.true.</code> for the encodings the engine reads: <code>ENC_PLAIN</code> and
+<code>ENC_UTF8_BOM</code>.</p>
+      </div>
+    <ul class="list-group">
+        <li class="list-group-item">
+              <h3>
+    private module subroutine set_io_units_engine(this, input_unit, output_unit, error_unit)  
+    <a href="../proc/set_io_units_engine.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+
+    </h3>
+  
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-this~50"></span>
+              class(<a href='../type/engine_t.html'>engine_t</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>this</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-input_unit~3"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>input_unit</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output_unit~3"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output_unit</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error_unit~3"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>error_unit</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
 
         </li>
     </ul>
@@ -2027,6 +4126,7 @@ Display name of an <code>ENC_*</code> value, as used in the engine's messages.
         <li class="list-group-item">
               <h3>
     public pure module subroutine strip_bom(text, enc)  
+    <a href="../proc/strip_bom.html"><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
 
     </h3>
   
@@ -2297,7 +4397,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
           <tbody>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/version_t.html#boundprocedure-string'>string</a></strong> => version_t_string</td>
+  <strong><a href='../type/version_t.html#boundprocedure-string'>string</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/version_t_string.html'>version_t_string</a></td>
                   <td></td>
               </tr>
           </tbody>
@@ -2473,6 +4573,225 @@ Signature of an on_enter hook.  Called after every successful state transition.<
 
               <div class="card">
     <div class="card-header codesum">
+      <span class="anchor" id="type-command_t"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/command_t.html'>command_t</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-spec~6"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>spec</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-req~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>req</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-opt~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>opt</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-kind~3"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>kind</strong></td>
+<td> =</td>
+                <td>EDGE_ACTION</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-target~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>target</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-proc~3"></span>
+              procedure(<a href='../interface/action_fun.html'>action_fun</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>proc</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-help~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>help</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-args~12"></span>
+              type(<a href='../type/arg_spec_t.html'>arg_spec_t</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>args</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-target_idx"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>target_idx</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-full~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>full</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rest_idx~2"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rest_idx</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
       <span class="anchor" id="type-command_info_t"></span>
       <h3>
         type, public&nbsp;::&nbsp;
@@ -2624,6 +4943,206 @@ Signature of an on_enter hook.  Called after every successful state transition.<
 
               <div class="card">
     <div class="card-header codesum">
+      <span class="anchor" id="type-state_t"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/state_t.html'>state_t</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~12"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-prompt~4"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>prompt</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-on_enter"></span>
+              procedure(<a href='../interface/on_enter_fun.html'>on_enter_fun</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer, nopass
+            </td>
+            <td>::</td>
+            <td><strong>on_enter</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-includes"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>includes</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-commands"></span>
+              type(<a href='../type/command_t.html'>command_t</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>commands</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-build_count"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>build_count</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-stack_entry_t"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/stack_entry_t.html'>stack_entry_t</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-state_idx~2"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>state_idx</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-context"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>context</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
       <span class="anchor" id="type-engine_t"></span>
       <h3>
         type, public&nbsp;::&nbsp;
@@ -2648,7 +5167,7 @@ Signature of an on_enter hook.  Called after every successful state transition.<
         <tr>
             <td>
               <span class="anchor" id="variable-states"></span>
-              type(state_t),
+              type(<a href='../type/state_t.html'>state_t</a>),
             </td>
               <td>public,</td>
             <td>
@@ -2658,6 +5177,91 @@ Signature of an on_enter hook.  Called after every successful state transition.<
             <td><strong>states</strong>(:)</td>
                 <td></td>
                 <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-state_count"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>state_count</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stack"></span>
+              type(<a href='../type/stack_entry_t.html'>stack_entry_t</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>stack</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stack_top"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stack_top</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-initial_state_idx"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>initial_state_idx</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-finalized"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>finalized</strong></td>
+<td> =</td>
+                <td>.false.</td>
             <td>
 
             </td>
@@ -2692,6 +5296,57 @@ Signature of an on_enter hook.  Called after every successful state transition.<
             <td><strong>build_error_msg</strong></td>
                 <td></td>
                 <td></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-input_unit~2"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>input_unit</strong></td>
+<td> =</td>
+                <td>DEFAULT_INPUT_UNIT</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-output_unit~2"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>output_unit</strong></td>
+<td> =</td>
+                <td>DEFAULT_OUTPUT_UNIT</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-error_unit~2"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>error_unit</strong></td>
+<td> =</td>
+                <td>DEFAULT_ERROR_UNIT</td>
             <td>
 
             </td>
@@ -2741,77 +5396,77 @@ Signature of an on_enter hook.  Called after every successful state transition.<
           <tbody>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-add_state'>add_state</a></strong> => add_state_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-add_state'>add_state</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/add_state_engine.html'>add_state_engine</a></td>
                   <td><p>Add a concrete or abstract state</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-add_command'>add_command</a></strong> => add_command_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-add_command'>add_command</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/add_command_engine.html'>add_command_engine</a></td>
                   <td><p>Add a command edge to a state</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-add_include'>add_include</a></strong> => add_include_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-add_include'>add_include</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/add_include_engine.html'>add_include_engine</a></td>
                   <td><p>Merge commands from an abstract state</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-set_on_enter'>set_on_enter</a></strong> => set_on_enter_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-set_on_enter'>set_on_enter</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/set_on_enter_engine.html'>set_on_enter_engine</a></td>
                   <td><p>Register a post-transition hook</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-finalize'>finalize</a></strong> => finalize_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-finalize'>finalize</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/finalize_engine.html'>finalize_engine</a></td>
                   <td><p>Validate the graph and set initial state</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-run'>run</a></strong> => run_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-run'>run</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/run_engine.html'>run_engine</a></td>
                   <td><p>Run an interactive loop on the configured input stream</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-run_file'>run_file</a></strong> => run_file_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-run_file'>run_file</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/run_file_engine.html'>run_file_engine</a></td>
                   <td><p>Execute commands from a file, stopping at first error</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-reset'>reset</a></strong> => reset_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-reset'>reset</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/reset_engine.html'>reset_engine</a></td>
                   <td><p>Rewind to initial state without rebuilding the graph</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-dispatch'>dispatch</a></strong> => dispatch_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-dispatch'>dispatch</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/dispatch_engine.html'>dispatch_engine</a></td>
                   <td><p>Dispatch one line of input</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-set_io_units'>set_io_units</a></strong> => set_io_units_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-set_io_units'>set_io_units</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/set_io_units_engine.html'>set_io_units_engine</a></td>
                   <td><p>Redirect I/O channels; pass <code>QUIET_UNIT</code> to suppress</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-current_state'>current_state</a></strong> => current_state_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-current_state'>current_state</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/current_state_engine.html'>current_state_engine</a></td>
                   <td><p>Name of the active state</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-current_context'>current_context</a></strong> => current_context_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-current_context'>current_context</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/current_context_engine.html'>current_context_engine</a></td>
                   <td><p>Context of the active state</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-is_running'>is_running</a></strong> => is_running_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-is_running'>is_running</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/is_running_engine.html'>is_running_engine</a></td>
                   <td><p>False after Quit or stack exhausted</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-available_commands'>available_commands</a></strong> => available_commands_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-available_commands'>available_commands</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/available_commands_engine.html'>available_commands_engine</a></td>
                   <td><p>Commands visible in the current state</p></td>
               </tr>
               <tr>
                 <td>  procedure, public ::
-  <strong><a href='../type/engine_t.html#boundprocedure-state_path'>state_path</a></strong> => state_path_engine</td>
+  <strong><a href='../type/engine_t.html#boundprocedure-state_path'>state_path</a></strong> => <a href='/home/simon/development/projects/cmdgraph/fortran/ford_docs/interface/state_path_engine.html'>state_path_engine</a></td>
                   <td><p>State names on the stack, bottom-first</p></td>
               </tr>
           </tbody>
