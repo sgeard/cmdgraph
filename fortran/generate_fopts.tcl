@@ -11,10 +11,26 @@ MOD_OPTS := -J$(ODIR) -I$(ODIR)
 F_BASE   := -cpp -Wall $(F_EXTRA_GF)
 ifdef debug
     F_BUILD := -ggdb -fbounds-check -ffpe-trap=denormal,invalid -fPIC
+    # GCC 16.1 at -O0 only (15.2 and -O1+ are fine):
+    #  - assigning a constant of exactly 64 characters to a deferred-length
+    #    allocatable drops the copy (the inline memmove expansion for lengths
+    #    in (32,64] emits no stores), leaving the new buffer uninitialised.
+    #    Expanding string moves as library calls avoids it (x86 option).
+    #  - -Wmaybe-uninitialized fires on the bounds reads guarding an
+    #    intent(out) deallocation of an unallocated allocatable array whose
+    #    type has allocatable components (the reads sit behind data /= null).
+    #    Release builds keep the warning.
+    ifeq ($(firstword $(subst ., ,$(shell $(F) -dumpversion))),16)
+        F_BUILD += -Wno-maybe-uninitialized
+        ifeq ($(shell uname -m),x86_64)
+            F_BUILD += -mstringop-strategy=libcall
+        endif
+    endif
 else
     F_BUILD := -O3 -fPIC
 endif
 F_LOPTS  := -Wl,-z,execstack $(F_LOPTS_GF)
+F_SOOPTS := -shared -Wl,-z,noexecstack $(F_LOPTS_GF)
 }
     
 dict set c ifx {
@@ -42,6 +58,7 @@ else
     F_BUILD := -O3 -fp-model precise -fprotect-parens $(F_ISA) -warn all -fPIC
 endif
 F_LOPTS  := -static-intel -Wl,-z,noexecstack $(F_LOPTS_IFX)
+F_SOOPTS := -shared -static-intel -Wl,-z,noexecstack $(F_LOPTS_IFX)
 }
 
 dict set c lfortran {
@@ -54,6 +71,7 @@ else
     F_BUILD := -O3
 endif
 F_LOPTS  := $(F_LOPTS_LF)
+F_SOOPTS := -shared $(F_LOPTS_LF)
 }
 
 dict set c flang {
@@ -64,10 +82,17 @@ MOD_OPTS := -module-dir $(ODIR) -I$(ODIR)
 # don't warn on the equivalent; this driver flag silences it (a -Wno-... form is
 # rejected by flang's frontend, which errors on unknown diagnostic options).
 F_BASE   := -cpp -DNO_PDT -Qunused-arguments $(F_EXTRA_FL)
+# -fPIC always, as for gfortran and ifx: the objects then serve an executable
+# and a shared object alike.  Whether a shared object can actually be linked
+# depends on the flang runtime it pulls in: libflang_rt.runtime.a must have
+# been built position independent (CMAKE_POSITION_INDEPENDENT_CODE=ON), or a
+# libflang_rt.runtime.so be available.  Termux's is; a default x86_64 build
+# of LLVM is not, and the link fails with "recompile with -fPIC" pointing at
+# the runtime, not at the project's objects.
 ifdef debug
-    F_BUILD := -g
+    F_BUILD := -g -fPIC
 else
-    F_BUILD := -O3
+    F_BUILD := -O3 -fPIC
 endif
 ifeq ($(shell uname -m),x86_64)
     # -no-pie: flang links a PIE by default, but the C shims projects link
@@ -75,16 +100,23 @@ ifeq ($(shell uname -m),x86_64)
     # absolute relocations are rejected in a PIE (R_X86_64_32). ifx and gfortran
     # do not force PIE; match them. Android (the aarch64 branch below) MUST stay
     # PIE, so this is x86_64-only.
-    F_LOPTS  := -no-pie -L/usr/lib/gcc/x86_64-mageia-linux/12 -B/usr/lib/gcc/x86_64-mageia-linux/12
+    #
+    # No -L/-B for the gcc runtime: the local LLVM finds the system gcc through
+    # /usr/local/bin/flang.cfg (--gcc-triple=x86_64-mageia-linux).
+    F_LOPTS  := -no-pie
+    # A shared object is position independent by nature: no -no-pie
+    F_SOOPTS := -shared
 else
     F_LOPTS  := -L/data/data/com.termux/files/usr/lib/clang/21/lib
+    F_SOOPTS := -shared -L/data/data/com.termux/files/usr/lib/clang/21/lib
 endif
 # Non-executable stack (W^X): Android forbids an exec stack, and it is the
 # safer default everywhere. Requires that no internal procedure is passed by
 # argument or assigned to a procedure pointer -- gfortran/flang implement that
 # with a stack trampoline, which needs an exec stack. Keep such procedures at
 # module level.
-F_LOPTS += -Wl,-z,noexecstack $(F_LOPTS_FL)
+F_LOPTS  += -Wl,-z,noexecstack $(F_LOPTS_FL)
+F_SOOPTS += -Wl,-z,noexecstack $(F_LOPTS_FL)
 }
 
 # =============================================================================
@@ -114,6 +146,9 @@ set header_mk "
 #   F_LOPTS_IFX  - ifx link flags
 #   F_LOPTS_LF   - lfortran link flags
 #   F_LOPTS_FL   - flang link flags
+#
+# Provides F_OPTS (compile), F_LOPTS (link an executable) and F_SOOPTS (link a
+# shared object: -shared, never an executable stack, no -no-pie).
 #
 # Knobs (set on the make command line):
 #   debug=1      - debug build (-O0 -check all ...)

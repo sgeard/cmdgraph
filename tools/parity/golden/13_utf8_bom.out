@@ -1,0 +1,5 @@
+root> e hello
+echo: hello
+root> ad 2 3
+sum: 5
+root> q

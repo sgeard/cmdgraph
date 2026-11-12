@@ -62,3 +62,20 @@ call eng%run()
 | `RC_TRANSITIONED`| State changed: Goto pushed, DoGoto succeeded, or Pop returned |
 | `RC_EXITED`      | Engine stopped: Quit, stack exhausted, or already dead |
 | `RC_ERROR`       | Action returned an error, or arg validation failed |
+
+## `run` / `run_file` status
+
+| Constant | Meaning |
+|----------|---------|
+| `RUN_OK`           | Ran to completion |
+| `RUN_OPEN_FAILED`  | `run_file`: the script file could not be opened |
+| `RUN_BAD_ENCODING` | A line is in an encoding the engine does not read |
+
+`run_file` otherwise reports the `RC_*` value of the failing line.
+
+## Input encoding
+
+The engine reads ASCII and UTF-8 (a UTF-8 byte-order mark is dropped). Input
+that carries the signature of another encoding, or NUL bytes, is refused with
+`RUN_BAD_ENCODING`; the `ENC_*` constants name what was recognised. See
+`strip_bom`, `encoding_name` and `encoding_supported`.

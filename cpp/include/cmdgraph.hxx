@@ -16,6 +16,7 @@
 #include <iosfwd>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <variant>
 #include <vector>
 
@@ -35,7 +36,7 @@ struct Version {
 };
 
 /// Compile-time library version constant.
-inline constexpr Version CMDGRAPH_VERSION{1, 3, 1};
+inline constexpr Version CMDGRAPH_VERSION{1, 4, 0};
 
 //──── Arg spec kinds ──────────────────────────────────────────────────────────
 
@@ -129,8 +130,45 @@ enum class [[nodiscard]] RC {
     Ambiguous,    ///< Multiple commands matched — input was a common prefix
     Transitioned, ///< State changed: Goto pushed, DoGoto succeeded, or Pop returned
     Exited,       ///< Engine stopped: Quit, stack exhausted, or already dead
-    Error         ///< Action returned an error, or arg validation failed
+    Error,        ///< Action returned an error, or arg validation failed
+    /// run_file() only, never dispatch(): a line is in an encoding the
+    /// engine does not read.  That line is not dispatched.
+    BadEncoding
 };
+
+//──── Input encoding ──────────────────────────────────────────────────────────
+
+/// Input encodings, as classified from the bytes of a line.  The engine reads
+/// ASCII and UTF-8; legacy 8-bit sets cannot be told apart from those and
+/// pass through as opaque bytes (Plain).  Every other value except Utf8Bom is
+/// refused — see encoding_supported().
+enum class Encoding {
+    Plain,      ///< No signature: ASCII, UTF-8, or an 8-bit set (not validated)
+    Utf8Bom,    ///< UTF-8 with a byte-order mark (the mark is dropped)
+    Utf16Le,    ///< UTF-16 / UCS-2, little-endian
+    Utf16Be,    ///< UTF-16 / UCS-2, big-endian
+    Utf32Le,    ///< UTF-32 / UCS-4, little-endian
+    Utf32Be,    ///< UTF-32 / UCS-4, big-endian
+    Utf7,       ///< UTF-7
+    Utf1,       ///< UTF-1
+    UtfEbcdic,  ///< UTF-EBCDIC
+    Scsu,       ///< SCSU
+    Bocu1,      ///< BOCU-1
+    Gb18030,    ///< GB18030
+    WideNoBom   ///< No signature, but NUL bytes: a 16- or 32-bit encoding without a byte-order mark
+};
+
+/// @brief Classify the first line of an input stream by its leading bytes and
+/// drop a UTF-8 byte-order mark.
+/// run() and run_file() do this themselves; it is public for a caller that
+/// reads its own lines and hands them to dispatch().
+[[nodiscard]] Encoding         strip_bom(std::string& text);
+/// @brief Display name of an Encoding, as used in the engine's messages.
+[[nodiscard]] std::string_view encoding_name(Encoding enc);
+/// @brief True for the encodings the engine reads: Plain and Utf8Bom.
+[[nodiscard]] constexpr bool   encoding_supported(Encoding enc) {
+    return enc == Encoding::Plain || enc == Encoding::Utf8Bom;
+}
 
 //──── Introspection ───────────────────────────────────────────────────────────
 
@@ -218,7 +256,10 @@ public:
     /// @{
 
     /// @brief Run an interactive loop reading from the configured input stream.
-    void                     run    ();
+    /// The loop ends at end of input, on quit, or — having written the reason
+    /// to the error channel — at a line in an unsupported encoding.
+    /// @return False only if the loop stopped on an unsupported encoding.
+    bool                     run    ();
 
     /// @brief Execute commands from @p path, stopping at the first error.
     /// Blank lines and lines whose first non-whitespace character is @c # are
@@ -227,7 +268,8 @@ public:
     /// @param echo        If true, emit each prompt+line as it is read.
     ///                    Echo goes through the info channel, so #last_message
     ///                    reflects the most recently echoed line.
-    /// @param out_stat    If non-null, receives the RC of the failing dispatch
+    /// @param out_stat    If non-null, receives the RC of the failing dispatch,
+    ///                    RC::BadEncoding for a line in an unsupported encoding
     ///                    (or RC::Ok on success / open failure).
     /// @param out_line    If non-null, receives the 1-based line number of the
     ///                    failure (0 for a file-open failure or a successful run).

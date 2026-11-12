@@ -223,6 +223,7 @@ program runner_f
         case (RC_TRANSITIONED); rc = "TRANSITIONED"
         case (RC_EXITED);       rc = "EXITED"
         case (RC_ERROR);        rc = "ERROR"
+        case (RUN_BAD_ENCODING); rc = "BAD_ENCODING"
         case default;           rc = "OK"
         end select
     end if

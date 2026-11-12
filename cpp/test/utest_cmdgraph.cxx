@@ -6,6 +6,7 @@
 #include "cmdgraph.hxx"
 
 #include <iostream>
+#include <cstdio>
 #include <sstream>
 #include <fstream>
 #include <stdexcept>
@@ -1075,6 +1076,170 @@ static void test_swap_not_cycle() {
         }), false);
 }
 
+//──── Input encoding ──────────────────────────────────────────────────────────
+
+using namespace std::string_literals;
+
+// `text` as UTF-16 with its byte-order mark.
+static std::string utf16(const std::string& text, bool little_endian) {
+    std::string wide = little_endian ? "\xFF\xFE"s : "\xFE\xFF"s;
+    for (const char c : text) {
+        if (little_endian) { wide += c; wide += '\0'; }
+        else               { wide += '\0'; wide += c; }
+    }
+    return wide;
+}
+
+// Write `content` to `path` byte for byte.
+static void write_raw(const std::string& path, const std::string& content) {
+    std::ofstream f(path, std::ios::binary);
+    f << content;
+}
+
+// One strip_bom case: `mark` followed by a command classifies as `expected`.
+static void check_signature(const std::string& label, const std::string& mark, Encoding expected) {
+    std::string text = mark + "quit";
+    const Encoding enc = strip_bom(text);
+    check_bool("strip_bom: " + label,              enc == expected, true);
+    check_bool("strip_bom: " + label + " refused", encoding_supported(enc), false);
+}
+
+static void test_strip_bom() {
+    std::string text = "quit";
+    Encoding enc = strip_bom(text);
+    check_bool("strip_bom: plain",           enc == Encoding::Plain, true);
+    check_str ("strip_bom: plain untouched", text, "quit");
+
+    text.clear();
+    enc = strip_bom(text);
+    check_bool("strip_bom: empty", enc == Encoding::Plain, true);
+
+    text = "\xEF\xBB\xBFquit";
+    enc = strip_bom(text);
+    check_bool("strip_bom: UTF-8 mark",          enc == Encoding::Utf8Bom, true);
+    check_str ("strip_bom: UTF-8 mark dropped",  text, "quit");
+    check_bool("strip_bom: UTF-8 mark accepted", encoding_supported(enc), true);
+
+    text = "\xEF\xBB\xBF";
+    enc = strip_bom(text);
+    check_bool("strip_bom: UTF-8 mark alone", enc == Encoding::Utf8Bom, true);
+    check_bool("strip_bom: UTF-8 mark alone leaves nothing", text.empty(), true);
+
+    // A partial mark is not a mark.
+    text = "\xEF\xBBquit";
+    check_bool("strip_bom: partial UTF-8 mark", strip_bom(text) == Encoding::Plain, true);
+    text = "\xFF";
+    check_bool("strip_bom: lone 0xFF",          strip_bom(text) == Encoding::Plain, true);
+
+    check_signature("UTF-16 LE",  "\xFF\xFE"s,         Encoding::Utf16Le);
+    check_signature("UTF-16 BE",  "\xFE\xFF"s,         Encoding::Utf16Be);
+    check_signature("UTF-32 LE",  "\xFF\xFE\x00\x00"s, Encoding::Utf32Le);
+    check_signature("UTF-32 BE",  "\x00\x00\xFE\xFF"s, Encoding::Utf32Be);
+    check_signature("UTF-7",      "\x2B\x2F\x76"s,     Encoding::Utf7);
+    check_signature("UTF-1",      "\xF7\x64\x4C"s,     Encoding::Utf1);
+    check_signature("UTF-EBCDIC", "\xDD\x73\x66\x73"s, Encoding::UtfEbcdic);
+    check_signature("SCSU",       "\x0E\xFE\xFF"s,     Encoding::Scsu);
+    check_signature("BOCU-1",     "\xFB\xEE\x28"s,     Encoding::Bocu1);
+    check_signature("GB18030",    "\x84\x31\x95\x33"s, Encoding::Gb18030);
+
+    // UTF-16 LE text really does start FF FE then a non-NUL pair.
+    text = utf16("quit", true);
+    check_bool("strip_bom: UTF-16 LE text",    strip_bom(text) == Encoding::Utf16Le, true);
+    check_int ("strip_bom: refused text kept", static_cast<int>(text.size()), 10);
+
+    // No mark, but NUL bytes.
+    text = "q\0u\0"s;
+    enc = strip_bom(text);
+    check_bool("strip_bom: NUL bytes",         enc == Encoding::WideNoBom, true);
+    check_bool("strip_bom: NUL bytes refused", encoding_supported(enc), false);
+    text = "\xEF\xBB\xBFq\0"s;
+    check_bool("strip_bom: NUL behind a UTF-8 mark", strip_bom(text) == Encoding::WideNoBom, true);
+
+    check_str("encoding_name: plain",     std::string{encoding_name(Encoding::Plain)}, "ASCII / UTF-8");
+    check_str("encoding_name: UTF-16 LE", std::string{encoding_name(Encoding::Utf16Le)},
+              "UTF-16 / UCS-2, little-endian");
+    check_str("encoding_name: UTF-32 BE", std::string{encoding_name(Encoding::Utf32Be)},
+              "UTF-32 / UCS-4, big-endian");
+}
+
+static void test_run_file_encoding() {
+    const std::string path = "/tmp/cmdgraph_cpp_encoding_utest.txt";
+    std::ostringstream oss;
+    Engine eng = build_eng(&oss, &oss);
+    RC stat = RC::Ok;
+    int line = 0;
+    std::string msg;
+
+    // UTF-8 with a mark: runs as if the mark were not there.
+    write_raw(path, "\xEF\xBB\xBF" "action\nquit\n");
+    g_outer_count = 0;
+    bool ok = eng.run_file(path, false, &stat, &line, &msg);
+    check_bool("run_file UTF-8 mark: ok",         ok, true);
+    check_int ("run_file UTF-8 mark: action ran", g_outer_count, 1);
+    check_bool("run_file UTF-8 mark: quit seen",  eng.is_running(), false);
+
+    // UTF-16: refused at line 1, nothing dispatched.
+    eng.reset();
+    write_raw(path, utf16("action\nquit\n", true));
+    g_outer_count = 0;
+    ok = eng.run_file(path, false, &stat, &line, &msg);
+    check_bool("run_file UTF-16 LE: refused",       ok, false);
+    check_bool("run_file UTF-16 LE: stat",          stat == RC::BadEncoding, true);
+    check_int ("run_file UTF-16 LE: line",          line, 1);
+    check_str ("run_file UTF-16 LE: errmsg",        msg,
+               "unsupported encoding (UTF-16 / UCS-2, little-endian); expected ASCII or UTF-8: " + path);
+    check_str ("run_file UTF-16 LE: last_error",    eng.last_error, msg);
+    check_int ("run_file UTF-16 LE: nothing ran",   g_outer_count, 0);
+    check_bool("run_file UTF-16 LE: still running", eng.is_running(), true);
+
+    write_raw(path, utf16("action\n", false));
+    ok = eng.run_file(path, false, &stat, &line, &msg);
+    check_bool("run_file UTF-16 BE: refused", ok, false);
+    check_bool("run_file UTF-16 BE: stat",    stat == RC::BadEncoding, true);
+
+    // NUL bytes on a later line: the lines before it have run.
+    write_raw(path, "action\nact\0ion\nquit\n"s);
+    g_outer_count = 0;
+    ok = eng.run_file(path, false, &stat, &line, &msg);
+    check_bool("run_file NUL line 2: refused",    ok, false);
+    check_bool("run_file NUL line 2: stat",       stat == RC::BadEncoding, true);
+    check_int ("run_file NUL line 2: line",       line, 2);
+    check_int ("run_file NUL line 2: line 1 ran", g_outer_count, 1);
+    check_bool("run_file NUL line 2: names the cause",
+               msg.find("NUL bytes") != std::string::npos, true);
+
+    std::remove(path.c_str());
+}
+
+static void test_run_encoding() {
+    std::ostringstream out, err;
+
+    {
+        std::istringstream input("\xEF\xBB\xBF" "action\nquit\n");
+        Engine eng = build_eng(&out, &err);
+        eng.set_io(&input, &out, &err);
+        g_outer_count = 0;
+        const bool ok = eng.run();
+        check_bool("run UTF-8 mark: ok",         ok, true);
+        check_int ("run UTF-8 mark: action ran", g_outer_count, 1);
+        check_bool("run UTF-8 mark: quit seen",  eng.is_running(), false);
+    }
+    {
+        std::istringstream input(utf16("action\nquit\n", false));
+        Engine eng = build_eng(&out, &err);
+        eng.set_io(&input, &out, &err);
+        g_outer_count = 0;
+        const bool ok = eng.run();
+        const std::string want =
+            "unsupported encoding (UTF-16 / UCS-2, big-endian); expected ASCII or UTF-8";
+        check_bool("run UTF-16 BE: refused",         ok, false);
+        check_str ("run UTF-16 BE: last_error",      eng.last_error, want);
+        check_str ("run UTF-16 BE: error channel",   err.str(), want + "\n");
+        check_int ("run UTF-16 BE: nothing ran",     g_outer_count, 0);
+        check_bool("run UTF-16 BE: engine not quit", eng.is_running(), true);
+    }
+}
+
 int main() {
     test_initial_state();
     test_action_edge();
@@ -1116,11 +1281,14 @@ int main() {
     test_do_swap();
     test_swap_builder_errors();
     test_swap_not_cycle();
+    test_strip_bom();
+    test_run_file_encoding();
+    test_run_encoding();
 
     check_int("version major",  CMDGRAPH_VERSION.major, 1);
-    check_int("version minor",  CMDGRAPH_VERSION.minor, 3);
-    check_int("version patch",  CMDGRAPH_VERSION.patch, 1);
-    check_str("version string", CMDGRAPH_VERSION.string(), "1.3.1");
+    check_int("version minor",  CMDGRAPH_VERSION.minor, 4);
+    check_int("version patch",  CMDGRAPH_VERSION.patch, 0);
+    check_str("version string", CMDGRAPH_VERSION.string(), "1.4.0");
 
     std::cout << "\nResults: " << (g_pass + g_fail) << " tests, "
               << g_pass << " passed, " << g_fail << " failed\n";

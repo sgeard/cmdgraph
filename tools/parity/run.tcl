@@ -14,6 +14,13 @@ set GOLD [file join $HERE golden]
 set WORK [file join $HERE .work]
 file mkdir $WORK
 
+# Scripts are named relative to the project root, and the runners are started
+# there, so that a path quoted in an error message is the same on every
+# machine (golden files hold it verbatim).
+set ROOT [file dirname [file dirname $HERE]]
+cd $ROOT
+set SCR_REL [file join tools parity scripts]
+
 set ALL  {tcl fortran cpp}
 set want [expr {[llength $argv] ? $argv : $ALL}]
 
@@ -58,7 +65,7 @@ puts "implementations: $avail"
 # --- case list: every scripts/*.in + synthetic open-fail ---
 set cases {}
 foreach f [lsort [glob -nocomplain -directory $SCR *.in]] {
-    lappend cases [list [file rootname [file tail $f]] $f]
+    lappend cases [list [file rootname [file tail $f]] [file join $SCR_REL [file tail $f]]]
 }
 lappend cases [list 10_open_fail $NOFILE]
 

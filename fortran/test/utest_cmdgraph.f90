@@ -6,7 +6,15 @@
 program utest_cmdgraph
     use cmdgraph
     use dlist
+    use, intrinsic :: iso_c_binding, only: c_int
     implicit none
+
+    interface
+        function c_getpid() bind(c, name="getpid") result(pid)
+            import :: c_int
+            integer(c_int) :: pid
+        end function c_getpid
+    end interface
 
     integer :: pass = 0, fail = 0
     integer, save :: last_act_outer_called = 0
@@ -169,18 +177,31 @@ program utest_cmdgraph
     call test_do_pop_error_keeps_frame()
     call test_action_error_no_msg()
     call test_tokeniser_edges()
+    call test_strip_bom()
+    call test_run_file_encoding()
+    call test_run_encoding()
 
     ! --- version ---
     call check_int("version major",  CMDGRAPH_VERSION%major, 1)
-    call check_int("version minor",  CMDGRAPH_VERSION%minor, 3)
-    call check_int("version patch",  CMDGRAPH_VERSION%patch, 1)
-    call check_str("version string", CMDGRAPH_VERSION%string(), "1.3.1")
+    call check_int("version minor",  CMDGRAPH_VERSION%minor, 4)
+    call check_int("version patch",  CMDGRAPH_VERSION%patch, 0)
+    call check_str("version string", CMDGRAPH_VERSION%string(), "1.4.0")
 
     ! --- Done ---
     write(*,'(/,a,i0,a,i0,a,i0,a)') "Results: ", pass+fail, " tests, ", pass, " passed, ", fail, " failed"
     if (fail > 0) error stop 1
 
 contains
+
+    ! A scratch file unique to this process, so concurrent runs (several
+    ! checkouts, several compilers) never share one - the Tcl suite's [pid].
+    function tmp_path(stem) result(path)
+        character(len=*), intent(in)  :: stem
+        character(len=:), allocatable :: path
+        character(len=16)             :: pid
+        write(pid, '(i0)') c_getpid()
+        path = "/tmp/" // stem // "_" // trim(pid) // ".txt"
+    end function tmp_path
 
     function act_outer(args, ctx) result(rv)
         type(dlist_t), intent(in)             :: args
@@ -353,18 +374,20 @@ contains
 
     subroutine test_run_file()
         type(engine_t) :: e, e2
-        character(len=*), parameter :: script_path = "/tmp/cmdgraph_fortran_utest.txt"
-        character(len=*), parameter :: bad_path = "/tmp/cmdgraph_fortran_bad_utest.txt"
+        character(len=:), allocatable :: script_path
+        character(len=:), allocatable :: bad_path
         integer :: u, s, ln
         logical :: ok
         character(len=:), allocatable :: m
 
+        script_path = tmp_path("cmdgraph_fortran_utest")
+        bad_path = tmp_path("cmdgraph_fortran_bad_utest")
         call e%add_state("root", prompt="> ")
         call e%add_command("root", "a(ction)", EDGE_ACTION, proc=act_outer, help="run")
         call e%add_command("root", "q(uit)", EDGE_QUIT, help="exit")
         call e%finalize("root")
 
-        ok = e%run_file("/tmp/cmdgraph_fortran_missing.txt")
+        ok = e%run_file(tmp_path("cmdgraph_fortran_missing"))
         call check_log("run_file missing returns false", ok, .false.)
         call check_str("run_file missing keeps state", e%current_state(), "root")
 
@@ -386,7 +409,7 @@ contains
         close(u, status="delete")
 
         ! Structured file-open failure: ok=.false., stat=-1, line=0.
-        ok = e%run_file("/tmp/cmdgraph_fortran_missing.txt", &
+        ok = e%run_file(tmp_path("cmdgraph_fortran_missing"), &
                          stat=s, errmsg=m, line=ln)
         call check_log("run_file missing ok false", ok, .false.)
         call check_int("run_file missing stat -1", s, -1)
@@ -462,10 +485,11 @@ contains
 
     subroutine test_io_diagnostics()
         type(engine_t) :: e
-        character(len=*), parameter :: script_path = "/tmp/cmdgraph_fortran_io_utest.txt"
+        character(len=:), allocatable :: script_path
         integer :: u
         logical :: ok
 
+        script_path = tmp_path("cmdgraph_fortran_io_utest")
         call e%add_state("root", prompt="> ")
         call e%add_command("root", "a(ction)", EDGE_ACTION, proc=act_outer, help="run")
         call e%add_command("root", "q(uit)", EDGE_QUIT, help="exit")
@@ -667,12 +691,13 @@ contains
 
     subroutine test_help_usage()
         type(engine_t) :: e
-        character(len=*), parameter :: hp = "/tmp/cmdgraph_fortran_help_utest.txt"
+        character(len=:), allocatable :: hp
         integer                       :: u, ios, p
         character(len=512)            :: line
         character(len=:), allocatable :: txt, ql
         logical                       :: has_q_adorn
 
+        hp = tmp_path("cmdgraph_fortran_help_utest")
         call e%add_state("home", prompt="> ")
         call e%add_command("home", "s(elect)", EDGE_ACTION, proc=act_outer, &
                            args=[arg_is_int("id")], help="Select <id>")
@@ -726,10 +751,11 @@ contains
     ! suppress even when a real unit was previously configured.
     subroutine test_quiet_unit()
         type(engine_t) :: e
-        character(len=*), parameter :: cp = "/tmp/cmdgraph_fortran_quiet_utest.txt"
+        character(len=:), allocatable :: cp
         integer            :: u, ios, nlines
         character(len=256) :: line
 
+        cp = tmp_path("cmdgraph_fortran_quiet_utest")
         call e%add_state("home", prompt="> ")
         call e%add_command("home", "a(ction)", EDGE_ACTION, proc=act_outer, help="run")
         call e%add_command("home", "q(uit)", EDGE_QUIT, help="exit")
@@ -772,12 +798,13 @@ contains
 
     subroutine test_rest_of_line()
         type(engine_t) :: e, bad
-        character(len=*), parameter :: hp = "/tmp/cmdgraph_fortran_rest_utest.txt"
+        character(len=:), allocatable :: hp
         integer                       :: u, ios, s
         character(len=512)            :: line
         character(len=:), allocatable :: txt
         character(len=:), allocatable :: m
 
+        hp = tmp_path("cmdgraph_fortran_rest_utest")
         call e%add_state("home", prompt="> ")
         call e%add_command("home", "e(cho)", EDGE_ACTION, proc=act_rest, &
                            args=[arg_is_rest("text")], help="Echo rest")
@@ -866,11 +893,12 @@ contains
     subroutine test_array_specs()
         type(engine_t)                :: e
         type(arg_spec_t), allocatable :: specs(:)
-        character(len=*), parameter   :: hp = "/tmp/cmdgraph_fortran_array_utest.txt"
+        character(len=:), allocatable   :: hp
         integer                       :: u, ios
         character(len=512)            :: line
         character(len=:), allocatable :: txt
 
+        hp = tmp_path("cmdgraph_fortran_array_utest")
         ! --- Constructor checks ---
         specs = arg_int_n("x", 3)
         call check_int("arg_int_n: count",    size(specs),    3)
@@ -1343,9 +1371,10 @@ contains
 
     subroutine test_run_engine()
         type(engine_t) :: e
-        character(len=*), parameter :: script_path = "/tmp/cmdgraph_fortran_run_engine_utest.txt"
+        character(len=:), allocatable :: script_path
         integer :: u
 
+        script_path = tmp_path("cmdgraph_fortran_run_engine_utest")
         call e%add_state("root", prompt="> ")
         call e%add_command("root", "a(ction)", EDGE_ACTION, proc=act_outer, help="run")
         call e%add_command("root", "q(uit)",   EDGE_QUIT,   help="exit")
@@ -1373,11 +1402,12 @@ contains
 
     subroutine test_run_file_rc_error()
         type(engine_t) :: e
-        character(len=*), parameter :: script_path = "/tmp/cmdgraph_fortran_rcerr_utest.txt"
+        character(len=:), allocatable :: script_path
         integer :: u, s, ln
         logical :: ok
         character(len=:), allocatable :: m
 
+        script_path = tmp_path("cmdgraph_fortran_rcerr_utest")
         call e%add_state("root", prompt="> ")
         call e%add_command("root", "s(elect)", EDGE_ACTION, proc=act_outer, &
                            args=[arg_is_int("id")])
@@ -1985,7 +2015,7 @@ contains
         call e%add_state("root", prompt="> ")
         call e%add_command("root", "q(uit)", EDGE_QUIT)
         call e%finalize("root")
-        open(newunit=u, file="/tmp/cmdgraph_help_notext_utest.txt", &
+        open(newunit=u, file=tmp_path("cmdgraph_help_notext_utest"), &
              status="replace", action="write")
         call e%set_io_units(output_unit=u, error_unit=QUIET_UNIT)
         call check_int("help with no-help cmd → RC_OK", e%dispatch("help"), RC_OK)
@@ -1995,9 +2025,11 @@ contains
     subroutine test_run_with_prompt()
         ! run() with a real output_unit exercises emit_prompt's write+flush path.
         type(engine_t) :: e
-        character(len=*), parameter :: script  = "/tmp/cmdgraph_run_prompt_in_utest.txt"
-        character(len=*), parameter :: outfile = "/tmp/cmdgraph_run_prompt_out_utest.txt"
+        character(len=:), allocatable :: script
+        character(len=:), allocatable :: outfile
         integer :: in_u, out_u
+        script = tmp_path("cmdgraph_run_prompt_in_utest")
+        outfile = tmp_path("cmdgraph_run_prompt_out_utest")
         call e%add_state("root", prompt="> ")
         call e%add_command("root", "q(uit)", EDGE_QUIT, help="exit")
         call e%finalize("root")
@@ -2070,5 +2102,237 @@ contains
         call check_log("typed real arg int-promoted value", &
                        last_real_arg == 7.0d0, .true.)
     end subroutine test_int_to_real_promotion
+
+    ! ===== Input encoding =====
+
+    ! The characters whose codes are `codes`, e.g. a byte-order mark.
+    pure function bytes(codes) result(text)
+        integer, intent(in)           :: codes(:)
+        character(len=size(codes))    :: text
+        integer                       :: i
+        do i = 1, size(codes)
+            text(i:i) = char(codes(i))
+        end do
+    end function bytes
+
+    ! `text` as UTF-16 with its byte-order mark; lines end in a line feed.
+    pure function utf16(text, little_endian) result(wide)
+        character(len=*), intent(in)  :: text
+        logical,          intent(in)  :: little_endian
+        character(len=:), allocatable :: wide
+        integer                       :: i
+        if (little_endian) then
+            wide = bytes([255, 254])
+        else
+            wide = bytes([254, 255])
+        end if
+        do i = 1, len(text)
+            if (little_endian) then
+                wide = wide // text(i:i) // char(0)
+            else
+                wide = wide // char(0) // text(i:i)
+            end if
+        end do
+    end function utf16
+
+    ! Write `content` to `path` byte for byte (no record markers, no newline added).
+    subroutine write_raw(path, content)
+        character(len=*), intent(in) :: path, content
+        integer                      :: u
+        open(newunit=u, file=path, status="replace", access="stream", &
+             form="unformatted", action="write")
+        write(u) content
+        close(u)
+    end subroutine write_raw
+
+    subroutine delete_file(path)
+        character(len=*), intent(in) :: path
+        integer                      :: u
+        open(newunit=u, file=path, status="old")
+        close(u, status="delete")
+    end subroutine delete_file
+
+    ! One strip_bom case: `mark` followed by a command classifies as `expected`.
+    subroutine check_signature(label, mark, expected)
+        character(len=*), intent(in)  :: label
+        integer,          intent(in)  :: mark(:), expected
+        character(len=:), allocatable :: text
+        integer                       :: enc
+        text = bytes(mark) // "quit"
+        call strip_bom(text, enc)
+        call check_int("strip_bom: " // label, enc, expected)
+        call check_log("strip_bom: " // label // " refused", encoding_supported(enc), .false.)
+    end subroutine check_signature
+
+    subroutine test_strip_bom()
+        character(len=:), allocatable :: text, none
+        integer                       :: enc
+
+        text = "quit"
+        call strip_bom(text, enc)
+        call check_int("strip_bom: plain",            enc, ENC_PLAIN)
+        call check_str("strip_bom: plain untouched",  text, "quit")
+
+        call strip_bom(none, enc)
+        call check_int("strip_bom: unallocated",      enc, ENC_PLAIN)
+        call check_log("strip_bom: unallocated stays so", allocated(none), .false.)
+
+        text = ""
+        call strip_bom(text, enc)
+        call check_int("strip_bom: empty",            enc, ENC_PLAIN)
+
+        text = bytes([239, 187, 191]) // "quit"
+        call strip_bom(text, enc)
+        call check_int("strip_bom: UTF-8 mark",         enc, ENC_UTF8_BOM)
+        call check_str("strip_bom: UTF-8 mark dropped", text, "quit")
+        call check_log("strip_bom: UTF-8 mark accepted", encoding_supported(enc), .true.)
+
+        text = bytes([239, 187, 191])
+        call strip_bom(text, enc)
+        call check_int("strip_bom: UTF-8 mark alone",   enc, ENC_UTF8_BOM)
+        call check_int("strip_bom: UTF-8 mark alone leaves nothing", len(text), 0)
+
+        ! A partial mark is not a mark.
+        text = bytes([239, 187]) // "quit"
+        call strip_bom(text, enc)
+        call check_int("strip_bom: partial UTF-8 mark", enc, ENC_PLAIN)
+        text = bytes([255])
+        call strip_bom(text, enc)
+        call check_int("strip_bom: lone 0xFF",          enc, ENC_PLAIN)
+
+        call check_signature("UTF-16 LE",  [255, 254],          ENC_UTF16_LE)
+        call check_signature("UTF-16 BE",  [254, 255],          ENC_UTF16_BE)
+        call check_signature("UTF-32 LE",  [255, 254, 0, 0],    ENC_UTF32_LE)
+        call check_signature("UTF-32 BE",  [0, 0, 254, 255],    ENC_UTF32_BE)
+        call check_signature("UTF-7",      [43, 47, 118],       ENC_UTF7)
+        call check_signature("UTF-1",      [247, 100, 76],      ENC_UTF1)
+        call check_signature("UTF-EBCDIC", [221, 115, 102, 115], ENC_UTF_EBCDIC)
+        call check_signature("SCSU",       [14, 254, 255],      ENC_SCSU)
+        call check_signature("BOCU-1",     [251, 238, 40],      ENC_BOCU1)
+        call check_signature("GB18030",    [132, 49, 149, 51],  ENC_GB18030)
+
+        ! UTF-16 LE text really does start FF FE then a non-NUL pair.
+        text = utf16("quit", little_endian=.true.)
+        call strip_bom(text, enc)
+        call check_int("strip_bom: UTF-16 LE text",   enc, ENC_UTF16_LE)
+        call check_int("strip_bom: refused text kept", len(text), 10)
+
+        ! No mark, but NUL bytes.
+        text = "q" // char(0) // "u" // char(0)
+        call strip_bom(text, enc)
+        call check_int("strip_bom: NUL bytes",         enc, ENC_WIDE_NO_BOM)
+        call check_log("strip_bom: NUL bytes refused", encoding_supported(enc), .false.)
+        text = bytes([239, 187, 191]) // "q" // char(0)
+        call strip_bom(text, enc)
+        call check_int("strip_bom: NUL behind a UTF-8 mark", enc, ENC_WIDE_NO_BOM)
+
+        call check_str("encoding_name: plain",     encoding_name(ENC_PLAIN), "ASCII / UTF-8")
+        call check_str("encoding_name: UTF-16 LE", encoding_name(ENC_UTF16_LE), &
+                       "UTF-16 / UCS-2, little-endian")
+        call check_str("encoding_name: UTF-32 BE", encoding_name(ENC_UTF32_BE), &
+                       "UTF-32 / UCS-4, big-endian")
+        call check_str("encoding_name: out of range", encoding_name(-99), "unknown")
+        call check_log("encoding_supported: elemental", &
+                       all(encoding_supported([ENC_PLAIN, ENC_UTF8_BOM])), .true.)
+    end subroutine test_strip_bom
+
+    subroutine test_run_file_encoding()
+        type(engine_t)                :: e
+        character(len=:), allocatable :: path, m
+        integer                       :: s, ln
+        logical                       :: ok
+        character(len=1), parameter   :: LF = achar(10)
+
+        path = tmp_path("cmdgraph_fortran_encoding_utest")
+        call e%add_state("root", prompt="> ")
+        call e%add_command("root", "a(ction)", EDGE_ACTION, proc=act_outer, help="run")
+        call e%add_command("root", "q(uit)",   EDGE_QUIT,   help="exit")
+        call e%finalize("root")
+        call e%set_io_units(output_unit=QUIET_UNIT, error_unit=QUIET_UNIT)
+
+        ! UTF-8 with a mark: runs as if the mark were not there.
+        call write_raw(path, bytes([239, 187, 191]) // "action" // LF // "quit" // LF)
+        last_act_outer_called = 0
+        ok = e%run_file(path, echo=.false., stat=s, errmsg=m, line=ln)
+        call check_log("run_file UTF-8 mark: ok",          ok, .true.)
+        call check_int("run_file UTF-8 mark: stat",        s, RUN_OK)
+        call check_int("run_file UTF-8 mark: action ran",  last_act_outer_called, 1)
+        call check_log("run_file UTF-8 mark: quit seen",   e%is_running(), .false.)
+
+        ! UTF-16: refused at line 1, nothing dispatched.
+        call e%reset()
+        call write_raw(path, utf16("action" // LF // "quit" // LF, little_endian=.true.))
+        last_act_outer_called = 0
+        ok = e%run_file(path, echo=.false., stat=s, errmsg=m, line=ln)
+        call check_log("run_file UTF-16 LE: refused",      ok, .false.)
+        call check_int("run_file UTF-16 LE: stat",         s, RUN_BAD_ENCODING)
+        call check_int("run_file UTF-16 LE: line",         ln, 1)
+        call check_str("run_file UTF-16 LE: errmsg",       m, &
+            "unsupported encoding (UTF-16 / UCS-2, little-endian); expected ASCII or UTF-8: " // path)
+        call check_str("run_file UTF-16 LE: last_error",   e%last_error, m)
+        call check_int("run_file UTF-16 LE: nothing ran",  last_act_outer_called, 0)
+        call check_log("run_file UTF-16 LE: still running", e%is_running(), .true.)
+
+        call write_raw(path, utf16("action" // LF, little_endian=.false.))
+        ok = e%run_file(path, echo=.false., stat=s, errmsg=m, line=ln)
+        call check_log("run_file UTF-16 BE: refused",      ok, .false.)
+        call check_int("run_file UTF-16 BE: stat",         s, RUN_BAD_ENCODING)
+
+        ! NUL bytes on a later line: the lines before it have run.
+        call write_raw(path, "action" // LF // "act" // char(0) // "ion" // LF // "quit" // LF)
+        last_act_outer_called = 0
+        ok = e%run_file(path, echo=.false., stat=s, errmsg=m, line=ln)
+        call check_log("run_file NUL line 2: refused",     ok, .false.)
+        call check_int("run_file NUL line 2: stat",        s, RUN_BAD_ENCODING)
+        call check_int("run_file NUL line 2: line",        ln, 2)
+        call check_int("run_file NUL line 2: line 1 ran",  last_act_outer_called, 1)
+        call check_log("run_file NUL line 2: names the cause", index(m, "NUL bytes") > 0, .true.)
+
+        call delete_file(path)
+
+        ! The open failure keeps its own stat.
+        ok = e%run_file(path, echo=.false., stat=s, errmsg=m, line=ln)
+        call check_int("run_file open failure: stat",      s, RUN_OPEN_FAILED)
+        call check_int("run_file open failure: line",      ln, 0)
+    end subroutine test_run_file_encoding
+
+    subroutine test_run_encoding()
+        type(engine_t)                :: e
+        character(len=:), allocatable :: path
+        integer                       :: u, s
+        character(len=1), parameter   :: LF = achar(10)
+
+        path = tmp_path("cmdgraph_fortran_run_encoding_utest")
+        call e%add_state("root", prompt="> ")
+        call e%add_command("root", "a(ction)", EDGE_ACTION, proc=act_outer, help="run")
+        call e%add_command("root", "q(uit)",   EDGE_QUIT,   help="exit")
+        call e%finalize("root")
+        call e%set_io_units(output_unit=QUIET_UNIT, error_unit=QUIET_UNIT)
+
+        call write_raw(path, bytes([239, 187, 191]) // "action" // LF // "quit" // LF)
+        last_act_outer_called = 0
+        open(newunit=u, file=path, status="old", action="read")
+        call e%set_io_units(input_unit=u)
+        call e%run(stat=s)
+        close(u)
+        call check_int("run UTF-8 mark: stat",       s, RUN_OK)
+        call check_int("run UTF-8 mark: action ran", last_act_outer_called, 1)
+        call check_log("run UTF-8 mark: quit seen",  e%is_running(), .false.)
+
+        call e%reset()
+        call write_raw(path, utf16("action" // LF // "quit" // LF, little_endian=.false.))
+        last_act_outer_called = 0
+        open(newunit=u, file=path, status="old", action="read")
+        call e%set_io_units(input_unit=u)
+        call e%run(stat=s)
+        close(u)
+        call check_int("run UTF-16 BE: stat",        s, RUN_BAD_ENCODING)
+        call check_str("run UTF-16 BE: last_error",  e%last_error, &
+            "unsupported encoding (UTF-16 / UCS-2, big-endian); expected ASCII or UTF-8")
+        call check_int("run UTF-16 BE: nothing ran", last_act_outer_called, 0)
+        call check_log("run UTF-16 BE: engine not quit", e%is_running(), .true.)
+
+        call delete_file(path)
+    end subroutine test_run_encoding
 
 end program utest_cmdgraph

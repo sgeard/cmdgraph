@@ -135,6 +135,7 @@ int main(int argc, char** argv) {
             case RC::Transitioned: rc = "TRANSITIONED"; break;
             case RC::Exited:       rc = "EXITED";       break;
             case RC::Error:        rc = "ERROR";        break;
+            case RC::BadEncoding:  rc = "BAD_ENCODING"; break;
             default:               rc = "OK";           break;
         }
     }

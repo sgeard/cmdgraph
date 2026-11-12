@@ -164,14 +164,17 @@ contains
             return ! index out of range ignored
         end if
 
-        ! Locate the node and reassign its data in place. Intrinsic assignment
-        ! to the allocatable polymorphic component re-fits it to data's dynamic
-        ! type, so a replacement of a different kind (e.g. int -> real) is fine.
+        ! Locate the node and re-allocate its data from the replacement.
+        ! Intrinsic assignment to the allocated polymorphic component would
+        ! suffice by the standard, but gfortran 16 copies a replacement of a
+        ! different dynamic type (e.g. int -> real) into the old, smaller
+        ! block; deallocate + sourced allocate is portable.
         this => lst%begin
         do i = 2, idx
             this => this%next
         end do
-        this%data = data
+        deallocate(this%data)
+        allocate(this%data, source=data)
 
     end subroutine replace_ll
 

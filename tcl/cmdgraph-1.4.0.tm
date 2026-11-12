@@ -129,8 +129,8 @@ namespace eval cmdgraph {
     namespace export Engine arg_int_n arg_real_n version
 
     variable version_major 1
-    variable version_minor 3
-    variable version_patch 1
+    variable version_minor 4
+    variable version_patch 0
 
     proc version {} {
         variable version_major
@@ -150,15 +150,11 @@ namespace eval cmdgraph {
     # Construct a spec list of n int/real slots all with the same name.
     # Use in the args= field: args [concat [cmdgraph::arg_real_n pt 3] {{label char}}]
     proc arg_int_n {name n} {
-        set result {}
-        for {set i 0} {$i < $n} {incr i} { lappend result [list $name int] }
-        return $result
+        return [lrepeat $n [list $name int]]
     }
 
     proc arg_real_n {name n} {
-        set result {}
-        for {set i 0} {$i < $n} {incr i} { lappend result [list $name real] }
-        return $result
+        return [lrepeat $n [list $name real]]
     }
 
     # Action-side helper. Returns the current state's context. Reliable when
@@ -169,6 +165,171 @@ namespace eval cmdgraph {
     proc context {} {
         variable current_context
         return $current_context
+    }
+}
+
+# ----------------------------------------------------------------------------
+# cmdgraph::encoding - what encoding is this input in, and do we read it?
+# ----------------------------------------------------------------------------
+#
+# The engine reads ASCII and UTF-8. Legacy 8-bit sets cannot be told apart
+# from those and pass through untouched (`plain`). Everything else that can
+# be recognised - by a byte-order mark or other leading signature, or by the
+# NUL bytes a 16- or 32-bit encoding leaves when it has no mark - is refused.
+#
+# Encodings are named by token:
+#   plain utf-8-bom                                  (read)
+#   utf-16le utf-16be utf-32le utf-32be utf-7 utf-1
+#   utf-ebcdic scsu bocu-1 gb18030 wide-no-bom       (refused)
+#
+# `run`, `run_file` and `Shell cmdloop` call `gets` below themselves;
+# `strip_bom` is for a caller that reads its own lines and hands them to
+# `dispatch`.
+namespace eval cmdgraph::encoding {
+    namespace export strip_bom name supported
+
+    # {signature token}, tested in this order, so a signature that begins
+    # with a shorter one (UTF-32 LE starts with the UTF-16 LE mark) must
+    # come first. Each signature character stands for one byte.
+    variable signatures {
+        "\xFF\xFE\x00\x00" utf-32le
+        "\x00\x00\xFE\xFF" utf-32be
+        "\xDD\x73\x66\x73" utf-ebcdic
+        "\x84\x31\x95\x33" gb18030
+        "\xEF\xBB\xBF"     utf-8-bom
+        "\x2B\x2F\x76"     utf-7
+        "\xF7\x64\x4C"     utf-1
+        "\x0E\xFE\xFF"     scsu
+        "\xFB\xEE\x28"     bocu-1
+        "\xFF\xFE"         utf-16le
+        "\xFE\xFF"         utf-16be
+    }
+    # Expand the backslash escapes once, at load.
+    set signatures [subst -nocommands -novariables $signatures]
+
+    variable names {
+        plain       {ASCII / UTF-8}
+        utf-8-bom   {UTF-8 with a byte-order mark}
+        utf-16le    {UTF-16 / UCS-2, little-endian}
+        utf-16be    {UTF-16 / UCS-2, big-endian}
+        utf-32le    {UTF-32 / UCS-4, little-endian}
+        utf-32be    {UTF-32 / UCS-4, big-endian}
+        utf-7       {UTF-7}
+        utf-1       {UTF-1}
+        utf-ebcdic  {UTF-EBCDIC}
+        scsu        {SCSU}
+        bocu-1      {BOCU-1}
+        gb18030     {GB18030}
+        wide-no-bom {NUL bytes; probably UTF-16 / UCS-2 or UTF-32 / UCS-4 without a byte-order mark}
+    }
+
+    # Channel encodings Tcl itself decodes from 16- or 32-bit units. A
+    # channel the caller configured this way is read as it stands.
+    variable wide_channel {^(unicode|ucs-2|ucs-4|utf-16|utf-32)}
+
+    # Display name of a token, as used in the engine's messages.
+    proc name {enc} {
+        variable names
+        if {[dict exists $names $enc]} { return [dict get $names $enc] }
+        return unknown
+    }
+
+    # 1 for the encodings the engine reads.
+    proc supported {enc} {
+        return [expr {$enc in {plain utf-8-bom}}]
+    }
+
+    # The one wording used for a refused encoding (parity contract).
+    proc message {enc} {
+        return "unsupported encoding ([name $enc]); expected ASCII or UTF-8"
+    }
+
+    # Classify the first line of an input stream, held in the caller's
+    # variable, and drop a UTF-8 byte-order mark from it. Returns the token.
+    #
+    # The line may be raw bytes (one character per byte, as a binary or
+    # iso8859-1 channel delivers them) or already decoded: a decoded mark
+    # arrives as the single character U+FEFF and is dropped the same way.
+    proc strip_bom {textVar} {
+        variable signatures
+        upvar 1 $textVar text
+
+        set enc plain
+        if {[string index $text 0] eq "\uFEFF"} {
+            set text [string range $text 1 end]
+            set enc utf-8-bom
+        } else {
+            foreach {sig token} $signatures {
+                if {[string equal -length [string length $sig] $sig $text]
+                        && [string length $text] >= [string length $sig]} {
+                    set enc $token
+                    if {$enc eq "utf-8-bom"} {
+                        set text [string range $text [string length $sig] end]
+                    }
+                    break
+                }
+            }
+        }
+        # A NUL is never part of a command, so in text with no signature (or
+        # behind a UTF-8 mark) it means a wide encoding with no mark.
+        if {[supported $enc] && [string first \x00 $text] >= 0} {
+            set enc wide-no-bom
+        }
+        return $enc
+    }
+
+    # [gets] with the encoding check. Reads one line of $chan into the
+    # caller's lineVar and its token into encVar; returns what [gets] does.
+    # `first` says this is the first line of the stream: it is then read
+    # byte for byte, so that a signature is seen exactly as written whatever
+    # the channel's encoding, and decoded afterwards. Later lines are only
+    # tested for NUL bytes.
+    proc gets {chan lineVar encVar first} {
+        variable wide_channel
+        upvar 1 $lineVar line $encVar enc
+
+        set enc plain
+        if {!$first} {
+            set n [::gets $chan line]
+            if {[string first \x00 $line] >= 0} { set enc wide-no-bom }
+            return $n
+        }
+
+        set chan_enc [fconfigure $chan -encoding]
+        if {[regexp -- $wide_channel $chan_enc]} {
+            # Tcl is decoding a wide encoding the caller asked for.
+            set n [::gets $chan line]
+            if {[string index $line 0] eq "\uFEFF"} {
+                set line [string range $line 1 end]
+                set enc utf-8-bom
+            }
+            return $n
+        }
+
+        fconfigure $chan -encoding iso8859-1
+        try {
+            set n [::gets $chan line]
+        } finally {
+            fconfigure $chan -encoding $chan_enc
+        }
+        if {$n < 0} { return $n }
+
+        set enc [strip_bom line]
+        if {[supported $enc] && $chan_enc ni {binary iso8859-1}} {
+            set line [decode $chan $chan_enc $line]
+        }
+        return $n
+    }
+
+    # Decode a line read byte for byte as the channel itself would have.
+    proc decode {chan chan_enc bytes} {
+        set raw [encoding convertto iso8859-1 $bytes]
+        # Tcl 9 channels carry a -profile that decides how invalid bytes are
+        # treated; Tcl 8.6 has no such option.
+        if {[catch {fconfigure $chan -profile} profile]} {
+            return [encoding convertfrom $chan_enc $raw]
+        }
+        return [encoding convertfrom -profile $profile $chan_enc $raw]
     }
 }
 
@@ -189,7 +350,9 @@ oo::class create cmdgraph::Engine {
         #   3. Validate goto/do_goto targets exist and are concrete (have a prompt).
         #      States with no `prompt` are abstract — usable as include targets only.
         #
-        # Pass 1: parse
+        # Pass 1: parse. full/rlen/flen are precomputed here so find_matches
+        # (per command, per dispatched line) never rebuilds the full name or
+        # re-measures it - the graph is immutable after construction.
         set graph {}
         dict for {state sdef} $graph_def {
             set parsed_cmds {}
@@ -198,6 +361,9 @@ oo::class create cmdgraph::Engine {
                 dict set parsed_cmds $spec [dict create \
                     req $req \
                     opt $opt \
+                    full $req$opt \
+                    rlen [string length $req] \
+                    flen [string length $req$opt] \
                     edge [my parse_edge $spec $edge]]
             }
             dict set sdef commands $parsed_cmds
@@ -428,13 +594,24 @@ oo::class create cmdgraph::Engine {
         return $result
     }
 
+    # Run an interactive loop on the input channel. The loop ends at end of
+    # input, on quit, or - having written the reason to the error channel -
+    # at a line in an unsupported encoding. Returns 0 in that last case,
+    # otherwise 1.
     method run {} {
+        set first 1
         while {[my is_running]} {
             set sdef [dict get $graph [my top_state]]
             my emit_prompt [dict get $sdef prompt]
-            if {[gets $in_chan line] < 0} break
+            if {[::cmdgraph::encoding::gets $in_chan line enc $first] < 0} break
+            set first 0
+            if {![::cmdgraph::encoding::supported $enc]} {
+                my emit_error [::cmdgraph::encoding::message $enc]
+                return 0
+            }
             my dispatch $line
         }
+        return 1
     }
 
     # Drive the engine from a script file. Each non-blank, non-comment line is
@@ -443,10 +620,12 @@ oo::class create cmdgraph::Engine {
     # Drive the engine from a script file. Returns a dict
     # {ok 0|1 stat <code> errmsg <msg> line <n>}. ok=1 iff the file opened
     # and every dispatched line succeeded (or the script quit cleanly). On
-    # failure: stat="open" for a file-open failure (line 0), otherwise the
-    # failing line's dispatch code (unknown|ambiguous|error) with line the
-    # 1-based file line number; errmsg is the diagnostic text. Stops at the
-    # first failing line (engine left in whatever state it produced).
+    # failure: stat="open" for a file-open failure (line 0), stat="encoding"
+    # for a line in an encoding the engine does not read (that line is not
+    # dispatched), otherwise the failing line's dispatch code
+    # (unknown|ambiguous|error); line is the 1-based file line number; errmsg
+    # is the diagnostic text. Stops at the first failing line (engine left in
+    # whatever state it produced).
     method run_file {path {echo 1}} {
         if {[catch {open $path r} fh]} {
             my set_error "could not open script file: $path"
@@ -455,8 +634,16 @@ oo::class create cmdgraph::Engine {
         set lineno 0
         set result [dict create ok 1 stat "" errmsg "" line 0]
         try {
-            while {[my is_running] && [gets $fh line] >= 0} {
+            while {[my is_running]
+                   && [::cmdgraph::encoding::gets $fh line enc [expr {$lineno == 0}]] >= 0} {
                 incr lineno
+                if {![::cmdgraph::encoding::supported $enc]} {
+                    # Populated silently, like the open failure: the error
+                    # channel is for events raised by a dispatched line.
+                    my set_error "[::cmdgraph::encoding::message $enc]: $path"
+                    set result [dict create ok 0 stat encoding errmsg $last_error line $lineno]
+                    break
+                }
                 set trimmed [string trim $line]
                 if {$trimmed eq ""} continue
                 if {[string index $trimmed 0] eq "#"} continue
@@ -600,34 +787,44 @@ oo::class create cmdgraph::Engine {
         }
     }
 
+    # The tokenizer walks the ORIGINAL line by index (start/sep positions);
+    # tokens are the only substrings ever copied out. The previous version
+    # recursed on [string range] suffixes, copying the remaining text per
+    # delimiter/token - O(line^2) on long argument lines.
     method split_first_token {line} {
-        set trimmed [my strip_leading_arg_space $line]
-        if {$trimmed eq ""} {
+        set start [my skip_arg_space $line 0]
+        if {$start >= [string length $line]} {
             return [list "" ""]
         }
-        set sep [my first_arg_separator $trimmed]
+        set sep [my first_arg_separator $line $start]
         if {$sep < 0} {
-            return [list $trimmed ""]
+            return [list [string range $line $start end] ""]
         }
-        set cmd [string range $trimmed 0 [expr {$sep - 1}]]
-        set rest [my strip_leading_arg_space [string range $trimmed [expr {$sep + 1}] end]]
+        set cmd [string range $line $start [expr {$sep - 1}]]
+        set rest [my strip_leading_arg_space [string range $line [expr {$sep + 1}] end]]
         return [list $cmd $rest]
     }
 
     method strip_leading_arg_space {text} {
-        if {$text eq ""} {
-            return ""
-        }
-        if {[string first [string index $text 0] $::cmdgraph::arg_delimiters] >= 0} {
-            tailcall my strip_leading_arg_space [string range $text 1 end]
-        }
-        return $text
+        return [string trimleft $text $::cmdgraph::arg_delimiters]
     }
 
-    method first_arg_separator {text} {
+    # The first non-delimiter position at or after start ([string length]
+    # when the remainder is all delimiters).
+    method skip_arg_space {text start} {
+        set n [string length $text]
+        while {$start < $n
+               && [string first [string index $text $start] $::cmdgraph::arg_delimiters] >= 0} {
+            incr start
+        }
+        return $start
+    }
+
+    # The first unquoted delimiter position at or after start, -1 if none.
+    method first_arg_separator {text {start 0}} {
         set in_quote 0
         set n [string length $text]
-        for {set i 0} {$i < $n} {incr i} {
+        for {set i $start} {$i < $n} {incr i} {
             set ch [string index $text $i]
             if {$ch eq "\""} {
                 set in_quote [expr {!$in_quote}]
@@ -642,53 +839,53 @@ oo::class create cmdgraph::Engine {
         return [expr {([my count_char $text "\""] % 2) == 0}]
     }
 
-    method count_char {text ch {acc 0}} {
-        set p [string first $ch $text]
+    method count_char {text ch {start 0} {acc 0}} {
+        set p [string first $ch $text $start]
         if {$p < 0} {
             return $acc
         }
-        tailcall my count_char [string range $text [expr {$p + 1}] end] $ch [expr {$acc + 1}]
+        tailcall my count_char $text $ch [expr {$p + 1}] [expr {$acc + 1}]
     }
 
-    method parse_args {text {acc {}}} {
-        set trimmed [my strip_leading_arg_space $text]
-        if {$trimmed eq ""} {
+    method parse_args {text {start 0} {acc {}}} {
+        set start [my skip_arg_space $text $start]
+        if {$start >= [string length $text]} {
             return $acc
         }
-        set sep [my first_arg_separator $trimmed]
+        set sep [my first_arg_separator $text $start]
         if {$sep < 0} {
-            set token $trimmed
-            set rest ""
+            set token [string range $text $start end]
+            set next [string length $text]
         } else {
-            set token [string range $trimmed 0 [expr {$sep - 1}]]
-            set rest [string range $trimmed [expr {$sep + 1}] end]
+            set token [string range $text $start [expr {$sep - 1}]]
+            set next [expr {$sep + 1}]
         }
         lappend acc [my unquote_arg_token $token]
-        tailcall my parse_args $rest $acc
+        tailcall my parse_args $text $next $acc
     }
 
     # Tokenise at most n_lead leading args (like parse_args), then return
     # {parsed-list unconsumed-tail}. The tail is a content-suffix of $text,
     # so [string length $text] - [string length $tail] is the consumed
     # prefix length. Used for the rest-of-line slot.
-    method parse_args_lead {text n_lead {acc {}}} {
+    method parse_args_lead {text n_lead {start 0} {acc {}}} {
         if {[llength $acc] >= $n_lead} {
-            return [list $acc $text]
+            return [list $acc [string range $text $start end]]
         }
-        set trimmed [my strip_leading_arg_space $text]
-        if {$trimmed eq ""} {
+        set start [my skip_arg_space $text $start]
+        if {$start >= [string length $text]} {
             return [list $acc ""]
         }
-        set sep [my first_arg_separator $trimmed]
+        set sep [my first_arg_separator $text $start]
         if {$sep < 0} {
-            set token $trimmed
-            set rest ""
+            set token [string range $text $start end]
+            set next [string length $text]
         } else {
-            set token [string range $trimmed 0 [expr {$sep - 1}]]
-            set rest [string range $trimmed [expr {$sep + 1}] end]
+            set token [string range $text $start [expr {$sep - 1}]]
+            set next [expr {$sep + 1}]
         }
         lappend acc [my unquote_arg_token $token]
-        tailcall my parse_args_lead $rest $n_lead $acc
+        tailcall my parse_args_lead $text $n_lead $next $acc
     }
 
     method unquote_arg_token {token} {
@@ -700,17 +897,15 @@ oo::class create cmdgraph::Engine {
         return $token
     }
 
+    # The prefix match against every command in the state - the dispatch inner
+    # loop. full/rlen/flen were precomputed at construction (pass 1), so each
+    # candidate costs three dict gets and one length-bounded string compare.
     method find_matches {sdef cmd} {
         set result {}
         set clen [string length $cmd]
         dict for {spec data} [dict get $sdef commands] {
-            set req [dict get $data req]
-            set opt [dict get $data opt]
-            set full $req$opt
-            set rlen [string length $req]
-            set flen [string length $full]
-            if {$clen >= $rlen && $clen <= $flen
-                && [string equal -length $clen $cmd $full]} {
+            if {$clen >= [dict get $data rlen] && $clen <= [dict get $data flen]
+                && [string equal -length $clen $cmd [dict get $data full]]} {
                 lappend result [dict create spec $spec edge [dict get $data edge]]
             }
         }
@@ -792,7 +987,7 @@ oo::class create cmdgraph::Engine {
                 return "transitioned"
             }
             swap {
-                set stack [lreplace $stack end end [list [dict get $edge target] ""]]
+                lset stack end [list [dict get $edge target] ""]
                 my fire_on_enter
                 return "transitioned"
             }
@@ -812,21 +1007,21 @@ oo::class create cmdgraph::Engine {
                 if {[dict get $r errored]} { return "error" }
                 set v [dict get $r value]
                 if {$v ne ""} {
-                    set stack [lreplace $stack end end [list [dict get $edge target] $v]]
+                    lset stack end [list [dict get $edge target] $v]
                     my fire_on_enter
                     return "transitioned"
                 }
                 return "ok"
             }
             pop {
-                set stack [lrange $stack 0 end-1]
+                set stack [lreplace $stack end end]
                 if {![my is_running]} { return "exited" }
                 return "transitioned"
             }
             do_pop {
                 set r [my invoke [dict get $edge proc] $arg_list]
                 if {[dict get $r errored]} { return "error" }
-                set stack [lrange $stack 0 end-1]
+                set stack [lreplace $stack end end]
                 if {![my is_running]} { return "exited" }
                 return "transitioned"
             }
@@ -1093,7 +1288,15 @@ oo::class create cmdgraph::Shell {
     method engine {} { return $engine }
 
     method cmdloop {} {
-        if {[my HasMethod preloop]} { my preloop }
+        # Detect the optional hooks ONCE per cmdloop entry - the previous
+        # per-line [info object methods -all] walk (twice per input line) was
+        # pure overhead. Hooks defined before cmdloop starts are honoured.
+        set methods [info object methods [self] -all]
+        set has_precmd  [expr {"precmd"  in $methods}]
+        set has_postcmd [expr {"postcmd" in $methods}]
+        if {"preloop" in $methods} { my preloop }
+        set first 1
+        set ok 1
         try {
             while {!$exiting && [$engine is_running]} {
                 # Route prompt through the engine so the "out_chan eq {}
@@ -1101,20 +1304,23 @@ oo::class create cmdgraph::Shell {
                 # for engine-emitted output; bypassing it with a bare
                 # `puts` would raise on a suppressed channel.
                 $engine emit_prompt $prompt_str
-                if {[gets $in_chan line] < 0} break
-                if {[my HasMethod precmd]} { set line [my precmd $line] }
+                if {[::cmdgraph::encoding::gets $in_chan line enc $first] < 0} break
+                set first 0
+                if {![::cmdgraph::encoding::supported $enc]} {
+                    $engine emit_error [::cmdgraph::encoding::message $enc]
+                    set ok 0
+                    break
+                }
+                if {$has_precmd} { set line [my precmd $line] }
                 if {$line eq ""} { continue }
                 set rc [$engine dispatch $line]
-                if {[my HasMethod postcmd]} { my postcmd $rc $line }
+                if {$has_postcmd} { my postcmd $rc $line }
             }
         } finally {
-            if {[my HasMethod postloop]} { my postloop }
+            if {"postloop" in $methods} { my postloop }
         }
-    }
-
-    method HasMethod {name} {
-        expr {$name in [info object methods [self] -all]}
+        return $ok
     }
 }
 
-package provide cmdgraph 1.3.1
+package provide cmdgraph 1.4.0

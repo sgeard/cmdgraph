@@ -101,6 +101,8 @@ if {!$ok && $line == 0} {
     set rc OPEN_FAIL
 } elseif {$ok} {
     set rc OK
+} elseif {$stat eq "encoding"} {
+    set rc BAD_ENCODING
 } else {
     set rc [string toupper $stat]
 }

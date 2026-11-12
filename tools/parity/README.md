@@ -34,7 +34,13 @@ For each script the runner produces:
 
 `rc` is normalised across impls. The open-failure discriminator is the P0
 contract: `ok==0 && line==0` -> `rc=OPEN_FAIL` (Tcl `stat open`, Fortran
-`stat=-1`, post-P4 C++ all collapse to this).
+`stat=-1`, post-P4 C++ all collapse to this). A line in an encoding the
+engine does not read is `rc=BAD_ENCODING` with its 1-based `line` (Tcl `stat
+encoding`, Fortran `RUN_BAD_ENCODING`, C++ `RC::BadEncoding`); cases 13-18
+are byte-exact scripts, held in svn as binary where they are not UTF-8.
+
+The driver changes to the project root and names every script relative to
+it, so a path quoted in `last_error` is the same on every machine.
 
 ## Golden = P0 canonical behaviour (TDD)
 

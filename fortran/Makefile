@@ -1,4 +1,4 @@
-.PHONY: all clean veryclean distclean utest coverage coverage-gcov coverage-clean perf help
+.PHONY: all check depcheck clean veryclean distclean utest coverage coverage-gcov coverage-clean perf help
 .SUFFIXES:
 .DEFAULT_GOAL := all
 
@@ -49,43 +49,42 @@ EX_BIN  := $(patsubst $(EX_DIR)/%.f90,$(ODIR)/%$(EXT),$(EX_SRC))
 
 all: $(OPTIONS_FNAME) $(LIB) $(TEST_BIN) $(APP_BIN) $(EX_BIN)
 
-# --- Module dependencies (auto-generated) ---
-depends.mk: fortran_deps.tcl $(addprefix $(SRC_DIR)/,$(LIB_SRC)) $(TEST_SRC) $(APP_SRC) $(EX_SRC)
-	tclsh $< $(SRC_DIR) $@ $(LIB_SRC) $(notdir $(TEST_SRC)) $(notdir $(APP_SRC)) $(notdir $(EX_SRC))
+# --- Module dependencies: depends.mk, written by tf_bld.tcl ---
+# The master in ../../common/tf_bld, run in place; a standalone copy of this
+# project (no ../../common) carries its own tf_bld.tcl beside this Makefile.
+# The Makefile names the sources: the library's and every program's. No entry
+# points: every program links libcmdgraph.a.
+TF_BLD  ?= $(firstword $(wildcard ../../common/tf_bld/tf_bld.tcl) tf_bld.tcl)
+TF_SRCS := $(addprefix $(SRC_DIR)/,$(LIB_SRC)) $(TEST_SRC) $(APP_SRC) $(EX_SRC)
 
--include depends.mk
+ifeq ($(filter clean veryclean distclean help depcheck coverage-clean,$(MAKECMDGOALS)),)
+include depends.mk
+endif
 
-# --- Compilation rules ---
-# Grouped targets (&:): each module .f90 produces both .o and .mod in one step.
+# Each TF_EXT_m hook (none here) would declare a sibling's module
+TF_ARGS = $(TF_SRCS) \
+    $(addprefix -ext ,$(patsubst TF_EXT_%,%,$(filter TF_EXT_%,$(.VARIABLES))))
 
-$(ODIR)/dlist.o $(ODIR)/dlist.mod &: $(SRC_DIR)/dlist.f90 | $(ODIR)
-	$(F) -c $(F_OPTS) -o $(ODIR)/dlist.o $<
-	@touch $(ODIR)/dlist.mod
+# After the include: TF_SOURCES (every file the last scan read) comes from it
+depends.mk: $(TF_BLD) Makefile $(TF_SRCS) $(TF_SOURCES)
+	tclsh $(TF_BLD) -o $@ $(TF_ARGS)
 
-$(ODIR)/dlist_sm.o: $(SRC_DIR)/dlist_sm.f90 $(ODIR)/dlist.mod | $(ODIR)
-	$(F) -c $(F_OPTS) -o $@ $<
+# The same scan with warnings as errors: a forgotten source or an
+# unimplemented separate procedure fails here, not at the link
+depcheck:
+	tclsh $(TF_BLD) -Werror -o depends.mk $(TF_ARGS)
 
-$(ODIR)/cmdgraph.o $(ODIR)/cmdgraph.mod &: $(SRC_DIR)/cmdgraph.f90 $(ODIR)/dlist.mod | $(ODIR)
-	$(F) -c $(F_OPTS) -o $(ODIR)/cmdgraph.o $<
-	@touch $(ODIR)/cmdgraph.mod
-
-$(ODIR)/cmdgraph_sm.o: $(SRC_DIR)/cmdgraph_sm.f90 $(ODIR)/cmdgraph.mod $(ODIR)/dlist.mod | $(ODIR)
+# --- Compilation: one pattern rule; depends.mk supplies the prerequisites
+# (and the vpath)
+$(ODIR)/%.o: %.f90 | $(ODIR)
 	$(F) -c $(F_OPTS) -o $@ $<
 
 # Library archive
 $(LIB): $(LIB_OBJ) | $(ODIR)
 	$(AR) rcs $@ $(LIB_OBJ)
 
-# Tests
-$(ODIR)/utest_%$(EXT): $(TEST_DIR)/utest_%.f90 $(LIB) | $(ODIR)
-	$(F) $(F_OPTS) -o $@ $< $(LIB) $(LFLAGS)
-
-# Demo app
-$(ODIR)/main$(EXT): $(APP_DIR)/main.f90 $(LIB) | $(ODIR)
-	$(F) $(F_OPTS) -o $@ $< $(LIB) $(LFLAGS)
-
-# Example
-$(ODIR)/cad_2d$(EXT): $(EX_DIR)/cad_2d.f90 $(LIB) | $(ODIR)
+# Tests, demo app and example: each links its own object and the library
+$(TEST_BIN) $(APP_BIN) $(EX_BIN): $(ODIR)/%$(EXT): $(ODIR)/%.o $(LIB)
 	$(F) $(F_OPTS) -o $@ $< $(LIB) $(LFLAGS)
 
 $(ODIR):
@@ -93,6 +92,8 @@ $(ODIR):
 
 utest: $(TEST_BIN)
 	@for t in $(TEST_BIN); do echo "==> $$t" && $$t || exit 1; done
+
+check: depcheck utest
 
 perf: $(LIB)
 	$(F) $(F_OPTS) -o $(ODIR)/perf_pathological$(EXT) \
@@ -111,7 +112,7 @@ coverage-clean:
 	@rm -vf *.gcov obj_gfortran_debug/*.gcda obj_gfortran_debug/*.gcno
 
 clean:
-	@rm -vf $(ODIR)/*.o $(ODIR)/*.mod $(ODIR)/*.smod $(ODIR)/*.gcda $(ODIR)/*.gcno $(LIB) $(TEST_BIN) $(APP_BIN) $(EX_BIN) depends.mk $(OPTIONS_FNAME) *~ *.mod *.smod *.gcov
+	@rm -vf $(ODIR)/*.o $(ODIR)/*.mod $(ODIR)/*.smod $(ODIR)/*.gcda $(ODIR)/*.gcno $(LIB) $(TEST_BIN) $(APP_BIN) $(EX_BIN) $(OPTIONS_FNAME) *~ *.mod *.smod *.gcov
 
 veryclean: clean
 	@rm -vfr obj_* *.gcov
@@ -120,7 +121,7 @@ distclean: veryclean
 	@rm -vrf depends.mk foptions_*.mk *~ $(PERF_DIR) build
 
 help:
-	@echo "Targets : all, utest, clean, veryclean, distclean"
+	@echo "Targets : all, utest, check (depcheck utest), depcheck, clean, veryclean, distclean"
 	@echo "          coverage, coverage-gcov, coverage-clean"
 	@echo "Options : F=gfortran|ifx|lfortran|flang (default ifx)  debug=1"
 	@echo "LIB_SRC = $(LIB_SRC)"

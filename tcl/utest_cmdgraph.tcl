@@ -1345,13 +1345,116 @@ emsg_eng destroy
 
 # --- version ---
 
+# --- input encoding ---
+
+namespace eval enctest {
+    # Write $bytes (one character per byte) to $path exactly.
+    proc write_raw {path bytes} {
+        set fh [open $path w]
+        fconfigure $fh -translation binary
+        puts -nonewline $fh $bytes
+        close $fh
+    }
+    # $text as UTF-16 with its byte-order mark.
+    proc utf16 {text little} {
+        set wide [expr {$little ? "\xFF\xFE" : "\xFE\xFF"}]
+        foreach c [split $text ""] {
+            append wide [expr {$little ? "$c\x00" : "\x00$c"}]
+        }
+        return $wide
+    }
+}
+
+foreach {label mark token} {
+    "UTF-16 LE"  "\xFF\xFE"         utf-16le
+    "UTF-16 BE"  "\xFE\xFF"         utf-16be
+    "UTF-32 LE"  "\xFF\xFE\x00\x00" utf-32le
+    "UTF-32 BE"  "\x00\x00\xFE\xFF" utf-32be
+    "UTF-7"      "\x2B\x2F\x76"     utf-7
+    "UTF-1"      "\xF7\x64\x4C"     utf-1
+    "UTF-EBCDIC" "\xDD\x73\x66\x73" utf-ebcdic
+    "SCSU"       "\x0E\xFE\xFF"     scsu
+    "BOCU-1"     "\xFB\xEE\x28"     bocu-1
+    "GB18030"    "\x84\x31\x95\x33" gb18030
+} {
+    set text "${mark}quit"
+    set enc [cmdgraph::encoding::strip_bom text]
+    check "strip_bom: $label"         $enc $token
+    check "strip_bom: $label refused" [cmdgraph::encoding::supported $enc] 0
+}
+set text "quit"
+check "strip_bom: plain"              [cmdgraph::encoding::strip_bom text] plain
+set text "\xEF\xBB\xBFquit"
+check "strip_bom: UTF-8 mark (bytes)" [cmdgraph::encoding::strip_bom text] utf-8-bom
+check "strip_bom: UTF-8 mark dropped" $text quit
+set text "\uFEFFquit"
+check "strip_bom: decoded mark"       [cmdgraph::encoding::strip_bom text] utf-8-bom
+check "strip_bom: decoded mark dropped" $text quit
+set text "\xEF\xBBquit"
+check "strip_bom: partial mark"       [cmdgraph::encoding::strip_bom text] plain
+set text "q\x00u\x00"
+check "strip_bom: NUL bytes"          [cmdgraph::encoding::strip_bom text] wide-no-bom
+check "encoding name"  [cmdgraph::encoding::name utf-16le] "UTF-16 / UCS-2, little-endian"
+
+set enc_path "/tmp/cmdgraph_enc_[pid].txt"
+cmdgraph::Engine create eenc $graph outer
+eenc set_io_channels stdin "" ""
+
+enctest::write_raw $enc_path "\xEF\xBB\xBFaction\nquit\n"
+probe::reset
+set r [eenc run_file $enc_path 0]
+check "run_file UTF-8 mark ok"         [dict get $r ok] 1
+check "run_file UTF-8 mark action ran" [probe::count] 1
+check "run_file UTF-8 mark quit seen"  [eenc is_running] 0
+
+eenc reset
+enctest::write_raw $enc_path [enctest::utf16 "action\nquit\n" 1]
+probe::reset
+set r [eenc run_file $enc_path 0]
+check "run_file UTF-16 LE refused" [dict get $r ok] 0
+check "run_file UTF-16 LE stat"    [dict get $r stat] encoding
+check "run_file UTF-16 LE line"    [dict get $r line] 1
+check "run_file UTF-16 LE errmsg"  [dict get $r errmsg] \
+    "unsupported encoding (UTF-16 / UCS-2, little-endian); expected ASCII or UTF-8: $enc_path"
+check "run_file UTF-16 LE nothing ran" [probe::count] 0
+
+enctest::write_raw $enc_path "action\nact\x00ion\nquit\n"
+probe::reset
+set r [eenc run_file $enc_path 0]
+check "run_file NUL line 2 stat"  [dict get $r stat] encoding
+check "run_file NUL line 2 line"  [dict get $r line] 2
+check "run_file NUL line 2 line 1 ran" [probe::count] 1
+
+# run: UTF-8 mark accepted, UTF-16 refused
+enctest::write_raw $enc_path "\xEF\xBB\xBFaction\nquit\n"
+set ich [open $enc_path r]
+eenc set_io_channels $ich "" ""
+probe::reset
+check "run UTF-8 mark returns 1"   [eenc run] 1
+check "run UTF-8 mark action ran"  [probe::count] 1
+close $ich
+
+eenc reset
+enctest::write_raw $enc_path [enctest::utf16 "action\nquit\n" 0]
+set ich [open $enc_path r]
+eenc set_io_channels $ich "" ""
+probe::reset
+check "run UTF-16 BE returns 0"    [eenc run] 0
+check "run UTF-16 BE last_error"   [eenc last_error] \
+    "unsupported encoding (UTF-16 / UCS-2, big-endian); expected ASCII or UTF-8"
+check "run UTF-16 BE nothing ran"  [probe::count] 0
+close $ich
+file delete $enc_path
+eenc destroy
+
 set v [cmdgraph::version]
 check "version major"  [dict get $v major]  1
-check "version minor"  [dict get $v minor]  3
-check "version patch"  [dict get $v patch]  1
-check "version string" [dict get $v string] "1.3.1"
+check "version minor"  [dict get $v minor]  4
+check "version patch"  [dict get $v patch]  0
+check "version string" [dict get $v string] "1.4.0"
 
 # --- Done ---
 
 puts ""
 puts "[expr {$pass+$fail}] tests: $pass passed, $fail failed"
+exit [expr {$fail > 0}]

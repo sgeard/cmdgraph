@@ -276,6 +276,32 @@ The original top priorities have largely landed. Do not re-implement these:
   language element is added to the engine (cohesively, under the parity
   contract) rather than worked around in the driver.
 
+- **1.4.0 release — input encoding** (2026-11-12, all three implementations).
+  `run` and `run_file` (and the Tcl `Shell cmdloop`) now state what they read
+  instead of dispatching whatever bytes arrive. Read: ASCII, UTF-8, and UTF-8
+  with a byte-order mark (the mark is dropped from the first line). Refused,
+  by a leading signature: UTF-16 / UCS-2 and UTF-32 / UCS-4 in both byte
+  orders, UTF-7, UTF-1, UTF-EBCDIC, SCSU, BOCU-1, GB18030; and, by NUL bytes
+  in any line, a 16- or 32-bit encoding written without a mark. Legacy 8-bit
+  sets have no signature and pass through as opaque bytes, as before - there
+  is deliberately no strict UTF-8 validation. Motivated by sqr's shells being
+  fed scripts written by Windows PowerShell (`>` writes UTF-16, `Out-File
+  -Encoding utf8` writes a mark).
+  **Parity contract additions**: the refusal wording
+  `unsupported encoding (<name>); expected ASCII or UTF-8`, with `: <path>`
+  appended by `run_file`; the encoding names; `run_file` -> `ok` false, the
+  1-based line, a new status (Fortran `RUN_BAD_ENCODING`, C++
+  `RC::BadEncoding`, Tcl `encoding`), nothing on the output or error channel
+  (like the open failure) and the offending line not dispatched; `run` ->
+  the message on the error channel and the loop left. `run` gains a result
+  (Fortran optional `stat`, C++ `bool`, Tcl 1/0) - source-compatible. Fortran
+  names the existing `run_file` statuses `RUN_OK` / `RUN_OPEN_FAILED`. Public
+  helpers for callers of `dispatch`: `strip_bom`, `encoding_name`,
+  `encoding_supported`. `dispatch` itself is unchanged. Parity cases
+  `13_utf8_bom` ... `18_wide_no_bom`; the driver now runs from the project
+  root with root-relative script paths so a path in a golden file is the same
+  everywhere. Tcl module renamed `cmdgraph-1.3.1.tm` -> `cmdgraph-1.4.0.tm`.
+
 ## Bigger — defer until a real workflow demands it
 
 1. **State lifecycle hooks beyond `on_enter`** (`on_exit`, `before_command`,

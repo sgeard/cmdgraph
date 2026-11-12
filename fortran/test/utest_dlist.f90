@@ -14,6 +14,7 @@ program utest_dlist
     call test_self_assignment_preserves_nodes()
     call test_insert_and_remove()
     call test_replace()
+    call test_replace_widening()
     call test_iteration()
     call test_array_and_matrix_nodes()
     call test_finalize_on_scope_exit()
@@ -114,6 +115,38 @@ contains
         call check_int_node("replace low no-op leaves head",  a, 1, 11)
         call check_int_node("replace high no-op leaves tail", a, 3, 33)
     end subroutine test_replace
+
+    ! A replacement much larger than the node it displaces (int -> real
+    ! matrix): the node must be re-allocated to the new dynamic type, not
+    ! copied into the old block.  Neighbours and the list must stay intact.
+    subroutine test_replace_widening()
+        type(dlist_t)                         :: a
+        class(dlist_node_data_t), allocatable :: node
+        real(dp)                              :: mat(3,3)
+        integer                               :: k
+
+        mat = reshape([(real(k, dp), k = 1, 9)], [3, 3])
+        call a%append(int_node(1))
+        call a%append(int_node(2))
+        call a%append(int_node(3))
+
+        call a%replace(2, real_m_node(mat))
+        call a%replace(2, real_node(4.5_dp))
+        call a%replace(2, real_m_node(2*mat))
+        call check_int("widening replace keeps size", a%size(), 3)
+        call check_int_node("widening replace leaves head", a, 1, 1)
+        call check_int_node("widening replace leaves tail", a, 3, 3)
+
+        node = a%get(2)
+        select type (node)
+        type is (dlist_node_real_m)
+            call check_log("widening replace holds the matrix", all(node%data == 2*mat), .true.)
+        class default
+            call fail_check("widening replace changed node type to matrix")
+        end select
+        call a%clear()
+        call check_int("widening replace list clears", a%size(), 0)
+    end subroutine test_replace_widening
 
     subroutine test_iteration()
         type(dlist_t) :: a

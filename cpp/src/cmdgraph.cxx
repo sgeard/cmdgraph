@@ -689,16 +689,106 @@ RC Engine::dispatch(const std::string& line) {
     return apply_edge_(cmd, args);
 }
 
-void Engine::run() {
+//──── Input encoding ──────────────────────────────────────────────────────────
+
+namespace {
+
+// One byte-order mark (or other leading signature) and what it identifies.
+struct Signature {
+    std::string_view bytes;
+    Encoding         enc;
+};
+
+using namespace std::string_view_literals;
+
+// Tested in this order, so a signature that begins with a shorter one
+// (UTF-32 LE starts with the UTF-16 LE mark) must come first.
+constexpr Signature SIGNATURES[] = {
+    {"\xFF\xFE\x00\x00"sv, Encoding::Utf32Le},
+    {"\x00\x00\xFE\xFF"sv, Encoding::Utf32Be},
+    {"\xDD\x73\x66\x73"sv, Encoding::UtfEbcdic},
+    {"\x84\x31\x95\x33"sv, Encoding::Gb18030},
+    {"\xEF\xBB\xBF"sv,     Encoding::Utf8Bom},
+    {"\x2B\x2F\x76"sv,     Encoding::Utf7},
+    {"\xF7\x64\x4C"sv,     Encoding::Utf1},
+    {"\x0E\xFE\xFF"sv,     Encoding::Scsu},
+    {"\xFB\xEE\x28"sv,     Encoding::Bocu1},
+    {"\xFF\xFE"sv,         Encoding::Utf16Le},
+    {"\xFE\xFF"sv,         Encoding::Utf16Be},
+};
+
+constexpr char NUL = '\0';
+
+// Classify one line read by run / run_file.  The first line of a stream is
+// tested for a signature (and loses a UTF-8 mark); every line is tested for
+// NUL bytes, which catch a wide encoding that has no mark.
+Encoding screen_line(std::string& text, bool first) {
+    if (first) return strip_bom(text);
+    return text.find(NUL) != std::string::npos ? Encoding::WideNoBom : Encoding::Plain;
+}
+
+// The one wording used for a refused encoding (parity contract).
+std::string unsupported_message(Encoding enc) {
+    return "unsupported encoding (" + std::string{encoding_name(enc)} +
+           "); expected ASCII or UTF-8";
+}
+
+} // namespace
+
+Encoding strip_bom(std::string& text) {
+    Encoding enc = Encoding::Plain;
+    for (const auto& sig : SIGNATURES) {
+        if (text.starts_with(sig.bytes)) {
+            enc = sig.enc;
+            if (enc == Encoding::Utf8Bom) text.erase(0, sig.bytes.size());
+            break;
+        }
+    }
+    // A NUL is never part of a command, so in text with no signature (or
+    // behind a UTF-8 mark) it means a wide encoding with no mark.
+    if (encoding_supported(enc) && text.find(NUL) != std::string::npos)
+        enc = Encoding::WideNoBom;
+    return enc;
+}
+
+std::string_view encoding_name(Encoding enc) {
+    switch (enc) {
+        case Encoding::Plain:     return "ASCII / UTF-8";
+        case Encoding::Utf8Bom:   return "UTF-8 with a byte-order mark";
+        case Encoding::Utf16Le:   return "UTF-16 / UCS-2, little-endian";
+        case Encoding::Utf16Be:   return "UTF-16 / UCS-2, big-endian";
+        case Encoding::Utf32Le:   return "UTF-32 / UCS-4, little-endian";
+        case Encoding::Utf32Be:   return "UTF-32 / UCS-4, big-endian";
+        case Encoding::Utf7:      return "UTF-7";
+        case Encoding::Utf1:      return "UTF-1";
+        case Encoding::UtfEbcdic: return "UTF-EBCDIC";
+        case Encoding::Scsu:      return "SCSU";
+        case Encoding::Bocu1:     return "BOCU-1";
+        case Encoding::Gb18030:   return "GB18030";
+        case Encoding::WideNoBom: return "NUL bytes; probably UTF-16 / UCS-2 or UTF-32 / UCS-4 "
+                                         "without a byte-order mark";
+    }
+    return "unknown";
+}
+
+bool Engine::run() {
     std::string line;
+    bool first = true;
     while (is_running()) {
         if (out_) {
             const auto& st = states_[stack_.back().state_idx];
             if (st.prompt) { *out_ << *st.prompt; out_->flush(); }
         }
         if (!std::getline(*in_, line)) break;
+        const Encoding enc = screen_line(line, first);
+        first = false;
+        if (!encoding_supported(enc)) {
+            emit_error_(unsupported_message(enc));
+            return false;
+        }
         (void)dispatch(line);  // loop condition is is_running(); RC not needed here
     }
+    return true;
 }
 
 // Drive the engine from a script file.  Blank / `#`-comment lines are skipped
@@ -728,6 +818,17 @@ bool Engine::run_file(const std::string& path, bool echo,
     int lno = 0;
     while (is_running() && std::getline(f, line)) {
         ++lno;
+
+        const Encoding enc = screen_line(line, lno == 1);
+        if (!encoding_supported(enc)) {
+            // Populated silently, like the open failure: the error channel
+            // is for events raised by a dispatched line.
+            last_error = unsupported_message(enc) + ": " + path;
+            if (out_stat)   *out_stat = RC::BadEncoding;
+            if (out_line)   *out_line = lno;
+            if (out_errmsg) *out_errmsg = last_error;
+            return false;
+        }
 
         // Skip blank lines and #-comment lines (first non-space char is #).
         std::size_t first = line.find_first_not_of(" \t");

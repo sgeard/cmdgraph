@@ -464,6 +464,63 @@ The engine also maintains `last_message` (last info output) and `last_error`
 (last error message) for callers that intercept output by redirecting the
 I/O channels.
 
+### Input encoding
+
+The engine reads **ASCII and UTF-8**, as bytes: command words are ASCII and
+argument text is passed to the action untouched. `run` and `run_file` look at
+the start of their input and at every line, and sort what they see into three
+classes.
+
+| Class | What it is | What happens |
+|-------|------------|--------------|
+| Read | ASCII, UTF-8, UTF-8 with a byte-order mark | Dispatched; the mark is dropped from the first line |
+| Not validated | Legacy 8-bit and multi-byte sets (Latin-1, CP1252, Shift-JIS, ...) | Indistinguishable from the above, so passed through as opaque bytes |
+| Refused | Anything with one of the signatures below, or with NUL bytes in a line | Nothing is dispatched from that line on |
+
+| First bytes   | Reported as                    | Fortran          | C++                   | Tcl          |
+|---------------|--------------------------------|------------------|-----------------------|--------------|
+| (none)        | ASCII / UTF-8                  | `ENC_PLAIN`      | `Encoding::Plain`     | `plain`      |
+| `EF BB BF`    | UTF-8 with a byte-order mark   | `ENC_UTF8_BOM`   | `Encoding::Utf8Bom`   | `utf-8-bom`  |
+| `FF FE 00 00` | UTF-32 / UCS-4, little-endian  | `ENC_UTF32_LE`   | `Encoding::Utf32Le`   | `utf-32le`   |
+| `00 00 FE FF` | UTF-32 / UCS-4, big-endian     | `ENC_UTF32_BE`   | `Encoding::Utf32Be`   | `utf-32be`   |
+| `FF FE`       | UTF-16 / UCS-2, little-endian  | `ENC_UTF16_LE`   | `Encoding::Utf16Le`   | `utf-16le`   |
+| `FE FF`       | UTF-16 / UCS-2, big-endian     | `ENC_UTF16_BE`   | `Encoding::Utf16Be`   | `utf-16be`   |
+| `2B 2F 76`    | UTF-7                          | `ENC_UTF7`       | `Encoding::Utf7`      | `utf-7`      |
+| `F7 64 4C`    | UTF-1                          | `ENC_UTF1`       | `Encoding::Utf1`      | `utf-1`      |
+| `DD 73 66 73` | UTF-EBCDIC                     | `ENC_UTF_EBCDIC` | `Encoding::UtfEbcdic` | `utf-ebcdic` |
+| `0E FE FF`    | SCSU                           | `ENC_SCSU`       | `Encoding::Scsu`      | `scsu`       |
+| `FB EE 28`    | BOCU-1                         | `ENC_BOCU1`      | `Encoding::Bocu1`     | `bocu-1`     |
+| `84 31 95 33` | GB18030                        | `ENC_GB18030`    | `Encoding::Gb18030`   | `gb18030`    |
+| NUL in a line | a wide encoding with no mark   | `ENC_WIDE_NO_BOM`| `Encoding::WideNoBom` | `wide-no-bom`|
+
+UCS-2 and UTF-16 (and UCS-4 and UTF-32) begin with the same bytes, so each
+pair is reported under one name. The UTF-7 signature is the printable text
+`+/v`: a first line that begins with those three characters is refused. Plain
+EBCDIC has neither a signature nor NUL bytes and is not detected; it fails as
+an unknown command.
+
+A refusal is reported in one wording,
+`unsupported encoding (<name>); expected ASCII or UTF-8`:
+
+| Entry point | Fortran | C++ | Tcl |
+|-------------|---------|-----|-----|
+| `run_file`  | `ok = .false.`, `stat = RUN_BAD_ENCODING`, `line`, `errmsg` (path appended) | `false`, `RC::BadEncoding`, line, errmsg | `ok 0 stat encoding line <n> errmsg <msg>` |
+| `run`       | message on the error channel; optional `stat = RUN_BAD_ENCODING` | message on the error channel; returns `false` | message on the error channel; returns `0` |
+| `Shell cmdloop` | - | - | as `run` |
+
+`run_file`'s other `stat` values are unchanged; Fortran now names them
+(`RUN_OK`, `RUN_OPEN_FAILED`).
+
+`dispatch` does not look at encodings: a caller that reads its own lines owns
+them. `strip_bom`, `encoding_name` and `encoding_supported` (Tcl:
+`cmdgraph::encoding::strip_bom` / `name` / `supported`) are public for such a
+caller.
+
+In Tcl the first line is read byte for byte, whatever the channel's
+`-encoding`, so a signature is seen as written; it is then decoded as the
+channel would have decoded it. A channel the caller has itself configured for
+a 16- or 32-bit encoding is left to Tcl and read normally.
+
 ---
 
 ## Building

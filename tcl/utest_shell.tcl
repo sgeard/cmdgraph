@@ -283,6 +283,50 @@ check "suppressed out_chan: quit landed"      [[m4 engine] is_running] 0
 m4 destroy
 
 # ----------------------------------------------------------------------------
+# 8. Input encoding — cmdloop drops a UTF-8 byte-order mark and refuses an
+# encoding the engine does not read (returns 0, reason on the error channel).
+# ----------------------------------------------------------------------------
+
+# A readable channel that delivers $bytes (one character per byte) exactly.
+proc make_raw_pipe {bytes} {
+    lassign [chan pipe] r w
+    fconfigure $w -translation binary
+    puts -nonewline $w $bytes
+    close $w
+    return $r
+}
+
+Minimal create m5
+set in_r [make_raw_pipe "\xEF\xBB\xBFgreet Marked\nquit\n"]
+m5 set_io_channels $in_r "" ""
+check "UTF-8 mark: cmdloop returns 1"   [m5 cmdloop] 1
+close $in_r
+check "UTF-8 mark: first command ran"   [m5 last_greeted] Marked
+m5 destroy
+
+Minimal create m6
+capture::reset
+set in_r [make_raw_pipe "\xFF\xFEg\x00r\x00e\x00e\x00t\x00 \x00W\x00\n\x00"]
+set err  [capture::channel]
+m6 set_io_channels $in_r "" $err
+check "UTF-16 LE: cmdloop returns 0"    [m6 cmdloop] 0
+close $in_r
+close $err
+check "UTF-16 LE: reason on error channel" [string trim [capture::text]] \
+    "unsupported encoding (UTF-16 / UCS-2, little-endian); expected ASCII or UTF-8"
+check "UTF-16 LE: nothing ran"          [m6 last_greeted] ""
+check "UTF-16 LE: engine still running" [[m6 engine] is_running] 1
+m6 destroy
+
+Minimal create m7
+set in_r [make_raw_pipe "greet One\ng\x00reet Two\nquit\n"]
+m7 set_io_channels $in_r "" ""
+check "NUL on line 2: cmdloop returns 0" [m7 cmdloop] 0
+close $in_r
+check "NUL on line 2: line 1 ran"        [m7 last_greeted] One
+m7 destroy
+
+# ----------------------------------------------------------------------------
 
 puts ""
 puts "Passed: $pass"
